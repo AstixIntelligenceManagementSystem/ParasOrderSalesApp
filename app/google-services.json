@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "231513248401",
+    "firebase_url": "https://parasordersalesapp.firebaseio.com",
+    "project_id": "parasordersalesapp",
+    "storage_bucket": "parasordersalesapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231513248401:android:fba55538e1b45812",
+        "android_client_info": {
+          "package_name": "project.astix.com.parasorder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231513248401-2rpis9grtdva71avks82620o2hdbjlts.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPQZyCidLIi5uJvh1wSspWlrj9kwlBXDs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
