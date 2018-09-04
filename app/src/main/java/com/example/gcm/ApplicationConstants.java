@@ -6,7 +6,7 @@ public interface ApplicationConstants {
 	static final String APP_SERVER_URL = "http://192.168.2.4:9000/gcm/gcm.php?shareRegId=true";
 
 	// Google Project Number
-	static final String GOOGLE_PROJ_ID = "937674536634";
+	static final String GOOGLE_PROJ_ID = "231513248401";
 	// Message Key
 	static final String MSG_KEY = "message";
 	static final String MSG_SendTime = "SendTime";
