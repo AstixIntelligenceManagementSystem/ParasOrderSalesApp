@@ -1,9 +1,9 @@
 <resources>
 
-   <string name="app_name">Paras Order Sales</string>
+   <!--<string name="app_name">Paras Order Sales</string>-->
     <!-- <string name="app_name">Paras Order Sales Stagging</string>-->
     <!--<string name="app_name">Paras Order Sales Test</string>-->
-    <!-- <string name="app_name">Paras Order Sales Dev</string>-->
+     <string name="app_name">Paras Order Sales Dev</string>
     <!--<string name="app_name">Paras Order Sales Test Release</string>-->
 
     <string name="Coverage_Area">कवरेज क्षेत्र</string>
