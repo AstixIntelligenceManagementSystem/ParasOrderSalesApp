@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class TblProductWiseInvoice {
 
-    @SerializedName("ProductId")
+    @SerializedName("ProductID")
     @Expose
     private Integer productId;
 
@@ -58,12 +58,12 @@ public class TblProductWiseInvoice {
         this.catID = catID;
     }
 
-    public Integer getTotLiveDiscVal() {
-        return totLiveDiscVal;
+    public Float getTotLineDiscVal() {
+        return totLineDiscVal;
     }
 
-    public void setTotLiveDiscVal(Integer totLiveDiscVal) {
-        this.totLiveDiscVal = totLiveDiscVal;
+    public void setTotLineDiscVal(Float totLineDiscVal) {
+        this.totLineDiscVal = totLineDiscVal;
     }
 
     public Integer getFreeQty() {
@@ -106,7 +106,7 @@ public class TblProductWiseInvoice {
     @Expose
     private String inVoiceForDate;
 
-    @SerializedName("OrdrID")
+    @SerializedName("OrderID")
     @Expose
     private Integer orderID;
 
@@ -116,7 +116,7 @@ public class TblProductWiseInvoice {
 
     @SerializedName("TotLineDiscVal")
     @Expose
-    private Integer totLiveDiscVal;
+    private Float totLineDiscVal;
 
     @SerializedName("Freeqty")
     @Expose
@@ -137,6 +137,12 @@ public class TblProductWiseInvoice {
     public void setProductId(Integer productId) {
         this.productId = productId;
     }
+
+
+
+
+
+
 
 
 }

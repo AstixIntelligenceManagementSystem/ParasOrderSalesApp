@@ -1023,7 +1023,7 @@ public class CommonFunction {
 
 
                     List<TblProductWiseInvoice> tblProductWiseInvoice=  allMasterTablesModel.getTblProductWiseInvoice();
-                    if(tblInvoiceExecutionProductList.size()>0){
+                    if(tblProductWiseInvoice.size()>0){
 
                         dbengine.inserttblProductWiseInvoice(tblProductWiseInvoice,hmapInvoiceOrderIDandStatus);
 

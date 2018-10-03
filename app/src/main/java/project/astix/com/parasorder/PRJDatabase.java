@@ -561,12 +561,12 @@ public class PRJDatabase
     private static final String DATABASE_CREATE_TABLE_101 = "create table tblFirstOrderDetailsOnLastVisitDetailsActivity(StoreID text null,Date text null,SKUID text null,OrderQty integer null,FreeQty integer null,Stock integer null,SKUName text null);";
     private static final String DATABASE_CREATE_TABLE_102 = "create table tblSecondVisitDetailsOnLastVisitDetailsActivity(StoreID text null,Date text null,SKUID text  null,OrderQty integer null,SKUName text null);";
     private static final String DATABASE_CREATE_TABLE_103 = "create table tblPDAGetLODQty(StoreID text not null,Date text null,SKUID text not null,Qty integer null,SKUName text not null);";
-    private static final String DATABASE_CREATE_TABLE_111 = "create table tblPendingInvoices(StoreID text null," +
-            "StoreName text null,RouteId text null,RouteName text null,DistId text null,DistName text null," +
-            "InvoiceForDate text null,flgSubmit text null,Sstat integer not null,IMEIno text not null,OrderID text  null,flgCancel int null,ServerOrdersFlg int null);";
-    private static final String DATABASE_CREATE_TABLE_112 = "create table tblInvoiceExecutionProductList (ProductId text null, ProductName text null);";
-    private static final String DATABASE_CREATE_TABLE_113 = "create table tblProductWiseInvoice (StoreID text null," +
-            " ProductID text null,OrderQty text null,ProductPrice text null,InvoiceForDate text null,OrderID text null,CatID text null,Freeqty int null,TotLineDiscVal real null);";
+    private static final String DATABASE_CREATE_TABLE_111 = "create table tblPendingInvoices(StoreID integer null," +
+            "StoreName text null,RouteId integer null,RouteNodeType integer null,RouteName text null,DistId integer null,DistName text null," +
+            "InvoiceForDate text null,flgSubmit integer null,Sstat integer not null,IMEIno text not null,OrderID text  null,flgCancel int null,ServerOrdersFlg int null);";
+    private static final String DATABASE_CREATE_TABLE_112 = "create table tblInvoiceExecutionProductList (ProductId integer null, ProductName text null);";
+    private static final String DATABASE_CREATE_TABLE_113 = "create table tblProductWiseInvoice (StoreID integer not null," +
+            " ProductID integer not null,OrderQty integer not null,ProductPrice real not null,InvoiceForDate text null,OrderID integer not null,CatID integer not null,Freeqty integer not null,TotLineDiscVal real null);";
     private static final String DATABASE_CREATE_TABLE_114 = "create table tblInvoiceButtonTransac (IMEIno text not null, " +
             "TransDate string not null, StoreID text not null, ProdID text not null, OrderQty integer not null, " +
             "DelQty integer not null,FreeQty integer not null,Sstat integer not null,ProductShortName text null, ProductPrice real null," +
@@ -4195,18 +4195,19 @@ public class PRJDatabase
             {
                 initialValues.put("StoreID", tblPendingInvoicesDataData.getStoreId());
                 initialValues.put("StoreName", tblPendingInvoicesDataData.getStoreName());
-            /* initialValues.put("RouteID", tblPendingInvoicesDataData.getRouteID());
+             initialValues.put("RouteID", tblPendingInvoicesDataData.getRouteID());
+                initialValues.put("RouteNodeType", tblPendingInvoicesDataData.getRouteNodeType());
            initialValues.put("RouteName", tblPendingInvoicesDataData.getRouteName());
             initialValues.put("DistID", tblPendingInvoicesDataData.getDistID());
             initialValues.put("DistName", tblPendingInvoicesDataData.getDistName());
             initialValues.put("InvoiceForDate", tblPendingInvoicesDataData.getInvoiceForDate());
-            initialValues.put("flgSubmit", tblPendingInvoicesDataData.getflgSubmit());
+            initialValues.put("flgSubmit", tblPendingInvoicesDataData.getFlgSubmit());
             initialValues.put("Sstat",0);
-            initialValues.put("IMEIno",CommonInfo.IMEIno);
+            initialValues.put("IMEIno",CommonInfo.imei);
             initialValues.put("OrderID","NA");
             initialValues.put("flgCancel",0);
             initialValues.put("OrderID",tblPendingInvoicesDataData.getOrderID());
-            initialValues.put("ServerOrdersFlg",0);*/
+            initialValues.put("ServerOrdersFlg",0);
 
                 db.insert(DATABASE_TABLE_MAIN111, null, initialValues);
             }
@@ -36520,6 +36521,7 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
             values.put("ProductId",tblInvoiceExecutionProductListData.getProductId());
 
             values.put("ProductName",tblInvoiceExecutionProductListData.getProductName());
+            System.out.println("Abhinav Raj and Mona:"+tblInvoiceExecutionProductListData.getProductId()+"^"+tblInvoiceExecutionProductListData.getProductName());
 
             db.insert(DATABASE_TABLE_MAIN112, null, values);
         }
@@ -36562,7 +36564,7 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
                 initialValues.put("OrderID", tblProductWiseInvoiceData.getOrderID());
                 initialValues.put("CatID", tblProductWiseInvoiceData.getCatID());
                 initialValues.put("Freeqty", tblProductWiseInvoiceData.getFreeQty());
-                initialValues.put("TotLineDiscVal", tblProductWiseInvoiceData.getTotLiveDiscVal());
+                initialValues.put("TotLineDiscVal", tblProductWiseInvoiceData.getTotLineDiscVal());
 
                 db.insert(DATABASE_TABLE_MAIN113, null, initialValues);
             }

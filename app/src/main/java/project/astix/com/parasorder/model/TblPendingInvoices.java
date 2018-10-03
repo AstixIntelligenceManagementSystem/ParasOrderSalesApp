@@ -114,5 +114,14 @@ public class TblPendingInvoices {
     public void setStoreName(String storeName) {
         this.storeName = storeName;
     }
+    @SerializedName("DistName")
+    @Expose
+    private String distName;
+    public String getDistName() {
+        return distName;
+    }
 
+    public void setDistName(String distName) {
+        this.distName = distName;
+    }
 }
