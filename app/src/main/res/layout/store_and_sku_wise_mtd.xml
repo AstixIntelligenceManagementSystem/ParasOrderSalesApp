@@ -74,15 +74,28 @@
    android:paddingTop="1dp"
    android:paddingBottom="1dp"
     android:gravity="center_vertical"
-    android:weightSum="11"
+    android:weightSum="12"
     android:layout_below="@+id/rtv_hdr"
     android:background="@drawable/table_cell_header_bg"
     android:orientation="horizontal">
 
-    <TextView 
+    <TextView
+        android:id="@+id/total_discountValue"
+        android:layout_width="0dp"
+android:layout_height="match_parent"
+android:layout_weight="1"
+android:gravity="right|center_vertical"
+android:paddingRight="2dp"
+        android:text=""
+        android:textColor="#000000"
+android:textSize="10sp"
+android:textStyle="bold"
+        />
+
+    <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="4.5"
         android:text="@string/prodlstProduct"
         android:gravity="center"
         android:textSize="10sp"
@@ -91,6 +104,7 @@
      <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
+         android:visibility="gone"
         android:background="#000000"/>
      <TextView 
         android:layout_width="0dp"
@@ -100,16 +114,19 @@
          android:gravity="center"
           android:textSize="10sp"
         android:textStyle="bold"
+         android:visibility="gone"
          android:textColor="#ffffff"/>
       <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
+          android:visibility="gone"
         android:background="#000000"/>
       <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/Rate"
+          android:visibility="gone"
          android:gravity="center"
         android:textSize="10sp"
         android:textStyle="bold"
@@ -126,6 +143,7 @@
         android:text="@string/Stock"
         android:textSize="10sp"
         android:textStyle="bold"
+           android:id="@+id/tvStockHead"
         android:textColor="#ffffff"/> 
         <View 
         android:layout_width="1dp"
@@ -135,7 +153,7 @@
              <TextView 
            android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="1.2"
         android:text="@string/txtOrderQty"
          android:gravity="center"
          android:textSize="10sp"
@@ -163,7 +181,7 @@
              <TextView 
             android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="1.2"
         android:text="@string/txtDiscountValue"
          android:gravity="center"
          android:textSize="10sp"
@@ -178,8 +196,10 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/txtValBeforeTax"
+           android:id="@+id/tvValBeforeTax"
          android:gravity="center"
          android:textSize="10sp"
+           android:visibility="gone"
         android:textStyle="bold"
         android:textColor="#ffffff"/> 
          <View 
@@ -204,7 +224,7 @@
              <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="1.1"
         android:text="@string/txtValAfterTax"
          android:gravity="center"
          android:textSize="10sp"
@@ -242,7 +262,7 @@
     <TextView 
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="7"
+        android:layout_weight="8"
         android:text="@string/txtTotal"
         android:gravity="left|center_vertical"
         android:textSize="10sp"
@@ -254,24 +274,24 @@
       
 
       
-         <View 
-        android:layout_width="1dp"
-        android:layout_marginLeft="5dp"
-        android:layout_height="match_parent"
-        android:background="#000000"/>
-     
-             <TextView 
-                 android:id="@+id/total_discountValue"
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#000000"/>
+        <TextView
+            android:id="@+id/tvDisCount"
             android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:text=""
-        android:paddingRight="2dp"
-         android:gravity="right|center_vertical"
-         android:textSize="10sp"
-        android:textStyle="bold"
-        android:textColor="#000000"/>
-              <View 
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingRight="2dp"
+            android:text=""
+            android:gravity="right|center_vertical"
+            android:textSize="10sp"
+
+            android:textStyle="bold"
+            android:textColor="#000000"/>
+        <View
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:background="#000000"/>
@@ -284,6 +304,7 @@
         android:text=""
          android:gravity="right|center_vertical"
          android:textSize="10sp"
+           android:visibility="gone"
         android:textStyle="bold"
         android:textColor="#000000"/> 
         

@@ -1,8 +1,10 @@
 package project.astix.com.parasorder;
 
+import android.app.ActivityManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,6 +63,9 @@ import java.util.regex.Pattern;
 
 public class DayStartActivity extends BaseActivity implements InterfaceClass,OnMapReadyCallback,CompoundButton.OnCheckedChangeListener
 {
+
+    TextView txt_rfrshCmnt;
+
     static int flgDaySartWorking = 0;
     DatabaseAssistant DASFA = new DatabaseAssistant(this);
     public long syncTIMESTAMP;
@@ -95,7 +100,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     public String ReasonText="NA";
     public int chkFlgForErrorToCloseApp=0;
     String[] reasonNames;
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
+    PRJDatabase dbengine = new PRJDatabase(this);
 
 
     public String fDate;
@@ -144,7 +149,11 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     private RadioButton rb_yes;
     private RadioButton rb_no;
 
-
+    Context ctx;
+    //private MyService mMyService;
+    public Context getCtx() {
+        return ctx;
+    }
     public void customHeader()
     {
 
@@ -399,12 +408,12 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
         }
         else
         {
+
             if(refreshCount==2)
             {
-               // txt_rfrshCmnt.setText(getString(R.string.loc_not_found));
-               // btn_refresh.setVisibility(View.GONE);
+                txt_rfrshCmnt.setText(getString(R.string.loc_not_found));
+                btn_refresh.setVisibility(View.GONE);
             }
-
             try
             {
                 googleMap.setMyLocationEnabled(false);
@@ -429,9 +438,11 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
     public void fnGetDistributorList()
     {
-        dbengine.open();
-        Distribtr_list=dbengine.getDistributorData();
-        dbengine.close();
+
+        //dbengine.open();
+        Distribtr_list=dbengine.getSuplierData();
+
+        //dbengine.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             //System.out.println("DISTRIBUTOR........"+Distribtr_list[i]);
@@ -472,7 +483,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                 else
                 {
                     DistributorName_Global=tv.getText().toString();
-                    String   Distribtor_Detail=dbengine.fetchDistributorIdByName(text);
+                    String   Distribtor_Detail=dbengine.fetchSuplierIdByName(text);
                     DistributorId_Global=Distribtor_Detail.split(Pattern.quote("^"))[0];
                     DistributorNodeType_Global=Distribtor_Detail.split(Pattern.quote("^"))[1];
                 }
@@ -492,6 +503,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daystart);
+        ctx=this;
         Intent intent=getIntent();
         intentFrom= intent.getIntExtra("IntentFrom", 0);
         sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
@@ -500,7 +512,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
         btn_refresh.setVisibility(View.GONE);
         ll_refresh= (LinearLayout) findViewById(R.id.ll_refresh);
         ll_refresh.setVisibility(View.GONE);
-
+        txt_rfrshCmnt= (TextView) findViewById(R.id.txt_rfrshCmnt);
         rb_yes= (RadioButton) findViewById(R.id.rb_yes);
         rb_no=(RadioButton)findViewById(R.id.rb_no);
 
@@ -512,6 +524,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
                 if(i!=-1)
                 {
+
                     RadioButton    radioButtonVal = (RadioButton) radioGroup.findViewById(i);
                     if(radioButtonVal.getId()==R.id.rb_yes)
                     {
@@ -567,8 +580,20 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                 {
                     rg_yes_no.clearCheck();
                     ll_refresh.setVisibility(View.GONE);
+                    refreshCount++;
+                    if(refreshCount==1)
+                    {
+                        txt_rfrshCmnt.setText(getString(R.string.second_msg_for_map));
+                    }
+                    else if(refreshCount==2)
+                    {
+                        txt_rfrshCmnt.setText(getString(R.string.third_msg_for_map));
+                        btn_refresh.setVisibility(View.GONE);
+                    }
+
                     LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-                    llaaa.locationRetrievingAndDistanceCalculating(DayStartActivity.this,false,50);
+                    llaaa.locationRetrievingAndDistanceCalculating(DayStartActivity.this,false,20);
+
                 }
 
 
@@ -634,7 +659,8 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
         but_Next=(Button) findViewById(R.id.but_Next);
         but_Next.setVisibility(View.GONE);
-        fnGetDistributorList();
+
+       // fnGetDistributorList();
 
         Button but_DayStart=(Button) findViewById(R.id.but_DayStart);
         but_DayStart.setOnClickListener(new View.OnClickListener() {
@@ -702,7 +728,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
 
                     LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-                    llaaa.locationRetrievingAndDistanceCalculating(DayStartActivity.this,false,50);
+                    llaaa.locationRetrievingAndDistanceCalculating(DayStartActivity.this,false,20);
                 }
 
 
@@ -724,7 +750,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             public void onClick(View view)
             {
 
-                if(rb_workingYes.isChecked() && DistributorName_Global.equals("Select Distributor"))
+               /* if(rb_workingYes.isChecked() && DistributorName_Global.equals("Select Distributor"))
                 {
                     AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
                     alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg));
@@ -742,108 +768,132 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                     alertDialog.show();
                     return;
                 }
-                else if (CommonInfo.DayStartClick==0)
-                {
-                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
-                    alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg));
-                    alertDialog.setMessage(getResources().getString(R.string.selectAtleastOneOption));
-                    alertDialog.setIcon(R.drawable.error);
-                    alertDialog.setCancelable(false);
+                else */
+               if((refreshCount==2) || (rg_yes_no.getCheckedRadioButtonId()==R.id.rb_yes))
+               {
+                   if (CommonInfo.DayStartClick==0)
+                   {
+                       AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
+                       alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg));
+                       alertDialog.setMessage(getResources().getString(R.string.selectAtleastOneOption));
+                       alertDialog.setIcon(R.drawable.error);
+                       alertDialog.setCancelable(false);
 
-                    alertDialog.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog,int which)
-                        {
-                            dialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                    return;
-                }
-                else if(hmapSelectedCheckBoxData.containsKey("6") && TextUtils.isEmpty(et_otherPleaseSpecify.getText().toString().trim()))
-                {
-                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
-                    alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg));
-                    alertDialog.setMessage(getResources().getString(R.string.selectAtleastOneOptionwithedittext));
-                    alertDialog.setIcon(R.drawable.error);
-                    alertDialog.setCancelable(false);
+                       alertDialog.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                       {
+                           public void onClick(DialogInterface dialog,int which)
+                           {
+                               dialog.dismiss();
+                           }
+                       });
+                       alertDialog.show();
+                       return;
+                   }
+                   else if(hmapSelectedCheckBoxData.containsKey("6") && TextUtils.isEmpty(et_otherPleaseSpecify.getText().toString().trim()))
+                   {
+                       AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
+                       alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg));
+                       alertDialog.setMessage(getResources().getString(R.string.selectAtleastOneOptionwithedittext));
+                       alertDialog.setIcon(R.drawable.error);
+                       alertDialog.setCancelable(false);
 
-                    alertDialog.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog,int which)
-                        {
-                            dialog.dismiss();
+                       alertDialog.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                       {
+                           public void onClick(DialogInterface dialog,int which)
+                           {
+                               dialog.dismiss();
 
 
-                        }
-                    });
-                    alertDialog.show();
-                    return;
-                }
+                           }
+                       });
+                       alertDialog.show();
+                       return;
+                   }
+                   else
+                   {
+                       if(hmapSelectedCheckBoxData.containsKey("6"))
+                       {
+                           hmapSelectedCheckBoxData.remove("6");
+
+                           hmapSelectedCheckBoxData.put("6",et_otherPleaseSpecify.getText().toString().trim());
+                       }
+
+                       if(hmapSelectedCheckBoxData.size()>0)
+                       {
+                           ReasonId="";
+                           ReasonText="";
+                           for(Map.Entry<String, String> entry:hmapSelectedCheckBoxData.entrySet())
+                           {
+                               String key = entry.getKey().toString().trim();
+                               String value = entry.getValue().toString().trim();
+
+                               if(ReasonId.equals(""))
+                               {
+                                   ReasonId= key;
+                               }
+                               else
+                               {
+                                   ReasonId=ReasonId+"$"+key;
+                               }
+
+                               if(ReasonText.equals(""))
+                               {
+                                   ReasonText= value;
+                               }
+                               else
+                               {
+                                   ReasonText=ReasonText+"$"+value;
+                               }
+                           }
+
+
+
+                       }
+
+
+                       String commentValue="NA";
+                       EditText commenttext=(EditText)findViewById(R.id.commenttext);
+                       if(!TextUtils.isEmpty(commenttext.getText().toString().trim()))
+                       {
+                           commentValue=commenttext.getText().toString().trim();
+                       }
+                       else
+                       {
+
+                       }
+
+
+                       if(DistributorName_Global.equals("Select Distributor"))
+                       {
+                           DistributorName_Global="NA";
+                           DistributorId_Global="0";
+                           DistributorNodeType_Global="0";
+                       }
+
+                       dbengine.updatetblAttandanceDetails("33","No Working",ReasonId,ReasonText,commentValue,DistributorId_Global,DistributorNodeType_Global,DistributorName_Global);
+                       syncStartAfterSavindData();
+                   }
+               }
                else
-                {
-                    if(hmapSelectedCheckBoxData.containsKey("6"))
-                    {
-                        hmapSelectedCheckBoxData.remove("6");
+               {
+                   AlertDialog.Builder alertDialog = new AlertDialog.Builder(DayStartActivity.this);
+                   alertDialog.setTitle(getResources().getString(R.string.AlertDialogHeaderMsg));
+                   alertDialog.setMessage(getResources().getString(R.string.verifyLocation));
 
-                        hmapSelectedCheckBoxData.put("6",et_otherPleaseSpecify.getText().toString().trim());
-                    }
+                   alertDialog.setCancelable(false);
 
-                     if(hmapSelectedCheckBoxData.size()>0)
-                      {
-                        ReasonId="";
-                        ReasonText="";
-                        for(Map.Entry<String, String> entry:hmapSelectedCheckBoxData.entrySet())
-                        {
-                            String key = entry.getKey().toString().trim();
-                            String value = entry.getValue().toString().trim();
-
-                            if(ReasonId.equals(""))
-                            {
-                                ReasonId= key;
-                            }
-                            else
-                            {
-                                ReasonId=ReasonId+"$"+key;
-                            }
-
-                            if(ReasonText.equals(""))
-                            {
-                                ReasonText= value;
-                            }
-                            else
-                            {
-                                ReasonText=ReasonText+"$"+value;
-                            }
-                        }
+                   alertDialog.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                   {
+                       public void onClick(DialogInterface dialog,int which)
+                       {
+                           dialog.dismiss();
 
 
+                       }
+                   });
+                   alertDialog.show();
+               }
 
-                    }
-
-
-                    String commentValue="NA";
-                            EditText commenttext=(EditText)findViewById(R.id.commenttext);
-                           if(!TextUtils.isEmpty(commenttext.getText().toString().trim()))
-                           {
-                               commentValue=commenttext.getText().toString().trim();
-                           }
-                           else
-                           {
-
-                           }
-
-
-                    if(DistributorName_Global.equals("Select Distributor"))
-                    {
-                        DistributorName_Global="NA";
-                        DistributorId_Global="0";
-                        DistributorNodeType_Global="0";
-                    }
-
-                    dbengine.updatetblAttandanceDetails("33","No Working",ReasonId,ReasonText,commentValue,DistributorId_Global,DistributorNodeType_Global,DistributorName_Global);
-                    syncStartAfterSavindData();
-                }
 
 
             }
@@ -856,7 +906,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                 if(rb_workingYes.isChecked())
                 {
                     rb_workingNo.setChecked(false);
-                    spinner_for_filter.setVisibility(View.VISIBLE);
+                    spinner_for_filter.setVisibility(View.GONE);
                     ll_map.setVisibility(View.VISIBLE);
                     ll_Working_parent.setVisibility(View.VISIBLE);
                     ll_NoWorking_parent.setVisibility(View.GONE);
@@ -988,7 +1038,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             mapFrag.getMapAsync(DayStartActivity.this);
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.show(mapFrag);
-            dbengine.open();
+            //dbengine.open();
             dbengine.savetblAttandanceDetails(txt_DayStarttime.getText().toString().trim(),PersonNodeID,PersonNodeType,PersonName,OptionID,OptionDesc,
                     ReasonId,ReasonText,FusedAddress,finalPinCode,finalCity,finalState,fnLati,fnLongi,
                     finalAccuracy,"0",fnAccurateProvider,AllProvidersLocation,FusedAddress,
@@ -999,7 +1049,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                     FusedLocationAccuracyWithFirstAttempt,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,
                     flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
 
-            dbengine.close();
+            //dbengine.close();
 
 
 
@@ -1046,7 +1096,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.show(mapFrag);
 
-                dbengine.open();
+                //dbengine.open();
                 dbengine.savetblAttandanceDetails(txt_DayStarttime.getText().toString().trim(),PersonNodeID,PersonNodeType,PersonName,OptionID,OptionDesc,
                         ReasonId,ReasonText,FusedAddress,finalPinCode,finalCity,finalState,fnLati,fnLongi,
                         finalAccuracy,"0",fnAccurateProvider,AllProvidersLocation,FusedAddress,
@@ -1057,7 +1107,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                         FusedLocationAccuracyWithFirstAttempt,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,
                         flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
 
-                dbengine.close();
+                //dbengine.close();
 
 
 
@@ -1425,128 +1475,7 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
         return str;
     }
 
-    private class GetNoStoreVisitForDay extends AsyncTask<Void, Void, Void>
-    {
-        ServiceWorker newservice = new ServiceWorker();
 
-        ProgressDialog pDialogGetNoStoreVisitForDay;
-
-        public GetNoStoreVisitForDay(DayStartActivity activity)
-        {
-            pDialogGetNoStoreVisitForDay = new ProgressDialog(activity);
-        }
-
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-
-            pDialogGetNoStoreVisitForDay.setTitle(getText(R.string.PleaseWaitMsg));
-            pDialogGetNoStoreVisitForDay.setMessage(getText(R.string.RetrivingDataMsg));
-            pDialogGetNoStoreVisitForDay.setIndeterminate(false);
-            pDialogGetNoStoreVisitForDay.setCancelable(false);
-            pDialogGetNoStoreVisitForDay.setCanceledOnTouchOutside(false);
-            pDialogGetNoStoreVisitForDay.show();
-
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-
-            try {
-
-
-                for(int mm = 1; mm < 2  ; mm++)
-                {
-                    if(mm==1)
-                    {
-                        newservice = newservice.getCallspSaveReasonForNoVisit(getApplicationContext(), fDate, getIMEI(), ReasonId,ReasonText);
-
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                            }
-
-                        }
-
-                    }
-
-
-
-                }
-
-
-            } catch (Exception e)
-            {
-                Log.i("SvcMgr", "Service Execution Failed!", e);
-            }
-
-            finally
-            {
-                Log.i("SvcMgr", "Service Execution Completed...");
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-            Log.i("SvcMgr", "Service Execution Cancelled");
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-
-            if(pDialogGetNoStoreVisitForDay.isShowing())
-            {
-                pDialogGetNoStoreVisitForDay.dismiss();
-            }
-
-            if(chkFlgForErrorToCloseApp==0)
-            {
-                dbengine.updateReasonIdAndDescrtblNoVisitStoreDetails(ReasonId,ReasonText);
-                dbengine.updateCurDatetblNoVisitStoreDetails(fDate);
-
-                dbengine.updateSstattblNoVisitStoreDetails(3);
-                String aab=dbengine.fetchReasonDescr();
-                //noVisit_tv.setText("Reason :"+ReasonText);
-            }
-            else
-            {
-                dbengine.updateSstattblNoVisitStoreDetailsAfterSync(4);
-
-              /*  if(RowId==0)
-                {
-                    dbengine.updateReasonIdAndDescrtblNoVisitStoreDetails(ReasonId,ReasonText);
-                    dbengine.updateCurDatetblNoVisitStoreDetails(fDate);
-                    dbengine.updateSstattblNoVisitStoreDetails(3);
-                    String aab=dbengine.fetchReasonDescr();
-                   // noVisit_tv.setText("Reason :"+ReasonText);
-                   // ll_noVisit.setEnabled(false);
-
-                }
-                else
-                {
-                    dbengine.updateSstattblNoVisitStoreDetailsAfterSync(4);
-                    String aab=dbengine.fetchReasonDescr();
-                  //  noVisit_tv.setText("Reason :"+ReasonText);
-                   // ll_noVisit.setEnabled(false);
-
-                }*/
-                finishAffinity();
-            }
-        }
-    }
 
     private class bgTasker extends AsyncTask<Void, Void, Void> {
 
@@ -1558,17 +1487,17 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             try {
 
 
-               /* dbengine.open();
+               /* //dbengine.open();
                 String rID=dbengine.GetActiveRouteID();
-                 dbengine.close();
+                 //dbengine.close();
 */
 
 
              //  pDialog2.dismiss();
-                   // dbengine.open();
+                   // //dbengine.open();
 
                     //dbengine.updateActiveRoute(rID, 0);
-                   // dbengine.close();
+                   // //dbengine.close();
                     // sync here
 
 
@@ -1576,7 +1505,9 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
 
 
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                String esdsd=e.getMessage();
+            }
 
             finally {}
 
@@ -1618,9 +1549,9 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
         Date dateobj = new Date(syncTIMESTAMP);
 
 
-        dbengine.open();
+        //dbengine.open();
         String presentRoute="0";
-        dbengine.close();
+        //dbengine.close();
         //syncTIMESTAMP = System.currentTimeMillis();
         //Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
@@ -1654,12 +1585,30 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
             if(isOnline())
             {
-                Intent syncIntent = new Intent(DayStartActivity.this, SyncMaster.class);
+
+
+                Intent mMyServiceIntent = new Intent(getCtx(), MyService.class);
+                mMyServiceIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
+                mMyServiceIntent.putExtra("OrigZipFileName", newfullFileName);
+                mMyServiceIntent.putExtra("whereTo", "DayStart");//
+                if (!isMyServiceRunning(MyService.class)) {
+                    startService(mMyServiceIntent);
+                }
+
+                Intent intent=new Intent(DayStartActivity.this,AllButtonActivity.class);
+                startActivity(intent);
+                finish();
+               /* Intent intent=new Intent(DayStartActivity.this,DSR_Registration.class);
+                intent.putExtra("IntentFrom", "SPLASH");
+                startActivity(intent);
+                finish();*/
+
+                /*Intent syncIntent = new Intent(DayStartActivity.this, SyncMaster.class);
                 syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
                 syncIntent.putExtra("OrigZipFileName", newfullFileName);
                 syncIntent.putExtra("whereTo", "DayStart");
                 startActivity(syncIntent);
-                finish();
+                finish();*/
             }
             else
             {
@@ -1672,5 +1621,18 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
             e.printStackTrace();
         }
 
+    }
+
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
     }
 }

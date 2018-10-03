@@ -1,18 +1,6 @@
 package project.astix.com.parasorder;
 
 
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-
-import com.astix.Common.CommonInfo;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-
-import android.support.v4.app.FragmentTransaction;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -21,6 +9,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,6 +32,17 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.astix.Common.CommonInfo;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
  * A simple {@link Fragment} subclass.
  * 
@@ -80,7 +80,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 	 DatePickerDialog datePickerDialog ;
 	    int Year, Month, Day ;
 	    TextView frmDate,todateText;
-	    DBAdapterKenya dbengine;
+	    PRJDatabase dbengine;
 	    String[] distributerList;
 	    ArrayAdapter<String> adapterDistributor;
 	    AlertDialog.Builder alertDialog;
@@ -226,7 +226,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 		 FragmentTransaction transaction=getFragmentManager().beginTransaction();
 		 transaction.setCustomAnimations(R.anim.enter_anim, R.anim.exit_anim);
 		 rootView= inflater.inflate(R.layout.fragment_a, container, false);
-		 dbengine=new DBAdapterKenya(getActivity());
+		 dbengine=new PRJDatabase(getActivity());
 		 hmapPrcDetailsFromDataBase=dbengine.getSalesQuotePrcsMstr();
 		 
 		 
@@ -342,7 +342,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 		{
 			boolean uom_is_select=true;
 			
-			//dbengine.open();
+			////dbengine.open();
 		  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 		   {
 			  String UOMID="0";
@@ -398,7 +398,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 			
 			if(!hashmapForBackupOfDynamicData.isEmpty())
 			{
-				dbengine.open();
+				//dbengine.open();
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
 				  String UOMID="0";
@@ -475,7 +475,7 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 				}
 			
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			 if(stopSavingFlg==true)
 			  {
 				  stopSavingFlg=false;
@@ -500,9 +500,9 @@ public class FragmentA extends Fragment implements DatePickerDialog.OnDateSetLis
 					  {
 							 SalesQuotePrcsForUpdate=	hmapPrcDetailsFromDataBase.get("3");
 							 SalesQuotePrcsIdForUpdate="3";
-							 dbengine.open();
+							 //dbengine.open();
 							 dbengine.UpdateQuotePrcsAgainstQuotationId(QuotationActivity.SalesQuoteId, SalesQuotePrcsIdForUpdate, SalesQuotePrcsForUpdate);
-							 dbengine.close();
+							 //dbengine.close();
 						} 
 				 	}
 				  
@@ -2612,11 +2612,11 @@ else{
 		    chkmsgnew=0;
 		    QuotationActivityLayout.setEnabled(false);
             gifView.setVisibility(View.VISIBLE);
-            dbengine.open();
+            //dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 			if(!hashmapForBackupOfDynamicData.isEmpty()){
-				dbengine.open();
+				//dbengine.open();
 				//StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
@@ -2685,7 +2685,7 @@ else{
 				
 			   }
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			  
 			  if(stopSavingFlg==false)
 			  {
@@ -2846,11 +2846,11 @@ else{
 			QuotationActivityLayout.setEnabled(false);
 			gifView.setVisibility(View.VISIBLE);
 			chkmsgnew=0;
-			dbengine.open();
+			//dbengine.open();
 			StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(QuotationActivity.storeID));
-			dbengine.close();
+			//dbengine.close();
 			if(!hashmapForBackupOfDynamicData.isEmpty()){
-				dbengine.open();
+				//dbengine.open();
 			  for(Map.Entry<String, String> entry:hashmapForBackupOfDynamicData.entrySet())
 			   {
 				  String UOMID="0";
@@ -2917,7 +2917,7 @@ else{
 				
 			   }
 				}
-			  dbengine.close();
+			  //dbengine.close();
 			  if(stopSavingFlg==false)
 			  {
 			  hashmapForBackupOfDynamicData.clear();

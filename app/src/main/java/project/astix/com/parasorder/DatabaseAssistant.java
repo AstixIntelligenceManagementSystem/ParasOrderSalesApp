@@ -1,26 +1,27 @@
 package project.astix.com.parasorder;
 
 //import java.io.BufferedOutputStream;
-import java.io.File;
-//import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
-
-
-//import android.content.Context;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-//import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
-//import android.provider.SyncStateContract.Constants;
 
 import com.astix.Common.CommonInfo;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.LinkedHashMap;
+
+//import java.io.FileNotFoundException;
+//import android.content.Context;
+//import android.database.sqlite.SQLiteOpenHelper;
+//import android.provider.SyncStateContract.Constants;
 
 public class DatabaseAssistant 
 {
@@ -66,6 +67,7 @@ public class DatabaseAssistant
 	public DatabaseAssistant open() throws SQLException 
 	{
 		db = DBHelper2.getWritableDatabase();
+
 		return this;
 	}
 
@@ -87,56 +89,50 @@ public class DatabaseAssistant
 		String sql = "select * from sqlite_master";
 		//////System.out.println("db print inside DA: " + db);
 		Cursor c = db.rawQuery(sql, new String[0]);
-		/*if (c.moveToFirst()) {
-			do {
-				String tableName = c.getString(c.getColumnIndex("name"));
 
-				// skip metadata, sequence, and uidx (unique indexes)
-				if (!tableName.equals("android_metadata")
-						&& !tableName.equals("sqlite_sequence")
-						&& !tableName.startsWith("uidx")) {
-					//exportTable(tableName);
-					exportTable("myPROmainData");		// FOR TEST! >> myPROmainData
-				}
-			} while (c.moveToNext());
-		}*/
-		if (1==1)
-		{			//reqd. if.. block
-			exportTabletblTransac("tblStoreProdcutPurchaseDetails");
-			exportTabletblInvoice("tblInvoice");
+
 			exportTableStoreList("tblStoreList");
-			
-			exportTableProductMappedWithSchemeSlabApplied("tblProductMappedWithSchemeSlabApplied");
+
+			exportTable("tblNewAddedStoreLocationDetails");
+			exportTableStoreVisit("tblStoreVisitMstr");
+			exportTabletblTransac("tblInvoiceDetails");
+				exportTableStoreCheckIn("tblActualVisitStock");
+
+			exportTabletblInvoice("tblInvoiceHeader");
+
+
+			exportCollection("tblAllCollectionData");
+			//exportTableProductMappedWithSchemeSlabApplied("tblProductMappedWithSchemeSlabApplied");
 			exportTablStoreProductPhotoDetail("tblStoreProductPhotoDetail");
 			
-			exportTableStoreReturnDetail("tblStoreReturnDetail");
+		//	exportTableStoreReturnDetail("tblStoreReturnDetail");
 			exportTableDayStartEndDetails("tblDayStartEndDetails");
 		
-			exportTableStoreProductAppliedSchemesBenifitsRecords("tblStoreProductAppliedSchemesBenifitsRecords");
+		//	exportTableStoreProductAppliedSchemesBenifitsRecords("tblStoreProductAppliedSchemesBenifitsRecords");
 			
 			exportTableStoreMain("tblNewStoreEntries");
-			exportTable("tblNewStoreListEntries");
-			exportTableTemp("tblTemp");
+			//exportTable("tblNewStoreListEntries");
+		//	exportTableTemp("tblTemp");
 			
 			exportTable("tblOutletQuestAnsMstr");
-			exportTableStoreMaterialDetail("tblStoreMaterialDetail");
-			exportTable("tblStoreMaterialPhotoDetail");
+		//	exportTableStoreMaterialDetail("tblStoreMaterialDetail");
+			//exportTable("tblStoreMaterialPhotoDetail");
 			
 			exportTable("tblNoVisitStoreDetails");
 			
-			exportTableForRouteType("tblRouteMstr",ActiveRouteID);
+			//exportTableForRouteType("tblRouteMstr",ActiveRouteID);
 			
-			exportSalesQuotePersonMeetTable("tblSalesQuotePersonMeetMstr");
-			exportTable("tblSalesQuoteProductsMstr");
+			//exportSalesQuotePersonMeetTable("tblSalesQuotePersonMeetMstr");
+			//exportTable("tblSalesQuoteProductsMstr");
 			
-			exportTable("tblNewStoreSalesQuotePaymentDetails");
+			//exportTable("tblNewStoreSalesQuotePaymentDetails");
 			
-			exportTable("tblStoreOrderBillAddressDetails");
+			//exportTable("tblStoreOrderBillAddressDetails");
 			
-			exportTable("tblStoreSalesOrderPaymentDetails");
+			//exportTabletblStoreSalesOrderPaymentDetails("tblStoreSalesOrderPaymentDetails");
 			
-			exportTable("tblRateDistribution");
-			exportTableNotification("tblNotificationMstr");
+			//exportTable("tblRateDistribution");
+		//	exportTableNotification("tblNotificationMstr");
 
 			exportTable("tblSelectedManagerDetails");
 
@@ -148,18 +144,20 @@ public class DatabaseAssistant
 			exportTable("tblStoreCloseLocationDetails");
 			exportTable("tblStoreClosedPhotoDetail");
 			exportTable("tblStoreCloseReasonSaving");
+				exportTableAttandance("tblAttandanceDetails");
+				exportTable("tblStoreCheckInPic");
 
-			exportTable("tblAllCollectionData");
-			exportTableAttandance("tblAttandanceDetails");
-
+				exportTable("tblCollectionReportCashChange");
+				exportTable("tblCollectionReportChequeChange");
+				exportTable("tblStoreOrderVisitDayActivity");
 
 			//String routeID=GetActiveRouteIDSunil();
-		}
+			UpdateNewAddedStorephotoFlag();
+
 		String xmlString = xmlBuilder.end();
 		writeToFile(xmlString, exportFileNamePrefix + ".xml");
 
 	}
-
 	private void exportTableAttandance(final String tableName) throws IOException {
 
 		xmlBuilder.openTable(tableName);
@@ -179,7 +177,6 @@ public class DatabaseAssistant
 		c.close();
 		xmlBuilder.closeTable();
 	}
-	
 	private void exportTableNotification(final String tableName) throws IOException {
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;			
@@ -242,7 +239,7 @@ public class DatabaseAssistant
 	private void exportTablStoreProductPhotoDetail(final String tableName) throws IOException {
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;			
-		String sql = "select StoreID,ProductID,ClickedDateTime,PhotoName,PhotoValidation,PDAPhotoPath,OrderIDPDA from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
+		String sql = "select StoreID,ProductID,ClickedDateTime,PhotoName,PhotoValidation,PDAPhotoPath,TmpInvoiceCodePDA from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
 		Cursor c = db.rawQuery(sql, new String[0]);
 		if (c.moveToFirst()) {
 			int cols = c.getColumnCount();
@@ -304,11 +301,90 @@ public class DatabaseAssistant
 			"TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null," +
 			" Sstat integer not null, InvAfterDis real not null, AddDis real not null, AmtPrevDue real null, " +
 			"AmtColl real null, AmtOut real null, NoCoupon int null, TotalCoupunAmount real null,RouteID int null);";*/
-	
+	//
+
+	private void exportTableStoreCheckIn(final String tableName) throws IOException {
+
+		xmlBuilder.openTable(tableName);
+		//String sql = "select * from " + tableName;
+		String sql = "select storeID,ProductID,Stock from " + tableName + " where Sstat = 3";//CollectionCode		// chk for flag - DB adapter
+		//String	sql = db.rawQuery("SELECT ifnull(INVPrefix,''),ifnull(INVSuffix,'') FROM tblActualVisitStock", null); //order by AutoIdOutlet Desc
+		Cursor c = db.rawQuery(sql, new String[0]);
+		if (c.moveToFirst()) {
+			int cols = c.getColumnCount();
+			do {
+				xmlBuilder.openRow();
+				for (int i = 0; i < cols; i++) {
+					xmlBuilder.addColumn(c.getColumnName(i), c.getString(i));
+				}
+				xmlBuilder.closeRow();
+			} while (c.moveToNext());
+		}
+		c.close();
+		xmlBuilder.closeTable();
+	}
+
 	private void exportTabletblInvoice(final String tableName) throws IOException {
+		LinkedHashMap<String,String> hmapInvoiceCaptionPrefixAndSuffix=fetch_InvoiceCaptionPrefixAndSuffix();
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;			
-		String sql = "select StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,InvAfterDis,AddDis,AmtPrevDue,AmtColl,AmtOut,NoCoupon,TotalCoupunAmount,OrderIDPDA from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
+		String sql = "select StoreID,StoreVisitCode,'"+hmapInvoiceCaptionPrefixAndSuffix.get("INVPrefix")+"-'||InvoiceNumber||'/"+hmapInvoiceCaptionPrefixAndSuffix.get("INVSuffix")+"' AS InvoiceNumber,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,CycleID from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
+		Cursor c = db.rawQuery(sql, new String[0]);
+		if (c.moveToFirst()) {
+			int cols = c.getColumnCount();
+			do {
+				xmlBuilder.openRow();
+				for (int i = 0; i < cols; i++) {
+					xmlBuilder.addColumn(c.getColumnName(i), c.getString(i));
+				}
+				xmlBuilder.closeRow();
+			} while (c.moveToNext());
+		}
+		c.close();
+		xmlBuilder.closeTable();
+	}
+	public LinkedHashMap<String,String> fetch_InvoiceCaptionPrefixAndSuffix()
+	{
+
+		// open();
+		LinkedHashMap<String,String>hmapInvoiceCaptionPrefixAndSuffix=new LinkedHashMap<String,String>();
+
+
+
+		Cursor	cursor = db.rawQuery("SELECT ifnull(INVPrefix,''),ifnull(INVSuffix,'') FROM tblInvoiceCaption", null); //order by AutoIdOutlet Desc
+
+		try
+		{
+			if(cursor.getCount()>0)
+			{
+				if (cursor.moveToFirst())
+				{
+					hmapInvoiceCaptionPrefixAndSuffix.put("INVPrefix",cursor.getString(0));
+					hmapInvoiceCaptionPrefixAndSuffix.put("INVSuffix",cursor.getString(1));
+
+				}
+			}
+			else
+			{
+				hmapInvoiceCaptionPrefixAndSuffix.put("INVPrefix","");
+				hmapInvoiceCaptionPrefixAndSuffix.put("INVSuffix","");
+			}
+
+			return hmapInvoiceCaptionPrefixAndSuffix;
+		}
+		finally
+		{
+			if(cursor!=null) {
+				cursor.close();
+			}
+			//   close();
+		}
+	}
+	//
+	private void exportCollection(final String tableName) throws IOException {
+		xmlBuilder.openTable(tableName);
+		//String sql = "select * from " + tableName;
+		String sql = "select StoreID,StoreVisitCode,PaymentMode,PaymentModeID,Amount,RefNoChequeNoTrnNo,Date,Bank,TmpInvoiceCodePDA,CollectionCode from " + tableName + " where Sstat = 3";//CollectionCode		// chk for flag - DB adapter
 		Cursor c = db.rawQuery(sql, new String[0]);
 		if (c.moveToFirst()) {
 			int cols = c.getColumnCount();
@@ -350,9 +426,10 @@ public class DatabaseAssistant
 	
 	
 	private void exportTabletblTransac(final String tableName) throws IOException {
+		LinkedHashMap<String,String> hmapInvoiceCaptionPrefixAndSuffix=fetch_InvoiceCaptionPrefixAndSuffix();
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;			
-		String sql = "select IMEIno,RouteID,StoreID,CatID,ProdID,TransDate,Stock,OrderQty,OrderVal,FreeQty,DisVal,SampleQuantity,ProductShortName,ProductPrice,TaxRate,TaxValue,OrderIDPDA,flgIsQuoteRateApplied,flgOrderType from " + tableName + " where Sstat = 3 and  (OrderQty<>0 OR SampleQuantity<>0 OR Stock<>0 OR FreeQty<>0)";		// chk for flag - DB adapter
+		String sql = "select '"+hmapInvoiceCaptionPrefixAndSuffix.get("INVPrefix")+"-'||InvoiceNumber||'/"+hmapInvoiceCaptionPrefixAndSuffix.get("INVSuffix")+"' AS InvoiceNumber,CatID,ProdID,ProductPrice,TaxRate,flgRuleTaxVal,OrderQty,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,FreeQty,DisVal,SampleQuantity,ProductShortName,TaxValue,flgIsQuoteRateApplied,ServingDBRId,flgWholeSellApplicable,ProductExtraOrder from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
 		Cursor c = db.rawQuery(sql, new String[0]);
 		if (c.moveToFirst()) {
 			int cols = c.getColumnCount();
@@ -390,6 +467,26 @@ public class DatabaseAssistant
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;			
 		String sql = "select SalesQuoteId,SalesQuoteCode,SalesQuotePrcsId,SalesQuotePrcs,StoreName,Remarks,StoreId,SalesQuoteValidFrom,SalesQuoteValidTo,SalesQuoteDate,SalesQuoteType,ContactPerson,ContactPersonEmail,ContactPersonPhone,PymtStageId,Sstat,ManufacturerID,ManufacturerName from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
+		Cursor c = db.rawQuery(sql, new String[0]);
+		if (c.moveToFirst()) {
+			int cols = c.getColumnCount();
+			do {
+				xmlBuilder.openRow();
+				for (int i = 0; i < cols; i++) {
+					xmlBuilder.addColumn(c.getColumnName(i), c.getString(i));
+				}
+				xmlBuilder.closeRow();
+			} while (c.moveToNext());
+		}
+		c.close();
+		xmlBuilder.closeTable();
+	}
+	//
+	private void exportTabletblStoreSalesOrderPaymentDetails(final String tableName) throws IOException {
+
+		xmlBuilder.openTable(tableName);
+		//String sql = "select * from " + tableName;
+		String sql = "select StoreId,PymtStageId,TmpInvoiceCodePDA,Sstat from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
 		Cursor c = db.rawQuery(sql, new String[0]);
 		if (c.moveToFirst()) {
 			int cols = c.getColumnCount();
@@ -461,35 +558,47 @@ public class DatabaseAssistant
 		xmlBuilder.closeTable();
 	}
 	
-	/*private static final String DATABASE_CREATE_TABLE_2 = "create table tblStoreList (StoreID text not null, " +
-	"StoreType string not null, StoreName string not null, StoreLatitude real not null, StoreLongitude real not null," +
-	" LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null, ForDate string not null," +
-	" ActualLatitude text null, ActualLongitude text null, VisitStartTS text null, VisitEndTS text null," +
-	"AutoIdStore int null, LocProvider text null, Accuracy text null, BateryLeftStatus text null," +
-	"StoreClose integer null,StoreNextDay integer null,chainID integer null,ISNewStore int null,StoreRouteID int null);";*/
-
-	//, int null, int null, int null, text null, text not null, text null
-
-	//private static final String DATABASE_CREATE_TABLE_13 = "create table tblStoreList(StoreID text not null,
-	// StoreType string not null, StoreName string not null, StoreLatitude real not null, StoreLongitude real not null,
-	// LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null, ForDate string not null,
-	// ActualLatitude text null, ActualLongitude text null, VisitStartTS text null, VisitEndTS text null,
-	// AutoIdStore int null, LocProvider text null, Accuracy text null, BateryLeftStatus text null,
-	// StoreClose integer null,StoreNextDay integer null,chainID integer null,ISNewStore int null,
-	// StoreRouteID int null,RouteNodeType int null,StoreCatNodeId int null,IsNewStoreDataCompleteSaved int null,
-	// flgFromWhereSubmitStatus int null,StoreAddress text null,PaymentStage text null,flgHasQuote int null,
-	// flgAllowQuotation int null,flgSubmitFromQuotation int null,flgGSTCapture text null,flgGSTCompliance text null,
-	// GSTNumber text null,flgGSTRecordFromServer int null,DistanceNear int null,flgLocationServicesOnOff int null,
-	// flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null,
-	// flgRestart int null,flgStoreOrder int null,StoreCity text null,StorePinCode text not null,StoreState text null,
-	// flgRetailerCreditBalnce integer null,DBR text null);";
-
+	//
 	private void exportTableStoreList(final String tableName) throws IOException {
 		xmlBuilder.openTable(tableName);
-		//String sql = "select * from " + tableName;	
-		// text null,  text null, 
-		//StoreID text not null, StoreType string not null, StoreName string not null, StoreLatitude real not null, StoreLongitude real not null, LastVisitDate string not null, LastTransactionDate string not null, Sstat integer not null, ForDate string not null, ActualLatitude real null, ActualLongitude real null, VisitStartTS text null, VisitEndTS text null);";
-		String sql = "select StoreID,StoreName, StoreLatitude, StoreLongitude,ForDate, ActualLatitude, ActualLongitude, VisitStartTS, VisitEndTS, ISNewStore, LocProvider, Accuracy, BateryLeftStatus, StoreClose, StoreNextDay,flgFromWhereSubmitStatus,StoreAddress,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,StoreRouteID,RouteNodeType,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart,flgStoreOrder,StoreCity,StorePinCode,StoreState,flgRetailerCreditBalnce,DBR,flgOrderType,CityId,StateId,MapAddress,MapCity,MapPinCode,MapState from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
+
+		String sql = "select IMEINumber,StoreID,StoreName,OwnerName,StoreContactNo,StoreAddress,StoreType, StoreLatitude,StoreLongitude,LastVisitDate,LastTransactionDate,ISNewStore,PaymentStage,DBR,StoreCity,StorePinCode,StoreState,0 AS flgRestart,"+ CommonInfo.DATABASE_VERSIONID+" AS AppVersion,StoreStateID,StoreCityID,flgOrderType from " + tableName + " where Sstat = 3 AND ISNewStore=1";		// chk for flag - DB adapter
+		Cursor c = db.rawQuery(sql, new String[0]);
+		if (c.moveToFirst()) {
+			int cols = c.getColumnCount();
+			do {
+				xmlBuilder.openRow();
+				for (int i = 0; i < cols; i++) {
+					xmlBuilder.addColumn(c.getColumnName(i), c.getString(i));
+				}
+				xmlBuilder.closeRow();
+			} while (c.moveToNext());
+		}
+		c.close();
+		xmlBuilder.closeTable();
+
+		}
+
+	public void UpdateNewAddedStorephotoFlag()
+	{
+		try
+		{
+			String sql = "Update tableImage SET Sstat=5 WHERE EXISTS(SELECT StoreID FROM tblStoreList WHERE(tableImage.StoreID=tblStoreList.StoreID AND tblStoreList.ISNewStore=1))  AND tableImage.Sstat=3";		// chk for flag - DB adapter
+			db.execSQL(sql);
+
+			String sql1 = "Update tblLatLongDetails SET Sstat=4 WHERE EXISTS(SELECT StoreID FROM tblStoreList WHERE(tblLatLongDetails.StoreID=tblStoreList.StoreID)) AND tblLatLongDetails.Sstat=3";		// chk for flag - DB adapter
+			db.execSQL(sql1);
+
+		}
+		catch (Exception ex)
+		{
+			System.out.println("shivam query = "+ex.toString());
+		}
+	}
+	private void exportTableStoreVisit(final String tableName) throws IOException {
+		xmlBuilder.openTable(tableName);
+
+		String sql = "select IMEINumber,StoreID,StoreVisitCode,ForDate,ActualLatitude,ActualLongitude,VisitTimeOutSideStore, VisitTimeInSideStore,VisitTimeCheckStore,VisitEndTS,LocProvider,Accuracy,BateryLeftStatus,StoreClose,StoreNextDay,ISNewStore,IsNewStoreDataCompleteSaved,flgFromWhereSubmitStatus,flgSubmitFromQuotation,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgStoreOrder,flgRetailerCreditBalnce,VisitTypeStatus,flgVisitCollectionMarkedStatus,SelfCreditNote from " + tableName + " where Sstat = 3";		// chk for flag - DB adapter
 		Cursor c = db.rawQuery(sql, new String[0]);
 		if (c.moveToFirst()) {
 			int cols = c.getColumnCount();
@@ -504,7 +613,7 @@ public class DatabaseAssistant
 		c.close();
 		xmlBuilder.closeTable();
 	}
-	
+
 	private void exportTableProductMappedWithSchemeSlabApplied(final String tableName) throws IOException {
 		xmlBuilder.openTable(tableName);
 		//String sql = "select * from " + tableName;	

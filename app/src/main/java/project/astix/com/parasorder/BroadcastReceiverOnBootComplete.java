@@ -14,7 +14,7 @@ public class BroadcastReceiverOnBootComplete extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-            DBAdapterKenya helperDb=new DBAdapterKenya(context);
+            PRJDatabase helperDb=new PRJDatabase(context);
            String prvsStoreId=helperDb.getPreviousShownPopUpStoreId();
 
             if(!TextUtils.isEmpty(prvsStoreId))

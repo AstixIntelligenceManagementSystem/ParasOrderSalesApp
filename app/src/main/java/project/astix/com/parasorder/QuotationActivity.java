@@ -1,31 +1,20 @@
 package project.astix.com.parasorder;
 
 
-
-
-
-
-
-
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-
-
 import android.app.ActionBar;
-import android.app.AlertDialog;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,7 +22,7 @@ import android.widget.RelativeLayout;
 
 import com.astix.Common.CommonInfo;
 
-public class QuotationActivity extends FragmentActivity implements TabListener {
+public class QuotationActivity extends BaseFragmentActivity implements TabListener {
 
 	ActionBar actionBar;
 	ViewPager viewPager;
@@ -43,28 +32,7 @@ public class QuotationActivity extends FragmentActivity implements TabListener {
 static String selStoreName,SalesQuoteId,storeID,imei,date,pickerDate;
 	
 
-public boolean onKeyDown(int keyCode, KeyEvent event) 
-{
-	  // TODO Auto-generated method stub
-	  if(keyCode==KeyEvent.KEYCODE_BACK)
-	  {
-	   return true;
-	  }
-	  if(keyCode==KeyEvent.KEYCODE_HOME)
-	  {
-	   return true;
-	  }
-	  if(keyCode==KeyEvent.KEYCODE_MENU)
-	  {
-		  return true;
-	  }
-	  if(keyCode==KeyEvent.KEYCODE_SEARCH)
-	  {
-		  return true;
-	  }
 
-	  return super.onKeyDown(keyCode, event);
-	 }
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 

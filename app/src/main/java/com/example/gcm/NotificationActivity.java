@@ -22,8 +22,8 @@ import android.widget.TextView;
 import com.astix.Common.CommonInfo;
 
 import project.astix.com.parasorder.BaseActivity;
-import project.astix.com.parasorder.DBAdapterKenya;
 import project.astix.com.parasorder.LauncherActivity;
+import project.astix.com.parasorder.PRJDatabase;
 import project.astix.com.parasorder.R;
 import project.astix.com.parasorder.StoreSelection;
 
@@ -35,7 +35,7 @@ public class NotificationActivity extends BaseActivity
 	
 	public TableLayout tbl1_dyntable_For_Notification; 
 	public TableRow tr1PG2;
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 	public int ComeFromActivity=0;
 	
 	
@@ -72,15 +72,15 @@ public class NotificationActivity extends BaseActivity
 				String Noti_ReadDateTime,int Noti_outStat)*/
 		tbl1_dyntable_For_Notification = (TableLayout) findViewById(R.id.dyntable_For_Notification);
 		
-		dbengine.open();
-		int SerialNo=dbengine.countNoRowIntblNotificationMstr();
+		//dbengine.open();
+		int SerialNo=dbengine.countNoRowIntblPDANotificationMaster();
 		System.out.println("Sunil LastNitificationrList SerialNo : "+SerialNo);
 		//String LastOrderDetail[]=dbengine.fetchAllDataFromtblFirstOrderDetailsOnLastVisitDetailsActivity(storeID);
 		String LastNitificationrList[]=dbengine.LastNitificationrListDB();
 		//String LastNitificationrList[]={"10-06-2015_Hi ","11-06-2015_Bye "};
 		
 		System.out.println("Sunil LastNitificationrList : "+LastNitificationrList.length);
-		dbengine.close();
+		//dbengine.close();
 		
 		LayoutInflater inflater = getLayoutInflater();
 		
@@ -167,9 +167,9 @@ public class NotificationActivity extends BaseActivity
 	    SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 		String passDate = sdf.format(date1).toString();
 		String fDate = passDate.trim().toString();
-		dbengine.open();
+		//dbengine.open();
 		rID=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
         Intent submitStoreIntent = new Intent(NotificationActivity.this, StoreSelection.class);
         
         

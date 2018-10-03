@@ -428,7 +428,7 @@
             android:layout_width="0dp"
              android:layout_height="match_parent"
             android:textSize="14sp"
-             android:text="Total Order Value:"  
+             android:text="Total Invoice Value:"
               android:padding="2dp"
               android:layout_weight="2"
             android:gravity="left|center_vertical"

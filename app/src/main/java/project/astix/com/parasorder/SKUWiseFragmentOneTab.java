@@ -1,12 +1,8 @@
 package project.astix.com.parasorder;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -19,11 +15,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.ProgressDialog;
 
 import com.astix.Common.CommonInfo;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 public class SKUWiseFragmentOneTab<Context> extends Fragment 
 {
@@ -31,7 +30,7 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine; 
+	PRJDatabase dbengine;
 	private Activity mContext;
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -42,6 +41,17 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 	
 	public String[] AllDataContainer;
 	public View rootView;
+
+	public boolean isOnline()
+	{
+		ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnected())
+		{
+			return true;
+		}
+		return false;
+	}
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,7 +60,7 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
        rootView = inflater.inflate(R.layout.sku_summary, container, false);
         
         mContext = getActivity();
-        dbengine = new DBAdapterKenya(mContext);
+        dbengine = new PRJDatabase(mContext);
         
         TelephonyManager tManager = (TelephonyManager) mContext.getSystemService(mContext.TELEPHONY_SERVICE);
 		imei = tManager.getDeviceId();
@@ -62,7 +72,7 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		
@@ -72,7 +82,8 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		//fDate="29-10-2015";
 		
 		//'868087024619932','29-10-2015'  
-		if(isOnline())
+
+			if(isOnline())
 		{
 
 			 try
@@ -97,16 +108,7 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
     }
     
     
-    public boolean isOnline()
-	{
-		ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(mContext.CONNECTIVITY_SERVICE);
-		NetworkInfo netInfo = cm.getActiveNetworkInfo();
-		if (netInfo != null && netInfo.isConnected()) 
-		{
-			return true;
-		}
-		return false;
-	}
+
     
 	private class GetSKUWiseSummaryForDay extends AsyncTask<Void, Void, Void>
 	{		
@@ -121,9 +123,9 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		{
 			super.onPreExecute();
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateSKUDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -167,9 +169,9 @@ public class SKUWiseFragmentOneTab<Context> extends Fragment
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}

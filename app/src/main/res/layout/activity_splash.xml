@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="project.astix.com.parasorder.SplashScreen"
+    tools:context="project.astix.com.balajisfaindirect.SplashScreen"
     android:background="@drawable/splash">
 
 

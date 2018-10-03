@@ -21,7 +21,7 @@ import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import project.astix.com.parasorder.DBAdapterKenya;
+import project.astix.com.parasorder.PRJDatabase;
 import project.astix.com.parasorder.R;
 
 public class GCMNotificationIntentService extends IntentService
@@ -29,7 +29,7 @@ public class GCMNotificationIntentService extends IntentService
 	// Sets an ID for the notification, so it can be updated
 	public static final int notifyID = 9001;
 	NotificationCompat.Builder builder;
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 
 	//public String DuplicateMsgServerID="";
 
@@ -89,11 +89,11 @@ public class GCMNotificationIntentService extends IntentService
 
 						int MsgServerID=Integer.parseInt(extras.get(ApplicationConstants.MSG_SendMsgID).toString());
 
-						dbengine.open();
-						int SerialNo=dbengine.countNoRowIntblNotificationMstr();
+						//dbengine.open();
+						int SerialNo=dbengine.countNoRowIntblPDANotificationMaster();
 						if(SerialNo>=10)
 						{
-							dbengine.deletetblNotificationMstrOneRow(1);
+							dbengine.deletetblPDANotificationMasterOneRow(1);
 						}
 						else
 						{
@@ -106,7 +106,7 @@ public class GCMNotificationIntentService extends IntentService
 						{
 							dbengine.inserttblNotificationMstr(SerialNo,imei,NotificationMessage,MsgSendingTime,1,1,
 									Noti_ReadDateTime,0,MsgServerID);
-							dbengine.close();
+							//dbengine.close();
 
 						}
 					/*else

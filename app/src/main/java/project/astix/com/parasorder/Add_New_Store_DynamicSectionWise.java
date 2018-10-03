@@ -1,28 +1,27 @@
 package project.astix.com.parasorder;
 
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 public class Add_New_Store_DynamicSectionWise extends Activity {
-	public DBAdapterKenya helperDb;
+	PRJDatabase helperDb = new PRJDatabase(this);
 	LinkedHashMap<String, String> hmapDistinctDiffrentSection=new LinkedHashMap<String, String>();
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_newstore_fragmrntmain);
-		helperDb=new DBAdapterKenya(Add_New_Store_DynamicSectionWise.this);
+		//helperDb=new PRJDatabase(Add_New_Store_DynamicSectionWise.this);
 		hmapDistinctDiffrentSection=helperDb.fnGetDistinctSenction();
 		
 		LinearLayout fragContainer = (LinearLayout) findViewById(R.id.llFragmentContainer);

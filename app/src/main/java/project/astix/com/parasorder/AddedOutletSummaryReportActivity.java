@@ -41,7 +41,7 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
     private TextView txt_lstVisitTime,textView_ChildName,textView_OverAllTotal,textView_OverAllValidate,textView_OverAllPending;
     private ScrollView scroll;
 
-    private DBAdapterKenya dbengine;
+    private PRJDatabase dbengine;
     private ServiceWorker worker;
 
     private LinkedHashMap<String,ArrayList<String>> hmapSummaryDataByHeader;
@@ -78,7 +78,7 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_added_outlet_summary_report);
 
-        dbengine=new DBAdapterKenya(this);
+        dbengine=new PRJDatabase(this);
         worker=new ServiceWorker();
 
 
@@ -266,10 +266,10 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
 
-            dbengine.open();
+         //   dbengine.open();
             hmapSummaryDataByHeader=dbengine.fetchtblDAGetAddedOutletSummaryReport();
             overAllSummaryDetail=dbengine.fetchtblDAGetAddedOutletOverAllData();
-            dbengine.close();
+          //  dbengine.close();
             inflateRows();
 
             if(dialog.isShowing())

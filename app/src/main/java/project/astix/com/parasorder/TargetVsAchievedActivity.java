@@ -1,11 +1,6 @@
 package project.astix.com.parasorder;
 
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -23,6 +18,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
+
 public class TargetVsAchievedActivity extends BaseActivity
 {
 
@@ -36,7 +36,7 @@ public class TargetVsAchievedActivity extends BaseActivity
 	public TableLayout tbl3_dyntable_SchemeApplicable,tl_headerVal; 
 	TextView txt_note;
 	public TableRow tr2PG2;
-	DBAdapterKenya dbengine = new DBAdapterKenya(this); 
+	PRJDatabase dbengine = new PRJDatabase(this);
 	public String[] AllDataContainer;
 	String note="";
 	
@@ -153,9 +153,9 @@ public class TargetVsAchievedActivity extends BaseActivity
 		{
 			super.onPreExecute();
 			
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncatetblTargetVsAchievedSummary();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -225,9 +225,9 @@ public class TargetVsAchievedActivity extends BaseActivity
 		 tl_headerVal = (TableLayout) findViewById(R.id.tl_headerVal);
 		 txt_note=(TextView) findViewById(R.id.txt_note);
 		 txt_note.setText(note);
-			/*dbengine.open();
+			/*//dbengine.open();
 			String LTschApp[] = {"380_10_5_1_20_15_2","500_20_35_3_50_25_4"};//dbengine.PrevPDASchemeApplicableSecondPage(storeID);
-			dbengine.close();*/
+			//dbengine.close();*/
 			
 			LayoutInflater inflater2 = getLayoutInflater();
 			for (int current2 = 0; current2 <= (AllDataContainer.length - 1); current2++)

@@ -1,34 +1,5 @@
 package project.astix.com.parasorder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.NameValuePair;
-
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -81,12 +52,41 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class ReturnActivity extends BaseActivity implements OnItemSelectedListener, OnClickListener, DeletePic,OnFocusChangeListener
 {
+	public String StoreVisitCode="NA";
 	public  Dialog dialog=null;
 	private Camera mCamera;
 	private CameraPreview mPreview;
@@ -99,11 +99,12 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 	private boolean isLighOn = false;
 	//String imageName;
 	float mDist=0;
-	int flgOrderType=0;
+
 	private String FilePathStrings;
 	private String FileNameStrings;
 	private File[] listFile;
-
+	public String strGlobalInvoiceNumber="NA";
+	public int chkflgInvoiceAlreadyGenerated=0;
 	File fileintial;
 
 
@@ -314,7 +315,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 
 	//Database
 
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 	DatabaseAssistant DA = new DatabaseAssistant(this);
 
 	//Common Controls Box
@@ -452,14 +453,13 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 				{
 					if(flgPageToRedirect.equals("1"))
 					{
-						Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderFilterSearch.class);
+						Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderEntry.class);
 						fireBackDetPg.putExtra("storeID", storeID);
 						fireBackDetPg.putExtra("SN", SN);
 						fireBackDetPg.putExtra("bck", 1);
 						fireBackDetPg.putExtra("imei", imei);
 						fireBackDetPg.putExtra("userdate", date);
 						fireBackDetPg.putExtra("pickerDate", pickerDate);
-						fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 						fireBackDetPg.putExtra("rID", routeID);
 
 						startActivity(fireBackDetPg);
@@ -467,14 +467,13 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					}
 					if(flgPageToRedirect.equals("2"))
 					{
-						Intent fireBackDetPg=new Intent(ReturnActivity.this,OrderReview.class);
+						Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderReview.class);
 						fireBackDetPg.putExtra("storeID", storeID);
 						fireBackDetPg.putExtra("SN", SN);
 						fireBackDetPg.putExtra("bck", 1);
 						fireBackDetPg.putExtra("imei", imei);
 						fireBackDetPg.putExtra("userdate", date);
 						fireBackDetPg.putExtra("pickerDate", pickerDate);
-						fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 						fireBackDetPg.putExtra("rID", routeID);
 
 						startActivity(fireBackDetPg);
@@ -489,8 +488,12 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 
 
 		getDataFromIntent();
-
-
+		StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+		chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+		if(chkflgInvoiceAlreadyGenerated==1)
+		{
+			strGlobalInvoiceNumber=dbengine.fnGetExistingInvoiceNumber(storeID);
+		}
 		new GetData().execute();
 	}
 
@@ -514,7 +517,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 		protected Void doInBackground(Void... params)
 		{
 			//hmapProductRelatedSchemesList=dbengine.fnProductRelatedSchemesList();
-			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID);
+			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
 			getCategoryDetail();
 
 			getProductData();
@@ -546,7 +549,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 			if (fileintial.isDirectory()) {
 				listFile = fileintial.listFiles();
 
-				hmapKPhotoNameVProductIdRsn=dbengine.getProductPicInfo(listFile,storeID);
+				hmapKPhotoNameVProductIdRsn=dbengine.getProductPicInfo(listFile,storeID,strGlobalInvoiceNumber);
 				String productIdtoBeSetOnAdapter;
 
 				for (int i = 0; i < listFile.length; i++) {
@@ -627,13 +630,12 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 			{
 				if(flgPageToRedirect.equals("1"))
 				{
-					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderFilterSearch.class);
+					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderEntry.class);
 					fireBackDetPg.putExtra("storeID", storeID);
 					fireBackDetPg.putExtra("SN", SN);
 					fireBackDetPg.putExtra("bck", 1);
 					fireBackDetPg.putExtra("imei", imei);
 					fireBackDetPg.putExtra("userdate", date);
-					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
 
@@ -642,7 +644,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 				}
 				if(flgPageToRedirect.equals("2"))
 				{
-					Intent fireBackDetPg=new Intent(ReturnActivity.this,OrderReview.class);
+					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderReview.class);
 					fireBackDetPg.putExtra("storeID", storeID);
 					fireBackDetPg.putExtra("SN", SN);
 					fireBackDetPg.putExtra("bck", 1);
@@ -650,7 +652,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
-					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
+
 					startActivity(fireBackDetPg);
 					finish();
 				}
@@ -736,10 +738,12 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 		SN = passedvals.getStringExtra("SN");
 		OrderPDAID= passedvals.getStringExtra("OrderPDAID");
 		flgPageToRedirect= passedvals.getStringExtra("flgPageToRedirect");
-		 flgOrderType=passedvals.getIntExtra("flgOrderType",0);
-		dbengine.open();
+		//dbengine.open();
 		routeID= dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
+
+
+
 		//passedvals.getStringExtra("rID");
 
 		//dbengine.fnProductWiseAppliedScehmeSlabDetails(storeIdProd);
@@ -777,8 +781,8 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 	private void getProductData() {
 		// CategoryID,ProductID,ProductShortName,ProductRLP,Date/Qty)
 
-		arrLstHmapPrdct=dbengine.fetch_catgry_prdctReturnData(storeID,OrderPDAID);
-		hmapFilledEDReason=dbengine.getSavedRemark(storeID,OrderPDAID);
+		arrLstHmapPrdct=dbengine.fetch_catgry_prdctReturnData(storeID,OrderPDAID,strGlobalInvoiceNumber);
+		hmapFilledEDReason=dbengine.getSavedRemark(storeID,OrderPDAID,strGlobalInvoiceNumber);
 		if(arrLstHmapPrdct.size()>0)
 		{
 			hmapCtgryPrdctDetail=arrLstHmapPrdct.get(0);
@@ -856,9 +860,9 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 
 						String productIdOfSpnr=(spnr_comment.getTag().toString()).split(Pattern.quote("_"))[1];
 						EditText edForProductReturn=(EditText) ll_prdct_detal.findViewWithTag("etReturnQty_"+productIdOfSpnr);
-						dbengine.open();
+						//dbengine.open();
 						dbengine.updateReason(storeID, productIdOfSpnr, spnr_comment.getSelectedItem().toString());
-						dbengine.close();
+						//dbengine.close();
 						String sipnerval="0";
 						hmapPhotoDetail.put(productIdOfSpnr, spnr_comment.getSelectedItem().toString()+"~"+hmapPrdctIdPrdctName.get(productIdOfSpnr));
 						if(hmapRtrnRsn.containsKey(spnr_comment.getSelectedItem().toString()))
@@ -1150,7 +1154,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 				{
 					if(true)
 					{
-						dbengine.insertPhotoDetail(storeID,productIdPhoto,clkdTime,imageName,spnrRsn.getSelectedItem().toString(),"1",uriSavedImage.toString(),1,OrderPDAID);
+						dbengine.insertPhotoDetail(storeID,productIdPhoto,clkdTime,imageName,spnrRsn.getSelectedItem().toString(),"1",uriSavedImage.toString(),1,OrderPDAID,strGlobalInvoiceNumber);
 						removePicPositin=picAddPosition;
 
 						hmapPhotoDetail.put(productIdPhoto, spnrRsn.getSelectedItem().toString()+"~"+hmapPrdctIdPrdctName.get(productIdPhoto));
@@ -1435,7 +1439,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 			}
 
 
-			dbengine.updateReturnData(hmapRtrnPrdctDetail,OrderPDAID,hmapEDReason);
+			dbengine.updateReturnData(hmapRtrnPrdctDetail,OrderPDAID,hmapEDReason,strGlobalInvoiceNumber);
 			return null;
 		}
 		@Override
@@ -1448,14 +1452,13 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 			{
 				if(flgPageToRedirect.equals("1"))
 				{
-					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderFilterSearch.class);
+					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderEntry.class);
 					fireBackDetPg.putExtra("storeID", storeID);
 					fireBackDetPg.putExtra("SN", SN);
 					fireBackDetPg.putExtra("bck", 1);
 					fireBackDetPg.putExtra("imei", imei);
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
-					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 					fireBackDetPg.putExtra("rID", routeID);
 
 					startActivity(fireBackDetPg);
@@ -1463,7 +1466,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 				}
 				if(flgPageToRedirect.equals("2"))
 				{
-					Intent fireBackDetPg=new Intent(ReturnActivity.this,OrderReview.class);
+					Intent fireBackDetPg=new Intent(ReturnActivity.this,ProductOrderReview.class);
 					fireBackDetPg.putExtra("storeID", storeID);
 					fireBackDetPg.putExtra("SN", SN);
 					fireBackDetPg.putExtra("bck", 1);
@@ -1471,7 +1474,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
-					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
+
 					startActivity(fireBackDetPg);
 					finish();
 				}
@@ -1688,9 +1691,6 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 						File file=pictureFile;
 						System.out.println("File +++"+pictureFile);
 						imageName=pictureFile.getName();
-						CommonFunction cm=new CommonFunction();
-						cm.normalizeImageForUri(ReturnActivity.this,Uri.fromFile(pictureFile));
-
 						Bitmap bmp = decodeSampledBitmapFromFile(file.getAbsolutePath(), 160, 160);
 						ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -1707,7 +1707,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 						{
 							if(true)
 							{
-								dbengine.insertPhotoDetail(storeID,productIdPhoto,photoClickedDateTime,imageName,spnrRsn.getSelectedItem().toString(),"1",uriSavedImage.toString(),1,OrderPDAID);
+								dbengine.insertPhotoDetail(storeID,productIdPhoto,photoClickedDateTime,imageName,spnrRsn.getSelectedItem().toString(),"1",uriSavedImage.toString(),1,OrderPDAID,strGlobalInvoiceNumber);
 								removePicPositin=picAddPosition;
 
 								hmapPhotoDetail.put(productIdPhoto, spnrRsn.getSelectedItem().toString()+"~"+hmapPrdctIdPrdctName.get(productIdPhoto));

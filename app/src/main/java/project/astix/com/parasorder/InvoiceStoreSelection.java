@@ -1,7 +1,35 @@
 package project.astix.com.parasorder;
 
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
+import com.astix.Common.CommonInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,40 +45,7 @@ import java.util.concurrent.ExecutionException;
 
 import project.astix.com.parasorder.ListAdapter.customButtonListener;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
-
-import com.astix.Common.CommonInfo;
-
-public class InvoiceStoreSelection extends Activity implements OnItemSelectedListener,customButtonListener   
+public class InvoiceStoreSelection extends BaseActivity implements OnItemSelectedListener,customButtonListener
 {
 	public String imei;
 	public String currSysDate;
@@ -109,7 +104,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 		ListAdapter adapter;  
 		InvoiceDatabaseAssistant DA = new InvoiceDatabaseAssistant(this); 
 	
-	 DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	 PRJDatabase dbengine = new PRJDatabase(this);
 	 String[] StoreName;
 	 ArrayList<String> dataItems = new ArrayList<String>();  
 	 public String Noti_text="Null";
@@ -123,9 +118,9 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			try
 			{
 
-			dbengine.open();
-			String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-			dbengine.close();
+			//dbengine.open();
+			String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+			//dbengine.close();
 			System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 			if(!Noti_textWithMsgServerID.equals("Null"))
 			{
@@ -179,17 +174,17 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
 					    	
-								dbengine.open();
-								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.open();
+								dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+								//dbengine.close();
 								
 								try
 								{
-									dbengine.open();
-								    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
+									//dbengine.open();
+								    int checkleftNoti=dbengine.countNumberOFNotificationtblPDANotificationMaster();
 								    if(checkleftNoti>0)
 								    {
-									    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
+									    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
 											System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 											if(!Noti_textWithMsgServerID.equals("Null"))
 											{
@@ -198,7 +193,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 												MsgServerID= Integer.parseInt(token.nextToken().trim());
 												Noti_text= token.nextToken().trim();
 												
-												dbengine.close();
+												//dbengine.close();
 												if(Noti_text.equals("") || Noti_text.equals("Null"))
 												{
 													
@@ -222,7 +217,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 								}
 					            finally
 					            {
-					            	dbengine.close();
+					            	//dbengine.close();
 								   
 					            }
 				            
@@ -283,10 +278,10 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 		    	spinnerRouteValue=0;
 		    }
 		}
-		dbengine.open();
+		//dbengine.open();
 		distributor_name = dbengine.fnGetDistinctDistributorsName();
 		distributor_name_id = dbengine.fnGetDistinctDistributorsID();
-		dbengine.close();
+		//dbengine.close();
 		setUpVariable();
 		showInputDialog();
 	}
@@ -295,14 +290,14 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 	protected void showInputDialog() {
 		System.out.println("inTest :"+ inTest);
 		inTest=inTest+1;
-		dbengine.open();
+		//dbengine.open();
 		StoreName = new String[0];
 		StorenameOther = new String[0];
 		StoreID = new String[0];
 		StoreSstat = new String[0];
 		StorenameList= new String[0];
 		StoreName = dbengine.fnGetStoreListForInvoice(selected_distributor_name_id,selected_route_name_id,"");
-		dbengine.close();
+		//dbengine.close();
 		StorenameList=new String[StoreName.length];
 		StorenameOther=new String[StoreName.length];
 		StoreID=new String[StoreName.length];
@@ -431,9 +426,9 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			public void onClick(View v) 
 			{
 				
-				dbengine.open();
+				//dbengine.open();
 				int check=dbengine.checkRouteIDExistInStoreListTable();
-				dbengine.close();
+				//dbengine.close();
 				if(check==0)
 				{
 					  AlertDialog.Builder alertDialog = new AlertDialog.Builder(InvoiceStoreSelection.this);
@@ -478,9 +473,9 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 	
 				}
 				whereTo = "11";
-				dbengine.open();
+				//dbengine.open();
 				StoreConformInvoiceOrder = dbengine.ProcessConformStoreReq();
-				dbengine.close();
+				//dbengine.close();
 				if (hmapConfirmCancel.size() != 0)
 				{
 					midPartConformInvoices();
@@ -527,9 +522,9 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 				 }
 				
 				whereTo = "11";
-				dbengine.open();
+				//dbengine.open();
 				 StoreList2Procs = dbengine.ProcessCancelStoreReq();
-				 dbengine.close();
+				 //dbengine.close();
 				if (hmapConfirmCancel.size()!=0)
 				{
 					midPartCancelInvoices();
@@ -564,9 +559,9 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			public void onClick(View v) 
 			{
 				
-				dbengine.open();
-				 int check = dbengine.CheckNonSubmitDataIntblInvoiceButtonStoreMstr();
-				 dbengine.close();
+				//dbengine.open();
+				 int check = dbengine.CheckNonSubmitDataIntblPendingInvoices();
+				 //dbengine.close();
 				 
 				 System.out.println("Check Data in NonSubmitDataIntblInvoiceButtonStoreMstr"+check);
 				 if(check==1)
@@ -586,6 +581,8 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 								//Intent intent = new Intent(InvoiceStoreSelection.this, LauncherActivity.class);
 						    	//intent.putExtra("imei", imei);
 						        // startActivity(intent);
+
+
 						         finish();
 							}
 						});
@@ -642,10 +639,10 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
             else
               {
              	   Spinner_Route.setEnabled(true);
-             	   dbengine.open();
+             	   //dbengine.open();
              	   route_name = dbengine.fnGetDistinctRouteName(selected_distributor_name_id);
              	   route_name_id = dbengine.fnGetDistinctRouteId(selected_distributor_name_id);
-            		   dbengine.close();
+            		   //dbengine.close();
              	   adapterRoute = new ArrayAdapter<String>(InvoiceStoreSelection.this,
             	            android.R.layout.simple_spinner_item, route_name);
              	  adapterRoute.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -663,10 +660,10 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
         	                       Spinner_Distributor.setEnabled(false);
         	                  
 	        	                    	   Spinner_Route.setEnabled(true);
-	        	                    	   dbengine.open();
+	        	                    	   //dbengine.open();
 	        	                    	   route_name = dbengine.fnGetDistinctRouteName(selected_distributor_name_id);
 	        	                    	   route_name_id = dbengine.fnGetDistinctRouteId(selected_distributor_name_id);
-	        	                   		   dbengine.close();
+	        	                   		   //dbengine.close();
 	        	                    	   ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(InvoiceStoreSelection.this,
 	        	                   	            android.R.layout.simple_spinner_item, route_name);
 	        	                   		   adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -700,7 +697,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 	{
 		if(clkdView==1)
 		{/*
-			 dbengine.open();
+			 //dbengine.open();
             final StringTokenizer ad = new StringTokenizer(String.valueOf(hmap.get(value)), "_");	                      
     		String TagStoreID= ad.nextToken().trim();
     		String TagOrderID= ad.nextToken().trim();
@@ -729,7 +726,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
               	 dbengine.UpdatetblInvoiceButtonTransac(TagStoreID, 7,1,TagOrderID);
                }
               
-                dbengine.close();
+                //dbengine.close();
                 txtvw.setTextColor(Color.RED);
                 btninv.setTextColor(Color.RED); 
                 btnCan.setTextColor(Color.RED); 
@@ -753,7 +750,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
               
                  dbengine.UpdatetblInvoiceButtonTransac(TagStoreID, 0,0,TagOrderID);
                 
-                  dbengine.close();
+                  //dbengine.close();
                   txtvw.setTextColor(Color.BLACK);
                   btninv.setTextColor(Color.BLACK); 
                   btnCan.setTextColor(Color.BLACK); 
@@ -779,7 +776,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			if(checkConformExecutionStore.isChecked())
 			{
 					
-                dbengine.open();
+                //dbengine.open();
                 final StringTokenizer ad = new StringTokenizer(String.valueOf(hmapStoreIdAndInvoiceOtherDetails.get(OrderIdOnClickedChekBoxNew)), "_");	                      
         		String TagStoreID= ad.nextToken().trim();
         		String TagOrderID= ad.nextToken().trim();
@@ -807,7 +804,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
               	 dbengine.UpdatetblInvoiceButtonTransac(TagStoreID, 10,0,TagOrderID);
                }
               
-                dbengine.close();
+                //dbengine.close();
                 txtvw.setTextColor(Color.parseColor("#9C27B0"));
                 btninv.setTextColor(Color.BLUE); 
               //  btnCan.setTextColor(Color.BLUE); 
@@ -831,7 +828,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 
 
                // dialog.dismiss();
-                dbengine.open();
+                //dbengine.open();
                 final StringTokenizer ad = new StringTokenizer(String.valueOf(hmapStoreIdAndInvoiceOtherDetails.get(OrderIdOnClickedChekBoxNew)), "_");	                      
         		String TagStoreID= ad.nextToken().trim();
         		String TagOrderID= ad.nextToken().trim();
@@ -848,7 +845,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
             
                dbengine.UpdatetblInvoiceButtonTransac(TagStoreID, 0,0,TagOrderID);
               
-                dbengine.close();
+                //dbengine.close();
                 txtvw.setTextColor(Color.BLACK);
                 btninv.setTextColor(Color.BLACK); 
                // btnCan.setTextColor(Color.BLACK); 
@@ -907,32 +904,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 		  return super.onKeyDown(keyCode, event);
 		 }
 	
-	 public boolean isOnline() 
-		{
-			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo netInfo = cm.getActiveNetworkInfo();
-			if (netInfo != null && netInfo.isConnected()) 
-			{
-				return true;
-			}
-			return false;
-		}
-	 public void showNoConnAlert() 
-	 {
-			AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(InvoiceStoreSelection.this);
-			alertDialogNoConn.setTitle(R.string.genTermNoDataConnection);
-			alertDialogNoConn.setMessage(R.string.genTermNoDataConnectionFullMsg);
-			alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) 
-						{
-                     dialog.dismiss();
-						}
-					});
-			alertDialogNoConn.setIcon(R.drawable.error_ico);
-			AlertDialog alert = alertDialogNoConn.create();
-			alert.show();
-		}
+
 	 
 	 public void midPartConformInvoices() {
 			String tempSID;
@@ -1178,20 +1150,20 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			protected Void doInBackground(Void... params) {
 
 				try {
-						dbengine.open();
+						//dbengine.open();
 						String rID=dbengine.GetActiveRouteID();
-						dbengine.close();
+						//dbengine.close();
 					if (whatTask == 2) 
 					{
 						whatTask = 0;
-						dbengine.open();
+						//dbengine.open();
 						for (int nosSelected = 0; nosSelected <= mSelectedItemsConfornInvoiceOrders.size() - 1; nosSelected++) 
 						{
 							String valSN = (String) mSelectedItemsConfornInvoiceOrders.get(nosSelected);
 							int valID = stNames.indexOf(valSN);
 							String stIDneeded = stIDs.get(valID);
 						}
-						dbengine.close();
+						//dbengine.close();
 						dbengine.UpdateCancelStoreFlag(hmapConfirmCancel,0);
 
 					}else if (whatTask == 3) 
@@ -1249,20 +1221,20 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 			protected Void doInBackground(Void... params) {
 
 				try {
-						dbengine.open();
+						//dbengine.open();
 						String rID=dbengine.GetActiveRouteID();
-						dbengine.close();
+						//dbengine.close();
 					if (whatTask == 2) 
 					{
 						whatTask = 0;
-						dbengine.open();
+						//dbengine.open();
 						for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++) 
 						{
 							String valSN = (String) mSelectedItems.get(nosSelected);
 							int valID = stNames.indexOf(valSN);
 							String stIDneeded = stIDs.get(valID);
 						}
-						dbengine.close();
+						//dbengine.close();
 						
 						//9,1=cancel
 						dbengine.UpdateCancelStoreFlag(hmapConfirmCancel,1);
@@ -1327,7 +1299,7 @@ public class InvoiceStoreSelection extends Activity implements OnItemSelectedLis
 
 			syncTIMESTAMP = System.currentTimeMillis();
 			Date dateobj = new Date(syncTIMESTAMP);
-			SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
+			SimpleDateFormat df = new SimpleDateFormat(".dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 			fullFileName1 = imei +df.format(dateobj).toString().trim();
 			try {
 				

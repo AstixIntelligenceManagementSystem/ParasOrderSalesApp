@@ -1,24 +1,20 @@
 package project.astix.com.parasorder;
 
 
-
-
-
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.AdapterView.OnItemClickListener;
+
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class CheckDatabaseData extends BaseActivity
 {
@@ -28,7 +24,7 @@ public class CheckDatabaseData extends BaseActivity
 	 
 	 LinkedHashMap<String, String> hmapStore_details=new LinkedHashMap<String, String>();
 	 
-	 DBAdapterKenya dbengine = new DBAdapterKenya(this); 
+	 PRJDatabase dbengine = new PRJDatabase(this);
 	 
 	 String date_value="";
 		String imei="";
@@ -69,7 +65,7 @@ public class CheckDatabaseData extends BaseActivity
 	private void getAllStoreListDetail() 
 	{
 			
-		hmapStore_details=dbengine.fetch_Store_List();
+		hmapStore_details=dbengine.fetch_StoreInvoiceWiseData_List();
 			
 			int index=0;
 			if(hmapStore_details!=null)

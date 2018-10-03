@@ -1,41 +1,81 @@
 <resources>
 
-   <!--<string name="app_name">Paras Order Sales</string>-->
+    <!--<string name="app_name">Paras Order Sales</string>-->
     <!-- <string name="app_name">Paras Order Sales Stagging</string>-->
-    <!--<string name="app_name">Paras Order Sales Test</string>-->
-     <string name="app_name">Paras Order Sales Dev</string>
+    <string name="app_name">Paras Order Sales Test</string>
+    <!--  <string name="app_name">Paras Order Sales Dev</string>-->
     <!--<string name="app_name">Paras Order Sales Test Release</string>-->
 
-    <string name="Coverage_Area">कवरेज क्षेत्र</string>
-    <string name="Contact_No">संपर्क नंबर</string>
-    <string name="DOB">जन्म तिथि</string>
+    <!-- <string name="app_name">Paras Order Sales Training</string>-->
 
-    <string name="DSR_Profile">डीएसआर प्रोफाइल</string>
+    <string name="alrtForNegativeStock">नकारात्मक स्टॉक की पुष्टि नहीं की जा सकती है, कृपया डीलर से संपर्क करें।</string>
+    <string name="Amount">रकम</string>
+    <string name="AlertTelephonic">यह एक टेलीफ़ोनिक ऑर्डर है और स्टोर की यात्रा की गणना नहीं की जाएगी, कृपया आगे बढ़ना सुनिश्चित करें</string>
+    <string name="AccountCensusBtn">खाता जनगणना रिपोर्ट</string>
+    <string name="txtLessThanNinety" translatable="false">&lt;90%</string>
+    <string name="txtGreaterThanNinety" translatable="false">&gt;=90 &lt;100</string>
+    <string name="txtGreaterThanHundred" translatable="false">&gt;=100 &lt;=105</string>
+    <string name="txtHighest" translatable="false">&gt;105</string>
+    <string name="hintSearch">खोज..</string>
+
+    <string name="DayCollectionTotalInv">कुल इन्वॉइस</string>
+    <string name="DayCollectionCashColec">नकद - संग्रह</string>
+    <string name="DayCollectionChequeColec">संग्रह की जांच करें</string>
+    <string name="DayCollectionBalAmt">शेष राशि</string>
+    <string name="DayCollectionChequeDet">विवरण की जांच करें :</string>
+    <string name="DayCollectionChequeNo">चेक नंबर</string>
+    <string name="DayCollectionChequeAmt">रकम</string>
+    <string name="DayCollectionChequeDate">तारीख</string>
+    <string name="DayCollectionChequeBank">बैंक</string>
+    <string name="DayCollectionReportViewDetails">विवरण देखें</string>
+    <string name="DayCollectionReportUpdateCollection">अद्यतन संग्रह</string>
+    <string name="DayStoreCollectionReportInvAmt">बीजक राशि</string>
+    <string name="DayStoreCollectionReportChequeAmt">चेक राशि</string>
+    <string name="DayStoreCollectionReportBal">संतुलन</string>
+    <string name="DayStoreCollectionReportModify">संशोधित करें</string>
+    <string name="Bank">बैंक</string>
+    <string name="OrderTypeTelephonic">टेलीफोनिक</string>
+
+
+    <string name="ConfirmOrderType">टेलीफोन आदेश की पुष्टि करें</string>
+    <string name="DoneAndExit">पूरा और &amp; बाहर जाएं</string>
+    <string name="OrderTypeActualVisit">वास्तविक यात्रा</string>
+    <string name="OrderTypeActualVisitNew">वास्तविक यात्रा</string>
+
+    <string name="title_activity_collectionreport">संग्रह रिपोर्ट</string>
+    <string name="title_activity_storewisereport">स्टोर वार रिपोर्ट</string>
+    <string name="RqrdQty">आवश्यक मात्रा : </string>
+    <string name="StoreSale">स्टोर बिक्री </string>
+    <string name="InvoiceReview">चालान समीक्षा</string>
+    <string name="selectAtleastOneOption">आगे बढ़ने के लिए कम से कम एक विकल्प का चयन करें।</string>
+    <string name="selectAtleastOneOptionwithedittext">आगे बढ़ने के लिए पहले कारण निर्दिष्ट करें</string>
+    <string name="DayStartButtonText">दिन शुरू</string>
+    <string name="ExitButtonText">बाहर जाएं</string>
     <string name="today_working">आज का काम</string>
     <string name="today_Notworking">काम नहीं कर रहे हो</string>
     <string name="working">काम कर रहे हो</string>
     <string name="not_working">काम नहीं कर रहे हो</string>
-    <string name="selectDistributorProceeds">कृपया आगे जाने के लिये वितरक चुनें</string>
-   <string name="laststock">अंतिम स्टैक एनए</string>
-    <string name="select_attendance_scope">उपस्थिति रिपोर्ट देखें</string>
-    <string name="select_attendance_report">डीएसआर उपस्थिति रिपोर्ट</string>
-    <!--Day Start message start-->
-    <string name="DayStartButtonText">दिन शुरू</string>
-    <string name="ExitButtonText">बाहर जाएं</string>
     <string name="submittingDayStart">दिन प्रारंभ विवरण जमा हो रहा है ...</string>
-    <string name="selectAtleastOneOption">आगे बढ़ने के लिए कम से कम एक विकल्प का चयन करें।</string>
-    <string name="selectAtleastOneOptionwithedittext">आगे बढ़ने के लिए पहले कारण निर्दिष्ट करें</string>
-    <!--Day Start message end-->
+    <string name="TodayStock">आज का स्टोक</string>
+    <string name="stockAsOn">आज तक का स्टॉक</string>
+    <string name="verifyLocation">अगली पर क्लिक करने से पहले कृपया अपना स्थान सत्यापित करें.</string>
 
-    <string name="TtlAmtOutStnding">कुल बकाया: </string>
-    <string name="PrvAmtOutStnding">पिछला राशि बकाया: </string>
-    <string name="crntInvoice">वर्तमान चालान: </string>
-    <string name="minAmountDue">न्यूनतम राशि के कारण: </string>
-    <string name="outstandingBal">बकाया राशि</string>
-    <string name="overdueBal">बकाया शेष</string>
 
-    <string name="SubmittingDistributorDetails">वितरक विवरण जमा हो रहा है </string>
 
+    <string name="DSR_Profile">डीएसआर प्रोफाइल</string>
+    <string name="Coverage_Area">कवरेज क्षेत्र</string>
+    <string name="Contact_No">संपर्क नंबर</string>
+    <string name="DOB">जन्म तिथि</string>
+    <string name="OrderTypeActualVisitHeader">भंडार की जांच</string>
+
+    <string name="WareHouseMsgWithoutInvoiceNumber">Stock loaded/adjusted recently will reflect after few minutes.</string>
+
+
+
+
+    <string name="SubmittingPndngDataMsg"> लंबित डेटा सबमिट करना…</string>
+    <string name="genStoreListWhoseDataIsNotYetSubmitted">Following invoices are Not Submitted as Yet. Invoices only Saved but not Submitted now will be permanently lost.</string>
+    <string name="VanStock">Van Stock</string>
     <!--Splash screen starts here-->
     <string name="genTermNoDataConnection">जानकारी</string>
     <string name="AlertDialogOkButton">ठीक</string>
@@ -54,11 +94,9 @@
     <string name="genTermLoadData">डेटा लोड हो रहा है...</string>
     <!--Splash screen ends here-->
 
-    <string name="OrderType">आदेश प्रकार</string>
-    <string name="OrderTypeTelephonic">टेलीफोनिक</string>
-    <string name="OrderTypeActualVisit">वास्तविक विज़िट</string>
+    <string name="stockUploadStatusMsg">स्टॉक अपलोड स्थिति नहीं आ रही है</string>
 
-
+    <string name="NoRouteAvailable">आपके डिवाइस के लिए कोई मार्ग उपलब्ध नहीं है</string>
     <!--DSR_Registrion starts here-->
     <string name="txtWelcome">स्वागत है  </string>
     <string name="txtDayStart">दिन का आरंभ करें</string>
@@ -98,7 +136,6 @@
     <string name="txtNoFrontCamera">सामने वाला कैमरा नहीं मिला।</string>
     <string name="txtSuccessfullySaved">सफलतापूर्वक SAVED कर लिया गया है</string>
     <string name="txtSELECTDOB">चुनें जन्म तिथि</string>
- <string name="Gujarati">गुजराती</string>
     <string name="txtSelectMarriedDate">विवाह की तिथि चुनें</string>
     <string name="txtBloodGroupTitle">रक्त समूह</string>
     <string name="txtSubmitData">क्या आप डेटा जमा करना चाहते हैं?</string>
@@ -147,7 +184,6 @@
     <string name="radioChooseDifferentRoute">अलग मार्ग चुनें</string>
     <string name="txtSelectedRoute">चयनित रूट</string>
     <string name="txtNoRouteAvailable">कोई मार्ग उपलब्ध नहीं है</string>
-    <string name="txtNoRoute">कोई मार्ग उपलब्ध नहीं है</string>
     <string name="txtGetStores">स्टोर लिस्ट पर जाओ</string>
     <string name="txtNoStoreVisittoday">आज किसी स्टोर की यात्रा नहीं है</string>
     <string name="txtDistributorStock">डिस्ट्रिबुटर स्टॉक</string>
@@ -327,7 +363,7 @@
 
     <!-- Check DatabaseData Activity starts -->
     <string name="txtTodaySubmitData">आज के जमा किए गए डेटा</string>
-
+    <string name="txtTodayInvoices">Today Invoices</string>
     <!-- Check DatabaseData Activity starts -->
 
 
@@ -369,6 +405,7 @@
     <string name="Save">सुरक्षित करना</string>
     <string name="SaveExit">सुरक्षित और बहार</string>
     <string name="Submit">डेटा भेजें</string>
+    <string name="Next">Next</string>
     <string name="CrBal">जमा शेष</string>
     <string name="prodlstSchmeApplicable">योजना लागू है</string>
     <string name="ProductName">उत्पाद का नाम</string>
@@ -393,7 +430,7 @@
     <string name="ConfirmDel">हटाने की पुष्टि करें...</string>
     <string name="YouclickedonNO">आपने नो पर क्लिक किया है</string>
 
-
+    <string name="prodOValAfterTax">कर राशि के बाद ऑर्डर मूल्य:</string>
     <string name="submitConfirmAlert"><small>स्टोर ऑर्डर के डिटेल सिंक किए जाएंगे।\n क्या आप ऑर्डर डिटेल सबमिट करना चाहते हैं?</small></string>
     <string name="genTermRetrivingLocation">स्टोर के स्थान की पहचान के लिए जीपीएस जांच कर रहा है</string>
 
@@ -417,6 +454,9 @@
     <!-- Order view Activity ends -->
     <!-- Product order filter search Activity starts -->
 
+    <string name="alertClickPic">कृपया स्टोर के कम से कम एक तस्वीर पर क्लिक करें</string>
+    <string name="alertOtherReason">कृपया अन्य कारण दर्ज करें.</string>
+
     <string name="OrderDetail">ऑर्डर विवरण</string>
     <string name="CategoryName">श्रेणी नाम</string>
 
@@ -431,7 +471,8 @@
     <string name="StockOverbooked">स्टॉक ओवरबुक</string>
     <string name="Continue">जारी रखे</string>
     <string name="ChangeQty">परिवर्तन मात्रा</string>
-    <string name="SubmittingOrderDetails">ऑर्डर डिटेल जमा कर रहे  है ...</string>
+    <string name="SubmittingOrderDetails">चालान/ऑर्डर डिटेल जमा कर रहे  है ...</string>
+    <string name="SubmittingInvoiceOrderDetails">ऑर्डर डिटेल जमा कर रहे  है ...</string>
     <string name="Loading">लोड हो रहा है...</string>
     <string name="MyNameAbhinav">मेरा नाम अभिनव</string>
     <string name="AvailableQty">उपलब्ध मात्रा :</string>
@@ -450,7 +491,12 @@
 
 
     <!-- LastVisitDetails Activity start -->
-
+    <string name="OwnerName">Owner Name :</string>
+    <string name="OwnerContact">Owner Contact :</string>
+    <string name="SalesPersonName">Sales Person Name :</string>
+    <string name="SalesPersonContact">Sales Person Contact :</string>
+    <string name="SalesPersonAddress">Sales Person Address :</string>
+    <string name="StoreCatType">Store Category Type :</string>
     <string name="LastVisitDate">अंतिम यात्रा की तारीख :</string>
     <string name="Details">विवरण</string>
     <string name="LastOrderDate">अंतिम ऑर्डर तिथि:</string>
@@ -620,10 +666,10 @@
     <string name="txtCancelOrder">ऑर्डर रद्द करें</string>
     <string name="genTernStoreOrderInvoicesubmitConfirmAlert"><small>क्या आप निष्पादन विवरण सबमिट करना चाहते हैं?</small></string>
     <!--invoice product list ends-->
-
-
+    <string name="ViewStorePicture">स्टॉक पिक्चर देखें</string>
+    <string name="AddEditStorePicture">स्टॉक पिक संपादित/जोड़ें</string>
     <!--surbhi ends here-->
-
+    <string name="Gujarati">गुजराती</string>
     <!--  Selection header starts -->
     <string name="ChangeLanguage">भाषा बदले</string>
     <string name="Language">भाषा</string>
@@ -631,8 +677,10 @@
     <string name="Hindi">हिंदी</string>
     <string name="English">अंग्रेज़ी</string>
     <string name="DayEnd">दिन की समाप्ति</string>
+    <string name="InitiateDayEnd">डे एंड शुरू करें</string>
     <string name="Dsrmessage">कृपया दिन के अंत की गतिविधि करने से पहले अपने व्यक्तिगत डिटेल को अपडेट करें</string>
     <string name="RefreshData">डेटा रिफ्रेश करें</string>
+    <string name="UploadPendingData">लंबित डेटा अपलोड करें</string>
     <string name="RefreshDataMsg">क्या आप डेटा रीफ्रेश करना चाहते हैं?</string>
     <string name="ChangeRoute">मार्ग बदलें</string>
     <string name="Summary">सारांश</string>
@@ -640,13 +688,16 @@
     <string name="VersionNo">संस्करण संख्या-V</string>
     <string name="CheckTodayOrder">आज का ऑर्डर देखें</string>
 
-    <string name="ErrorUploadingData">डेटा अपलोड करते समय त्रुटि</string>
-
+    <string name="CollectionAlert1">अगर आज के लिए कोई संग्रह नहीं है तो सबमिट पर क्लिक करने से पहले कृपया  \'नो कलेक्शन टुडे \' पर टिकटें</string>
+    <string name="CollectionAlert2">
+एकत्रित राशि न्यूनतम संग्रह राशि से कम है, वर्तमान चालान नहीं किया जा सकता है।
+चालान बंद करने और वर्तमान यात्रा से बाहर निकलने के लिए कैंसल और एक्स्टिट पर क्लिक करें।
+संग्रह राशि अपडेट करने के लिए अद्यतन भुगतान पर क्लिक करें</string>
     <!-- Selection header ends -->
 
+    <string name="CollectionAlert3">आप कुल बकाया एकत्रित कर रहे हैं। यदि यह सही है, तो जारी रखने के लिए हाँ पर क्लिक करें, फिर वापस जाने और सही राशि को रद्द करने के लिए रद्द करें पर क्लिक करें।</string>
 
-   <string name="SubmittingPndngDataMsg">लंबित डेटा अपलोड कर रहा है ...</string>
-   <string name="UploadPndngData">लंबित डेटा अपलोड करें</string>
+
     <string name="genlocaldataMsg">डेटा स्थानीय रूप से फोन मे सहेजा गया है, इंटरनेट एक्सेस करने के बाद सर्वर पर भेज दिया जायेगा</string>
     <string name="reason_prompt">Please Select Reason</string>
     <string name="category_prompt">Please Select Category</string>
@@ -717,12 +768,48 @@
 
 
 
-
+    <string name="PrintSubmit">प्रिंट करें &amp; जमा करें</string>
     <!--Distributor Check In First Activity starts here-->
     <string name="LocalAreaMessage">स्थानीय क्षेत्र</string>
     <string name="PinCodeMessage">पिन कोड</string>
     <string name="CityMessage">शहर</string>
     <string name="StateMessage">राज्य</string>
+
+    <string name="collection">संग्रह</string>
+    <string name="Print">छाप</string>
+
+    <string name="stkOn">स्टैक ऑन</string>
+    <string name="LastStk">अंतिम स्टॉक</string>
+
+    <string name="StoreDetails">स्टोर विवरण:</string>
+    <string name="LVDeatils">अंतिम विज़िट विवरण:</string>
+    <string name="StorePreOut">पिछला बकाया:</string>
+    <string name="StoreTot">कुल  :</string>
+
+    <string name="PreOutAmt">पिछली बकाया राशि.</string>
+    <string name="CntInvVal">वर्तमान चालान मूल्य</string>
+    <string name="TotOut">कुल बकाया </string>
+    <string name="MinAmtToColec">चालान जमा करने के लिए न्यूनतम राशि एकत्र की जानी चाहिए:</string>
+    <string name="totAmt">कुल रकम:-</string>
+    <string name="NoCollection">आज कोई संग्रह नहीं</string>
+    <string name="paymentCollection">भुगतान संग्रह</string>
+    <string name="PaymentCollection">भुगतान संग्रह</string>
+    <string name="AddStorePicture">स्टॉक पिक जोड़ें</string>
+    <string name="PrvAmtOutStnding">बकाया पिछली राशि:</string>
+    <string name="RefNochequeNoTrnNo">RefNo/chequeNo/TrnNo</string>
+    <string name="totLineCnt">कुल रेखा गणना</string>
+    <string name="totInvoiceQty">कुल चालान मात्रा</string>
+    <string name="PrevOutAmt">पिछली आउटसमंडिंग राशि</string>
+    <string name="TtlAmtOutStnding">કकुल बकाया: </string>
+    <string name="TotalAmount">કकुल रकम:-</string>
+    <string name="crntInvoice">वर्तमान चालान: </string>
+
+    <string name="laststock">अंतिम स्टॉक</string>
+    <string name="outstandingBal">બबकाया राशि</string>
+    <string name="overdueBal">बकाया शेष</string>
+    <string name="store_call">स्टोर कॉल </string>
+
+
 
     <string name="PleaseSelectDistributor">कृपया वितरक का चयन करें।</string>
     <string name="PleaseFillAddress">कृपया पता मूल्य भरें</string>
@@ -767,58 +854,74 @@
     <string name="StrClosedHeader">स्टोर बंद सूचना</string>
     <string name="StrClosedReason">स्टोर बंद रहने का कारण</string>
     <string name="alertSaveMsg">कृपया यहाँ से जाने से पहले डेटा सुरक्षित करे नहीं तो परिवर्तन सहेज नहीं किए जाएंगे।</string>
-    <string name="alertAskSaveMsg">क्या आप डेटा को सुरक्षित करना चाहते हैं?</string>
+    <string name="alertAskSaveMsg">क्या आप डेटा को सुरक्षित करना चाहते हैं??</string>
 
     <string name="clkStrClosePic">बंद स्टोर की तस्वीर क्लिक करें</string>
     <string name="reason">कारण का चयन करें</string>
-
-    <string name="alertClickPic">कृपया स्टोर के कम से कम एक तस्वीर पर क्लिक करें</string>
-    <string name="alertOtherReason">कृपया अन्य कारण दर्ज करें.</string>
     <!--newly added for store close activity ends-->
 
 
     <string name="DistributorCheckInAlrady">आपने पहले से ही वितरक का चेक आज के लिए किया हुआ है </string>
 
-    <string name="ActualVisitHeader">वास्तविक विज़िट</string>
 
-    <string name="AccountCensusBtn">खाता जनगणना रिपोर्ट</string>
+    <string name="VANStockTransfer">वाहन स्टॉक ट्रान्सफर</string>
+    <string name="VANStockStockOut">स्टॉक से बाहर</string>
+    <string name="VANStockStockIn">स्टॉक दर्ज</string>
+    <string name="AlertVANStockStockOut">अपने बाज़ार की यात्रा शुरू करने के लिए पहले स्टॉक को भरें</string>
 
-    <string name="DistributorStockMessage">कृपया पहले वितरक स्टॉक भरें</string>
-    <string name="Calculating">गणना...</string>
+    <string name="AlertVANStockStockOutWareHouse">अपना शुरू करने के लिए पहले स्टॉक आउट भरें </string>
+    <string name="DayStart">दिन शुरू</string>
+    <string name="internetslowMsggg">आपका डिवाइस डेटा कनेक्शन धीमा है</string>
+
+    <string name="ReadyStockOut">स्टॉक आउट</string>
+    <string name="ReadyStockIn">स्टॉक में</string>
+
+    <string name="Warehouse">गोदाम में चेक इन</string>
+    <string name="DayStartCheckIN">Day Start</string>
+    <string name="WarehouseStock">गोदाम स्टॉक</string>
+    <string name="WarehouseDataSubmit">गोदाम डेटा सफलतापूर्वक सबमिट हो चूका हैं</string>
+    <string name="currentStock">वर्तमान स्टॉक</string>
+    <string name="LastStock">अंतिम स्टॉक</string>
+    <string name="AlertVANStockStockValidate">कृपया अपना बाजार यात्रा शुरू करने के लिए पहले गोदाम स्टॉक की पुष्टि करें</string>
+
+    <string name="strRemainingStockStatus">शेष स्टॉक स्थिति रिपोर्ट</string>
+    <string name="strDataLostIfNotSubmitted">जमा नहीं होने पर भरा डेटा खो जाएगा?</string>
+    <string name="prodlstPurchaseAmtBeforeTax">टैक्स से पहले वैल्यू:</string>
 
 
-    <!--Collection Activity-->
-    <string name="PaymentCollection">भुगतान संग्रह</string>
-    <string name="Amount">राशि</string>
-    <string name="RefNochequeNoTrnNo">रेफ न./चेक न./ट्रांसक्शन न.</string>
-    <string name="Bank">बैंक</string>
-    <string name="TotalAmount">कुल राशि</string>
-    <string name="DoneAndExit">डेटा सुरक्षित करे और बहर जाए</string>
 
+    <string name="StockRequest">स्टॉक अनुरोध</string>
+    <string name="avgSales">अपेक्षित बिक्री</string>
+    <string name="StockinVan">वैन में स्टॉक</string>
+    <string name="ReqStock">आवश्यक स्टॉक</string>
+    <string name="fnlStk">अंतिम स्टॉक</string>
+    <string name="uom">UOM</string>
+    <string name="AlertVANStockForRqstStk">पिछले चक्र स्टॉक आपके और डीलर की स्वीकृति के लिए पुष्टि के लिए लंबित है। उसके बाद आप स्टॉक अनुरोध के लिए जा सकते हैं</string>
+    <string name="AlertDialogRequstionStock">स्टॉक अनुरोध रखने में त्रुटि!</string>
+    <string name="AlertVANStockConfrmDstrbtr">पिछले चक्र स्टॉक डीलर पुष्टिकरण के लिए लंबित है। इसके बाद आप वेयरहाउस चेकइन के लिए जा सकते हैं।</string>
+    <string name="UnloadStk">अनलोड स्टॉक</string>
+    <string name="uploading_error_data">डेटा अपलोड करते समय त्रुटि</string>
+    <string name="AlertDialogUnloadStock">स्टॉक उतारने में त्रुटि!</string>
+    <string name="AlertDialogUnloadVaidation">अनलोड स्टॉक वैन में स्टॉक से अधिक नहीं हो सकता है!</string>
+    <string name="StkUnload">स्टॉक अनलोड</string>
+
+    <string name="alrtDayEndProcess">आपकी दिन की अंत प्रक्रिया अभी भी लंबित है, कृपया पूरा होने तक प्रतीक्षा करें </string>
+    <string name="alrtDayEndDone">दिन बंद होने के बाद आप आगे नहीं बढ़ सकते हैं </string>
+    <string name="AlertDayEndCnfrmForRqstStk">आपका स्टॉक अनलोडिंग अनुरोध पुष्टि के बाद लंबित है। यह स्वीकार किए जाने के बाद है।</string>
+
+    <string name="onlyprintMsg">एक बार बीजक मुद्रित हो जाने के बाद, कोई परिवर्तन / संपादन की अनुमति नहीं है, केवल सबमिशन की अनुमति है। क्या आप चालान प्रिंट करना चाहते हैं?</string>
+    <string name="CollectionDetails">कलेक्शन विवरण</string>
+    <string name="TotalCollection">कुल कलेक्शन</string>
+    <string name="ModifiedCollection">संशोधित कलेक्शन</string>
+    <string name="CashCollection">नकद - कलेक्शन</string>
+    <string name="AddModifyChequeDetails">चेक विवरण जोड़ें / संशोधित करें</string>
+    <string name="ADDCheque">चेक जोड़ें</string>
+    <string name="PleaseEntertheModifiedAmount"> कृपया संशोधित राशि दर्ज करें।</string>
     <string name="PleaseEntertheAmount">कृपया राशि दर्ज करें</string>
-    <string name="PleaseEnterChequeNoRefNo">कृपया चेक न./रेफ न. दर्ज करें</string>
-    <string name="PleaseSelectDate">कृपया तारीख चुनें</string>
-    <string name="PleaseEnterAllValidation">कृपया राशि या चेक न./रेफ न. दर्ज करें या तारीख चुनें</string>
-    <string name="PleaseEnterAmountCheckNo">कृपया राशि या चेक न./रेफ न. दर्ज करें</string>
-    <string name="DateEmpty">तारीख खाली है</string>
-    <string name="PleaseSelectBank">कृपया बैंक चुनें</string>
-
-
-    <string name="AmountEmpty">राशि खाली है</string>
-    <string name="RefNochequeNoTrnNoEmpty">रेफ न./चेक न./ट्रांसक्शन न. खाली है</string>
-
-
-     <string name="OrderTypeActualVisitHeader">स्टोर चेक</string>
-    <string name="TodayStock">आज का स्टोक</string>
-    <string name="stockAsOn">आज तक का स्टॉक</string>
-    <string name="store_call">स्टोर कॉल</string>
-
-    <string name="OrderTypeActualVisitNew">वास्तविक विज़िट</string>
-    <string name="ConfirmOrderType">टेलिफोनिक आदेश की पुष्टि करें</string>
-
-    <string name="AlertTelephonic">यह टेलीफ़ोनिक ऑर्डर है और स्टोर विज़िट की गणना नहीं होगी, कृपया आगे बढ़ने की पुष्टि करें</string>
-
-    <string name="strDataLostIfNotSubmitted">The Filled data will be lost if not submitted?</string>
-
-
+    <string name="PleaseEnterChequeNoRefNo">कृपया ChequeNo / RefNo दर्ज करें।</string>
+    <string name="PleaseselectDate"> कृपया तिथि का चयन करें</string>
+    <string name="PleaseselectBank"> कृपया बैंक का चयन करें</string>
+    <string name="PleaseEntertheAmountorChequeNoRefNo">कृपया राशि या ChequeNo / RefNo दर्ज करें।</string>
+    <string name="PleaseEntertheAmountorChequeNoRefNoorSelectDate">कृपया राशि या ChequeNo / RefNo दर्ज करें। या तिथि का चयन करें</string>
+    <string name="txtNet">कुल मूल्य</string>
 </resources>

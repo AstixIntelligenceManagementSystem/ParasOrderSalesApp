@@ -53,7 +53,8 @@
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/StorelistTheme">
+        android:theme="@style/StorelistTheme"
+         >
 
 
         <receiver
@@ -469,7 +470,75 @@
 
         <activity android:name="project.astix.com.parasorder.ActualVisitStock"
             android:screenOrientation="portrait" />
+        <activity android:name=".ProductEntryForm"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ProductOrderReview"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".ProductInvoiceReview"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustNothing" />
 
+        <activity
+            android:name=".WebViewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".WarehouseCheckInFirstActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".WarehouseCheckInSecondActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+
+        <activity
+            android:name=".StorelistActivity"
+            android:screenOrientation="portrait" />
+        <service
+            android:name=".MyService"
+            android:enabled="true"
+            android:process=":ParasDSRSalesSaleBkgSync" />
+        <activity
+            android:name=".printer.DeviceListActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog" />
+        <activity
+            android:name=".StockRequestActivity"
+            android:screenOrientation="portrait" />
+
+
+        <activity
+            android:name=".DayCollectionReport"
+            android:configChanges="orientation|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:label="@string/title_activity_collectionreport"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DayEndStoreCollectionsChequeReport"
+            android:configChanges="orientation|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:label="@string/title_activity_collectionreport"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".StockUnloadEndClosure"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".collectionReportStoreList"
+            android:configChanges="orientation|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:label="@string/title_activity_collectionreport"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CollectionDetailsStoreWise"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden"
+            android:theme="@style/StorelistTheme">
+            <activity
+                android:name=".RemainingStockStatusReport"
+                android:screenOrientation="portrait" />
+        </activity>
     </application>
 
 </manifest>

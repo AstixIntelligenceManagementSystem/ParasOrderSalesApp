@@ -64,11 +64,8 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
     public LocationManager locationManager;
     public Location location;
 
-    private final long startTime = 31000;
+    private final long startTime = 10000;
     private final long interval = 1000;
-
-    int checkAccuracy=0;
-
     public CoundownClass countDownTimer;
     public boolean isGPSEnabled = false;
     public String FusedLocationLatitude="0";
@@ -106,7 +103,8 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
     Location mCurrentLocation;
     String mLastUpdateTime;
     Activity activity ;
-    boolean fetchAdressFlag=true;
+    int checkAccuracy=0;
+    boolean fetchAdressFlag=true;// if true means fetch address ,if false dont fetch address
     public void locationRetrievingAndDistanceCalculating(Context context,boolean fetchAdressFlag,int checkAccuracy)
     {
         activity = (Activity) context;
@@ -121,7 +119,13 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
                 | PowerManager.ACQUIRE_CAUSES_WAKEUP
                 | PowerManager.ON_AFTER_RELEASE, "INFO");
         wl.acquire();
-
+        if(pDialog2STANDBY!=null)
+        {
+            if(pDialog2STANDBY.isShowing())
+            {
+                pDialog2STANDBY.dismiss();
+            }
+        }
 
         pDialog2STANDBY = ProgressDialog.show(context, context.getText(R.string.genTermPleaseWaitNew), context.getText(R.string.rtrvng_loc), true);
         pDialog2STANDBY.setIndeterminate(true);
@@ -223,7 +227,8 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
 
         @Override
         public void onTick(long millisUntilFinished) {
-            if(FusedLocationAccuracy!=null){
+            System.out.println("Shivam"+FusedLocationAccuracy);
+          /*  if(FusedLocationAccuracy!=null){
                 if(Double.parseDouble(FusedLocationAccuracy)<checkAccuracy && (!FusedLocationAccuracy.equals("0"))){
                     System.out.println("Shivam"+"ontickFInish "+millisUntilFinished+":"+ FusedLocationAccuracy);
 
@@ -231,7 +236,7 @@ public class LocationRetreivingGlobal implements LocationListener,GoogleApiClien
                     countDownTimer.cancel();
 
                 }
-            }
+            }*/
 
         }
 
@@ -610,42 +615,39 @@ else{
 
 
     }*/
+  public String getAddressOfProviders(String latti, String longi){
 
-    public String getAddressOfProviders(String latti, String longi){
-
-        StringBuilder FULLADDRESS2 =new StringBuilder();
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(context, Locale.ENGLISH);
-
+      StringBuilder FULLADDRESS2 =new StringBuilder();
+      Geocoder geocoder;
+      List<Address> addresses;
+      geocoder = new Geocoder(context,  Locale.ENGLISH);
 
 
-        try {
-            addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
 
-            if (addresses == null || addresses.size()  == 0 || addresses.get(0).getAddressLine(0)==null)
-            {
-                FULLADDRESS2=  FULLADDRESS2.append("NA");
-            }
-            else
-            {
-                FULLADDRESS2 =FULLADDRESS2.append(addresses.get(0).getAddressLine(0));
-            }
+      try {
+          addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
 
-        } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+          if (addresses == null || addresses.size()  == 0 || addresses.get(0).getAddressLine(0)==null)
+          {
+              FULLADDRESS2=  FULLADDRESS2.append("NA");
+          }
+          else
+          {
+              FULLADDRESS2 =FULLADDRESS2.append(addresses.get(0).getAddressLine(0));
+          }
 
-
-        return FULLADDRESS2.toString();
-
-    }
+      } catch (NumberFormatException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+      } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+      } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
 
 
+      return FULLADDRESS2.toString();
+
+  }
     public void checkHighAccuracyLocationMode(Context context) {
         int locationMode = 0;
         String locationProviders;
@@ -749,7 +751,7 @@ else{
             if (addresses != null && addresses.size() > 0){
                 if(addresses.get(0).getAddressLine(1)!=null){
                     addr=addresses.get(0).getAddressLine(1);
-                    address=addr;
+
                 }
 
                 if(addresses.get(0).getLocality()!=null){
@@ -779,6 +781,7 @@ else{
                     }
 
                     addr=  getAddressNewWay(addresses.get(0).getAddressLine(0),city,state,zipcode,countryname);
+                    address=addr;
                 }
 
               /*  NewStoreFormSO recFragment = (NewStoreFormSO)getFragmentManager().findFragmentByTag("NewStoreFragment");

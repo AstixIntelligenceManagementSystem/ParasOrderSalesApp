@@ -1,5 +1,70 @@
 package project.astix.com.parasorder;
 
+import android.annotation.SuppressLint;
+import android.app.ActionBar.LayoutParams;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationManager;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Environment;
+import android.os.PersistableBundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.UnderlineSpan;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.astix.Common.CommonInfo;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,88 +87,25 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar.LayoutParams;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.location.Location;
-import android.location.LocationManager;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.PersistableBundle;
-import android.os.PowerManager;
-import android.provider.Settings;
-import android.support.annotation.Nullable;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.UnderlineSpan;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-
-
-import com.astix.Common.CommonInfo;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class OrderReview extends BaseActivity implements OnItemSelectedListener, OnClickListener, OnFocusChangeListener, LocationListener,GoogleApiClient.ConnectionCallbacks,
-GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
+GoogleApiClient.OnConnectionFailedListener
+{
 
-	TextView txt_Lststock;
-	String lastStockDate="";
-	Double outstandingvalue=0.0;
-	LinkedHashMap<String, String> hmapSchmDscrptnAndBenfit;
-	LinkedHashMap<String,ArrayList<String>> hmapProductMinMax;
 
-	//nitika
+	public TextView tvRateHeading;
+
 	CustomKeyboard mCustomKeyboardNum,mCustomKeyboardNumWithoutDecimal;
 
-	LinkedHashMap<String,Integer> hmapDistPrdctStockCount =new LinkedHashMap<String,Integer>();
-	LinkedHashMap<String,String> hmapPrdctIdOutofStock=new LinkedHashMap<String,String> ();
-	HashMap<String, String> hmapProductAddOnSchemesList=new HashMap<String, String>();
+	HashMap<String,Integer> hmapDistPrdctStockCount =new HashMap<String,Integer>();
+	HashMap<String,String> hmapPrdctIdOutofStock=new HashMap<String,String> ();
+
+	public String VisitTypeStatus="1";
+	public int PriceApplyDiscountLevelType=0;
+	public Double cutoffvalue=0.0;
+	public String strGlobalInvoiceNumber="NA";
+	public String strFinalAllotedInvoiceIds="NA";
+	public int chkflgInvoiceAlreadyGenerated=0;
+	public boolean flgAllTotalOrderValueCrossesCutOff=false;
 
 	public  int flgLocationServicesOnOffOrderReview=0;
 	public  int flgGPSOnOffOrderReview=0;
@@ -162,9 +164,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		int CheckIfStoreExistInStoreProdcutInvoiceDetails=0;
 		public String strGlobalOrderID="0";
 		ProgressDialog mProgressDialog;
-
-	LinkedHashMap<String,String> hmapFetchPDASavedData=new LinkedHashMap<>();
-	int flgOrderType=0;
+		 
 		 
 	//****************************************************************	 
 		//Field
@@ -191,20 +191,21 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		public TextView tvFtotal;
 		public TextView tvAddDisc;
 		public TextView tv_NetInvAfterDiscount;
-		
+		public TextView tvPreAmtOutstandingVALNew;
 		public TextView tvAmtPrevDueVAL;
 		public EditText etAmtCollVAL;
 		public TextView tvAmtOutstandingVAL;
 		LinearLayout ll_scheme_detail;
 		public TextView tvCredAmtVAL;
+	public TextView tvTotalAmtCollected;
 		public TextView tvINafterCredVAL;
 		public TextView textView1_CredAmtVAL_new;
 		
 		public TextView tvNoOfCouponValue;
 		
 		public TextView txttvCouponAmountValue;
-		public TextView tvAmtPrvsOutstandingVAL,tvTtlAmtOutstandingVAL;
-	public String lastKnownLocLatitude="";
+		
+		public String lastKnownLocLatitude="";
 		public String lastKnownLocLongitude="";
 		public String accuracy="0";
 		public String locationProvider="Default";
@@ -241,8 +242,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	    public AppLocationService appLocationService;
 
 	    
-
-	    private  long startTime = 45000;
+	    public CoundownClass2 countDownTimer2;
+	    private final long startTime = 30000;
 	    private final long interval = 200;
 	    
 	    private static final String TAG = "LocationActivity";
@@ -253,7 +254,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	    public String fnAccurateProvider="";
 	    public String fnLati="0";
 	    public String fnLongi="0";
-	    public String fnAccuracy="NA";
+	    public Double fnAccuracy=0.0;
 	   
 	    
 	 public EditText   ed_search;
@@ -266,10 +267,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		View[] hide_View;
 		 String[] categoryNames;
 	public String[] prductId;
-
-	// hmapProductIdLastDMSORSFAStock key = ProductID value= Stock
-	HashMap<String, String> hmapProductIdLastStock=new HashMap<String, String>();
-
 		LinkedHashMap<String, String> hmapctgry_details=new LinkedHashMap<String, String>();
 		
 		HashMap<String, String> hmapProductToBeFree=new HashMap<String, String>();    //Not is use
@@ -344,11 +341,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		   
 		 //hmapProductVolumePer= key =ProductID         value=Per
 		   HashMap<String, String> hmapProductVolumePer=new HashMap<String, String>();
-
-	HashMap<String, String> hmapPrdctFreeQtyFinal=new HashMap<String, String>();
-	HashMap<String, String> hmapProductDiscountPercentageGiveFinal=new HashMap<String, String>();
-	HashMap<String, String> hmapProductVolumePerFinal=new HashMap<String, String>();
-
+		   
 		   //hmapProductDiscountPercentageGive= key =ProductID         value=DiscountPercentageGivenOnProduct
 		   HashMap<String, String> hmapProductDiscountPercentageGive=new HashMap<String, String>();
 		   
@@ -386,6 +379,27 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		   //
 		   //hmapMinDlvrQty= key =ProductID         value=QPTaxAmount
 		   LinkedHashMap<String, String> hmapMinDlvrQtyQPTaxAmount=new LinkedHashMap<String, String>();
+
+
+	//hmapProductStock= key =ProductID         value=flgWholeSellApplicable
+	HashMap<String, String> hmapflgWholeSellApplicable=new HashMap<String, String>();
+
+	//hmapProductStock= key =ProductID         value=flgPriceRangeWholeSellApplicable
+	HashMap<String, String> hmapPriceRangeWholeSellApplicable=new HashMap<String, String>();
+
+
+	//hmapProductStock= key =ProductID         value=StandardRateWholeSale
+	HashMap<String, String> hmapStandardRateWholeSale=new HashMap<String, String>();
+
+
+	//hmapProductStock= key =ProductID         value=StandardRateBeforeTaxWholeSell
+	HashMap<String, String> hmapStandardRateBeforeTaxWholeSell=new HashMap<String, String>();
+
+	//hmapProductStock= key =ProductID         value=StandardTaxWholeSale
+	HashMap<String, String> hmapStandardTaxWholeSale=new HashMap<String, String>();
+
+	//hmapMinDlvrQty= key =ProductID         value=ProductListOnWhichWholePriceNeedsToApplyIfRequired
+	LinkedHashMap<String, String> hmapProductListOnWhichWholePriceNeedsToApplyIfRequired=new LinkedHashMap<String, String>();
 		 
 		 public int flgApplyFreeProductSelection=0;
 		
@@ -393,7 +407,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		 
 		//Database
 		 
-		DBAdapterKenya dbengine = new DBAdapterKenya(this); 
+		PRJDatabase dbengine = new PRJDatabase(this);
 		DatabaseAssistant DA = new DatabaseAssistant(this);
 		 
 		 //Common Controls Box
@@ -466,9 +480,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				
 				
 				
-			/*	dbengine.open();
+			/*	//dbengine.open();
 				String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-				dbengine.close();
+				//dbengine.close();
 				System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 				if(!Noti_textWithMsgServerID.equals("Null"))
 				{
@@ -497,10 +511,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								SimpleDateFormat df = new SimpleDateFormat(
 										"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
-					    	 dbengine.open();
+					    	 //dbengine.open();
 								
 								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.close();
 					      dialog.dismiss();
 					     
 					     }
@@ -566,6 +580,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		return super.onKeyDown(keyCode, event);
 	}
 
+
 	@Override
 		protected void onCreate(Bundle savedInstanceState) 
 		{
@@ -603,8 +618,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				isGPSok = false;
 				 isNWok=false;
 			  }
-			getDataFromIntent();
-
 			initializeFields();
 			if(powerCheck==0)
 			{
@@ -667,7 +680,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			  // LocalBroadcastManager.getInstance(ProductList.this).unregisterReceiver(mLocationReceiver);
 			   
 			  }
+		
 
+		 
 		 public void CustomAlertBoxForSchemeDetails()
 		 {
 			 
@@ -812,25 +827,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	      
 			
 		 }
-
-		 public void loadPurchaseProductDefault()
-		{
-	      
-	      
-	      
-		      
+public void loadPurchaseProductDefault()
+{
 		        	hmapFilterProductList.clear();
 		        	hmapPrdctIdPrdctNameVisible.clear();
 		        	
 		        	ll_prdct_detal.removeAllViews();
-	            	 
-			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID);
+
+			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,strGlobalInvoiceNumber);
 			       System.out.println("hmapFilterProductListCount :-"+ hmapFilterProductList.size());
-			        
-		        
-		       
-		        
-		    
 		       
 		       			Iterator it11new = hmapPrdctIdPrdctName.entrySet().iterator();
 		       			String crntPID="0";
@@ -840,10 +845,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					        if(hmapFilterProductList.containsKey(pair.getKey().toString())){
 					        //if(pair.getValue().equals(abc)){
 					        	crntPID	=pair.getKey().toString();
-					        	
-					        	
-					        	
-					        	
 					        	
 					        	/*if(!hmapPrdctIdPrdctNameVisible.containsKey(crntPID))
 								   {
@@ -855,45 +856,20 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						  	           }
 								   } */
 					        }
-				      
 				    }
-				    
-					    
 					    createProductPrepopulateDetail(CheckIfStoreExistInStoreProdcutPurchaseDetails);
 					    setInvoiceTableView();
 }
 
-		public void
-		initializeFields() {
-
+		public void	initializeFields() {
+			getDataFromIntent();
 			//nitika
 			mCustomKeyboardNum= new CustomKeyboard(this, R.id.keyboardviewNum, R.xml.num );
 			mCustomKeyboardNumWithoutDecimal= new CustomKeyboard(this, R.id.keyboardviewNumDecimal, R.xml.num_without_decimal );
 
 			//	spinner_product=(TextView) findViewById(R.id.spinner_product);
-
-			txt_Lststock= (TextView) findViewById(R.id.txt_Lststock);
-			if(!TextUtils.isEmpty(lastStockDate))
-			{
-				txt_Lststock.setText("Stk On "+lastStockDate);
-			}
-			else
-			{
-				txt_Lststock.setText("Last Stk NA");
-			}
+			tvRateHeading=null;//=(TextView) findViewById(R.id.tvRateHeading);
 			ed_search=(EditText) findViewById(R.id.ed_search);
-
-			ed_search.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-
-					mCustomKeyboardNumWithoutDecimal.hideCustomKeyboard();
-					mCustomKeyboardNum.hideCustomKeyboard();
-
-					return false;
-				}
-			});
-
 			  btn_go=(ImageView) findViewById(R.id.btn_go);
 			txtVw_schemeApld=(TextView) findViewById(R.id.txtVw_schemeApld);
 			txtVw_schemeApld.setText("");
@@ -917,10 +893,12 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					@Override
 					public void onClick(View v)
 					{
+
 						if(ed_LastEditextFocusd!=null)
 						{
 							/*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
 							{*/
+
 								 getOrderData(ProductIdOnClickedEdit);
 								 
 								 fnUpdateSchemeNameOnScehmeControl(ProductIdOnClickedEdit);
@@ -935,16 +913,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			
 			
 			final Button btn_AmountCollect=(Button) findViewById(R.id.btn_collectAmount);
-
-			if(flgOrderType==0){
-				btn_AmountCollect.setVisibility(View.GONE);
-			}
-			else {
-				btn_AmountCollect.setVisibility(View.VISIBLE);
-			}
-
 			btn_AmountCollect.setOnClickListener(new OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					if(ed_LastEditextFocusd!=null)
@@ -1040,7 +1010,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			
 			final Button btn_OrderPayment=(Button) findViewById(R.id.btn_OrderPayment);
 			btn_OrderPayment.setOnClickListener(new OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
@@ -1228,7 +1198,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						
 						String fileName=imei+"_"+storeID;
 						
-						File file = new File("/sdcard/"+CommonInfo.TextFileFolder+"/"+fileName);
+						File file = new File("/sdcard/"+ CommonInfo.TextFileFolder+"/"+fileName);
 						
 						if (!file.exists()) 
 						{
@@ -1243,7 +1213,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							}
 						}
 						
-						CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Cancel Button Click on Product List"+StartClickTimeFinal;
+						CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Cancel Button Click on Product List"+StartClickTimeFinal;
 						
 						
 						FileWriter fw;
@@ -1254,9 +1224,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							bw.write(CommonInfo.fileContent);
 							bw.close();
 							
-							dbengine.open();
+							//dbengine.open();
 							dbengine.savetblMessageTextFileContainer(fileName,0);
-							dbengine.close();
+							//dbengine.close();
 							
 							
 						}
@@ -1299,14 +1269,14 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			    			
 			    		}
 			    		
-			    		dbengine.deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(storeID,strGlobalOrderID);
-			    		dbengine.deleteAllStoreAlertValueProduct(storeID,strGlobalOrderID);
-			    		dbengine.open();
+			    		dbengine.deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+			    		dbengine.deleteAllStoreAlertValueProduct(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+			    		//dbengine.open();
 			    		dbengine.UpdateStoreFlag(storeID.trim(), 0);
-			    		dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 0,strGlobalOrderID);
-			    		dbengine.deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(storeID.trim(),flag,strGlobalOrderID);
-			    		dbengine.close();
-			    		dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
+			    		dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 0,strGlobalOrderID,strGlobalInvoiceNumber);
+			    		dbengine.deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(storeID.trim(),flag,strGlobalOrderID,strGlobalInvoiceNumber);
+			    		//dbengine.close();
+			    		//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
 			    		
 			    		
 			        	Intent storeSaveIntent = new Intent(OrderReview.this, LauncherActivity.class);
@@ -1353,21 +1323,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					   String tag=ed_LastEditextFocusd.getTag().toString();
 					   if(tag.contains("etOrderQty"))
 					   {
-						   if (hmapDistPrdctStockCount.containsKey(ProductIdOnClickedEdit)) {
+						   if (hmapDistPrdctStockCount.containsKey(ProductIdOnClickedEdit))
+						   {
 							   if(hmapPrdctIdOutofStock!=null && hmapPrdctIdOutofStock.size()>0)
 							   {
 								   if(hmapPrdctIdOutofStock.containsKey(ProductIdOnClickedEdit))
 								   {
 									   int lastOrgnlQntty=Integer.parseInt(hmapPrdctIdOutofStock.get(ProductIdOnClickedEdit));
-
-
-									   //hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
-									   // int updatedStock=lastOrgnlQntty-originalQntty;
 									   int netStockLeft=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+lastOrgnlQntty;
 									   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockLeft);
-
-
-
 
 								   }
 							   }
@@ -1380,6 +1344,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 							   int netStock=totalStockLeft-originalNetQntty;
 							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+
+									/*change*/
+							   TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							   if(tv_VanStock!=null)
+							   {
+								   tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							   }
+
+
 							   if(originalNetQntty!=0)
 							   {
 								   hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,ed_LastEditextFocusd.getText().toString().trim());
@@ -1388,24 +1361,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   {
 								   hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
 								   dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
-							   }  if (originalNetQntty>totalStockLeft)
+							   }
+							   if (originalNetQntty>totalStockLeft)
 							   {
 
-								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,0);
+								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,-1);
 							   }
 							   else
 							   {
-								   if(dbengine.isFlgCrediBalSubmitted(storeID))
-								   {
 
-									   nextStepAfterRetailerCreditBal(0);
-
-								   }
-								   else
-								   {
-
-									   alertForRetailerCreditLimit(0);
-								   }
 							   }
 
 						   }
@@ -1508,8 +1472,17 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   }
 							   int totalStockLeft = hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 
-							   int netStock=totalStockLeft-originalNetQntty;
-							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+							   int netStockTemp=totalStockLeft-originalNetQntty;
+							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockTemp);
+
+									/*change*/
+							   TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							   if(tv_VanStock!=null)
+							   {
+								   tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							   }
+
+
 							   if(originalNetQntty!=0)
 							   {
 								   hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,ed_LastEditextFocusd.getText().toString().trim());
@@ -1518,13 +1491,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   {
 								   hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
 								   dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
-							   }  if (originalNetQntty>totalStockLeft)
+							   }
+							   if (originalNetQntty>totalStockLeft)
 							   {
 
-								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,1);
+								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,-1);
 							   }
 							   else
 							   {
+
 								   if(dbengine.isFlgCrediBalSubmitted(storeID))
 								   {
 
@@ -1595,6 +1570,52 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			  });
 			  final Button btn_Submit=(Button) findViewById(R.id.btn_sbmt);
 			  btn_Submit.setTag("0_0");
+			/*btn_Submit.setEnabled(false);
+			btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));*/
+
+
+			Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+			outstandingvalue=Double.parseDouble(new DecimalFormat("##.##").format(outstandingvalue));
+
+			Double CollectionAmt=0.00;//dbengine.fnTotCollectionAmtAgainstStore(storeID,strGlobalInvoiceNumber,Store);
+			CollectionAmt=Double.parseDouble(new DecimalFormat("##.##").format(CollectionAmt));
+
+			Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,strGlobalInvoiceNumber);
+			cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
+
+
+			if(outstandingvalue<0.0)
+			{
+				btn_Submit.setEnabled(true);
+				//btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));
+			}
+			else if(outstandingvalue==0.0)
+			{
+				btn_Submit.setEnabled(true);
+				//btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));
+			}
+			else if(Math.ceil(CollectionAmt)>Math.ceil(outstandingvalue+cntInvoceValue))
+			{
+				btn_Submit.setEnabled(false);
+				//btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));
+			}
+			else if(outstandingvalue>0.0 && CollectionAmt==0.0)
+			{
+				btn_Submit.setEnabled(false);
+				btn_Submit.setBackgroundColor(Color.parseColor("#D3D3D3"));
+				//btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));
+			}
+			else if(Math.ceil(outstandingvalue+ cntInvoceValue)==Math.ceil(CollectionAmt))
+			{
+				btn_Submit.setEnabled(true);
+				btn_AmountCollect.setBackgroundColor(Color.parseColor("#FFFF33"));
+			}
+			else if(outstandingvalue>0.0 && CollectionAmt>0.0)
+			{
+				btn_Submit.setEnabled(true);
+				btn_AmountCollect.setBackgroundColor(Color.parseColor("#2E7D32"));
+			}
+
 			  btn_Submit.setOnClickListener(new OnClickListener() {
 			   
 			   @Override
@@ -1614,16 +1635,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								   if(hmapPrdctIdOutofStock.containsKey(ProductIdOnClickedEdit))
 								   {
 									   int lastOrgnlQntty=Integer.parseInt(hmapPrdctIdOutofStock.get(ProductIdOnClickedEdit));
-
-
-									   //hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
+							     	   //hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 									   // int updatedStock=lastOrgnlQntty-originalQntty;
 									   int netStockLeft=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+lastOrgnlQntty;
 									   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockLeft);
-
-
-
-
 								   }
 							   }
 							   int originalNetQntty=0;
@@ -1633,8 +1648,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   }
 							   int totalStockLeft = hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 
-							   int netStock=totalStockLeft-originalNetQntty;
-							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+							   int netStockTemp=totalStockLeft-originalNetQntty;
+							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockTemp);
+
+									/*change*/
+							   TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							   if(tv_VanStock!=null)
+							   {
+								   tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							   }
 							   if(originalNetQntty!=0)
 							   {
 								   hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,ed_LastEditextFocusd.getText().toString().trim());
@@ -1643,80 +1665,60 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   {
 								   hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
 								   dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
-							   }  if (originalNetQntty>totalStockLeft)
+							   }
+							   if (originalNetQntty>totalStockLeft)
 							   {
 
-								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,2);
+								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,-1);
 							   }
 							   else
 							   {
+
 								   if(dbengine.isFlgCrediBalSubmitted(storeID))
 								   {
-
 									   nextStepAfterRetailerCreditBal(2);
-
 								   }
 								   else
 								   {
-
 									   alertForRetailerCreditLimit(2);
 								   }
 							   }
-
 						   }
 						   else
 						   {
 							   if(dbengine.isFlgCrediBalSubmitted(storeID))
 							   {
-
 								   nextStepAfterRetailerCreditBal(2);
-
 							   }
 							   else
 							   {
-
 								   alertForRetailerCreditLimit(2);
 							   }
 						   }
 					   }
-
-
 					   else
 					   {
 						   if(dbengine.isFlgCrediBalSubmitted(storeID))
 						   {
-
 							   nextStepAfterRetailerCreditBal(2);
-
 						   }
 						   else
 						   {
-
 							   alertForRetailerCreditLimit(2);
 						   }
 					   }
-
-
-
 				   }
 				   else
 				   {
 					   if(dbengine.isFlgCrediBalSubmitted(storeID))
 					   {
-
 						   nextStepAfterRetailerCreditBal(2);
-
 					   }
 					   else
 					   {
-
 						   alertForRetailerCreditLimit(2);
 					   }
 				   }
-
-
-
-
 			   }
 			  });
 			  
@@ -1725,8 +1727,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			   
 			   @Override
 			   public void onClick(View v) {
-
-
 				   if(ed_LastEditextFocusd!=null)
 				   {
 					   String tag=ed_LastEditextFocusd.getTag().toString();
@@ -1739,14 +1739,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								   {
 									   int lastOrgnlQntty=Integer.parseInt(hmapPrdctIdOutofStock.get(ProductIdOnClickedEdit));
 
-
 									   //hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 									   // int updatedStock=lastOrgnlQntty-originalQntty;
 									   int netStockLeft=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+lastOrgnlQntty;
 									   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockLeft);
-
-
-
 
 								   }
 							   }
@@ -1757,8 +1753,16 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   }
 							   int totalStockLeft = hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 
-							   int netStock=totalStockLeft-originalNetQntty;
-							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+							   int netStockTemp=totalStockLeft-originalNetQntty;
+							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockTemp);
+
+									/*change*/
+							   TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							   if(tv_VanStock!=null)
+							   {
+								   tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							   }
+
 							   if(originalNetQntty!=0)
 							   {
 								   hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,ed_LastEditextFocusd.getText().toString().trim());
@@ -1767,55 +1771,45 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   {
 								   hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
 								   dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
-							   }  if (originalNetQntty>totalStockLeft)
+							   }
+							   if (originalNetQntty>totalStockLeft)
 							   {
 
-								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,3);
+								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,-1);
 							   }
 							   else
 							   {
+
 								   if(dbengine.isFlgCrediBalSubmitted(storeID))
 								   {
-
 									   nextStepAfterRetailerCreditBal(3);
-
 								   }
 								   else
 								   {
-
 									   alertForRetailerCreditLimit(3);
 								   }
 							   }
-
 						   }
 						   else
 						   {
 							   if(dbengine.isFlgCrediBalSubmitted(storeID))
 							   {
-
 								   nextStepAfterRetailerCreditBal(3);
-
 							   }
 							   else
 							   {
-
 								   alertForRetailerCreditLimit(3);
 							   }
 						   }
 					   }
-
-
 					   else
 					   {
 						   if(dbengine.isFlgCrediBalSubmitted(storeID))
 						   {
-
 							   nextStepAfterRetailerCreditBal(3);
-
 						   }
 						   else
 						   {
-
 							   alertForRetailerCreditLimit(3);
 						   }
 					   }
@@ -1914,8 +1908,17 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   }
 							   int totalStockLeft = hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
 
-							   int netStock=totalStockLeft-originalNetQntty;
-							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+							   int netStockTemp=totalStockLeft-originalNetQntty;
+							   hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockTemp);
+
+									/*change*/
+							   TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							   if(tv_VanStock!=null)
+							   {
+								   tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							   }
+
+
 							   if(originalNetQntty!=0)
 							   {
 								   hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,ed_LastEditextFocusd.getText().toString().trim());
@@ -1924,13 +1927,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							   {
 								   hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
 								   dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
-							   }  if (originalNetQntty>totalStockLeft)
+							   }
+							   if (originalNetQntty>totalStockLeft)
 							   {
 
-								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,4);
+								   alertForOrderExceedStock(ProductIdOnClickedEdit,ed_LastEditextFocusd,ed_LastEditextFocusd,-1);
 							   }
 							   else
 							   {
+
 								   if(dbengine.isFlgCrediBalSubmitted(storeID))
 								   {
 
@@ -1990,28 +1995,18 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					   }
 					   else
 					   {
-
 						   alertForRetailerCreditLimit(4);
 					   }
 				   }
-
-
-
 			   }
 			  });
 			 // spinner_category.setOnItemSelectedListener(this);
-			  
-			  
-			 
-			  
-			  
 
-			  
 			  new GetData().execute();
-			  
-			
-			  
+
 		}
+		
+		
 
 	private boolean isGooglePlayServicesAvailable() {
 	    int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -2022,7 +2017,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	        return false;
 	    }
 	}
-
 	protected void createLocationRequest() {
 	    mLocationRequest = new LocationRequest();
 	    mLocationRequest.setInterval(INTERVAL);
@@ -2031,7 +2025,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	}
 
 		private void getDataFromIntent() {
-
+			  
+			  
 			  Intent passedvals = getIntent();
 
 			  storeID = passedvals.getStringExtra("storeID");
@@ -2039,29 +2034,47 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			  date = passedvals.getStringExtra("userdate");
 			  pickerDate = passedvals.getStringExtra("pickerDate");
 			  SN = passedvals.getStringExtra("SN");
-			  flgOrderType = passedvals.getIntExtra("flgOrderType",0);
-
-				if(flgOrderType==0)
-				{
-					startTime = 10000;
-				}
-			  dbengine.open();
+			if(passedvals.hasExtra("hmapPrdctIdOutofStock"))
+			{
+				hmapDistPrdctStockCount=(HashMap<String, Integer>) passedvals.getSerializableExtra("hmapDistPrdctStockCount");
+				hmapPrdctIdOutofStock=(HashMap<String, String>) passedvals.getSerializableExtra("hmapPrdctIdOutofStock");
+			}
+			  //dbengine.open();
 				 StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-					dbengine.close();
+					//dbengine.close();
 			  //dbengine.fnProductWiseAppliedScehmeSlabDetails(storeIdProd);
 			  hmapProductRelatedSchemesList=dbengine.fnProductRelatedSchemesList();
 			  //hmapPrdtAppliedSchIdsAppliedSlabIdsDefination=dbengine.fnProductWiseAppliedScehmeSlabDetails(StoreID);
-			  
-			 }
+
+			//chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+			/*if(chkflgInvoiceAlreadyGenerated==1)
+			{
+				strGlobalInvoiceNumber=dbengine.fnGetExistingInvoiceNumber(storeID);
+			}
+			else
+			{
+				strGlobalInvoiceNumber=dbengine.fnGettblInvoiceCaption(storeID);
+			}*/
+			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
+			CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,strGlobalInvoiceNumber);
+
+			if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
+            {
+               // strGlobalOrderID=dbengine.fngetOrderIDAganistStore(storeID);
+            }
+            else
+            {
+                strGlobalOrderID= genOutOrderID();
+            }
+		}
 
 
-		private void getProductData() {
+		/*private void getProductData() {
 			// CategoryID,ProductID,ProductShortName,ProductRLP,Date/Qty)
 			
 			arrLstHmapPrdct=dbengine.fetch_catgry_prdctsData(storeID,StoreCurrentStoreType);
 			hmapSchemeIDandDescr=dbengine.fnSchemeIDandDescr();
-			lastStockDate=dbengine.fnGetLastStockDate(storeID);
-			hmapProductIdLastStock=dbengine.fnGetLastStockByDMS_Or_SFA(storeID);
+			
 			HashMap<String, String>  hmapTempProd=dbengine.FetchLODqty(storeID);
 			if(arrLstHmapPrdct.size()>0)
 			{
@@ -2117,8 +2130,75 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			
 			
 			
-	}
-		private void getSchemeSlabDetails() {
+	}*/
+		private void getProductData() {
+			// CategoryID,ProductID,ProductShortName,ProductRLP,Date/Qty)
+
+			arrLstHmapPrdct=dbengine.fetch_catgry_prdctsData(storeID,StoreCurrentStoreType);
+			hmapSchemeIDandDescr=dbengine.fnSchemeIDandDescr();
+
+			HashMap<String, String>  hmapTempProd=dbengine.FetchLODqty(storeID);
+			if(arrLstHmapPrdct.size()>0)
+			{
+				hmapCtgryPrdctDetail=arrLstHmapPrdct.get(0);
+				hmapPrdctVolRatTax=arrLstHmapPrdct.get(1);
+				hmapPrdctOdrQty=arrLstHmapPrdct.get(2);
+				hmapPrdctSmpl=arrLstHmapPrdct.get(3);
+				hmapPrdctFreeQty=arrLstHmapPrdct.get(4);
+				hmapPrdctIdPrdctName=arrLstHmapPrdct.get(5);
+				hmapPrdctIdPrdctDscnt=arrLstHmapPrdct.get(6);
+				hmapProductRetailerMarginPercentage=arrLstHmapPrdct.get(7);
+				hmapProductVatTaxPerventage=arrLstHmapPrdct.get(8);
+				hmapProductMRP=arrLstHmapPrdct.get(9);
+				hmapProductDiscountPercentageGive=arrLstHmapPrdct.get(10);
+				hmapProductVolumePer=arrLstHmapPrdct.get(11);
+				hmapProductTaxValue=arrLstHmapPrdct.get(12);
+				hmapProductLODQty=arrLstHmapPrdct.get(13);
+				hmapProductIdOrdrVal=arrLstHmapPrdct.get(14);
+
+				hmapProductStandardRate=arrLstHmapPrdct.get(15);
+
+				hmapProductStandardRateBeforeTax=arrLstHmapPrdct.get(16);
+
+				hmapProductStandardTax=arrLstHmapPrdct.get(17);
+				hmapProductIdStock=arrLstHmapPrdct.get(18);
+				hmapProductflgPriceAva=arrLstHmapPrdct.get(19);
+				hmapflgWholeSellApplicable=arrLstHmapPrdct.get(20);
+				hmapPriceRangeWholeSellApplicable=arrLstHmapPrdct.get(21);
+				hmapStandardRateWholeSale=arrLstHmapPrdct.get(22);
+				hmapStandardRateBeforeTaxWholeSell=arrLstHmapPrdct.get(23);
+				hmapStandardTaxWholeSale=arrLstHmapPrdct.get(24);
+				Iterator it = hmapProductLODQty.entrySet().iterator();
+				while (it.hasNext())
+				{
+					Entry pair = (Entry)it.next();
+					if(hmapTempProd.containsKey(pair.getKey().toString()))
+					{
+						hmapProductLODQty.put(pair.getKey().toString(), hmapTempProd.get(pair.getKey().toString()));
+					}
+
+				}
+
+				Iterator it11 = hmapPrdctIdPrdctName.entrySet().iterator();
+				int pSize=hmapPrdctIdPrdctName.size();
+				products=new String[pSize];
+				int cntPsize=0;
+				while (it11.hasNext())
+				{
+					Entry pair = (Entry)it11.next();
+
+					products[cntPsize]=pair.getValue().toString();
+					cntPsize++;
+
+				}
+
+
+			}
+
+
+
+		}
+		/*private void getSchemeSlabDetails() {
 			  
 			  arrayListSchemeSlabDteail=dbengine.fnctnSchemeSlabIdSchmVal();
 			  
@@ -2133,7 +2213,26 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			    
 			    hmapSchmeSlabIdBenifitDes=arrayListSchemeSlabDteail.get(2);
 			  }
-			 }
+			 }*/
+		private void getSchemeSlabDetails()
+		{
+			PriceApplyDiscountLevelType=dbengine.fnGettblPriceApplyDiscountLevelType(storeID);
+			if(PriceApplyDiscountLevelType==0) {
+				arrayListSchemeSlabDteail = dbengine.fnctnSchemeSlabIdSchmVal();
+
+				hmapSchemeIdStoreID = dbengine.fnctnSchemeStoreID(storeID);
+				// hmapSchemeStoreID=dbengine.fnctnSchemeStoreID(storeID);
+				if (arrayListSchemeSlabDteail != null && arrayListSchemeSlabDteail.size() > 0) {
+					hmapSchmeSlabIdSchemeId = arrayListSchemeSlabDteail.get(0);
+					hmapSchmeSlabIdSlabDes = arrayListSchemeSlabDteail.get(1);
+					hmapSchmeSlabIdBenifitDes = arrayListSchemeSlabDteail.get(2);
+				}
+			}
+			else
+			{
+				cutoffvalue=dbengine.fnGettblPriceApplycutoffvalue(storeID);
+			}
+		}
 		private void getCategoryDetail() {
 			
 			hmapctgry_details=dbengine.fetch_Category_List();
@@ -2962,7 +3061,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
         {
             if(hmapDistPrdctStockCount.containsKey(productIdDynamic))
             {
-                tv_product_name.setText(hmapPrdctIdPrdctName.get(productIdDynamic)+"( Avl : "+hmapDistPrdctStockCount.get(productIdDynamic)+")");
+                tv_product_name.setText(""+hmapPrdctIdPrdctName.get(productIdDynamic));//+"( Avl : "+hmapDistPrdctStockCount.get(productIdDynamic)+")"
             }
             else {
                 tv_product_name.setText(hmapPrdctIdPrdctName.get(productIdDynamic));
@@ -2977,7 +3076,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 
-		EditText et_ProductMDQ=(EditText) viewProduct.findViewById(R.id.et_ProductMDQ);
+		TextView et_ProductMDQ=(TextView) viewProduct.findViewById(R.id.et_ProductMDQ);
 		if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
 		{
 			if(hmapMinDlvrQty.containsKey(productIdDynamic))
@@ -2991,11 +3090,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 
-		final ImageView btnExcptn=(ImageView) viewProduct.findViewById(R.id.btnExcptn);
+		//final ImageView btnExcptn=(ImageView) viewProduct.findViewById(R.id.btnExcptn);
 
 
 
-		btnExcptn.setTag("btnException"+"_"+productIdDynamic);
+	//	btnExcptn.setTag("btnException"+"_"+productIdDynamic);
 
 
 
@@ -3004,7 +3103,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 		txtVwRate.setTag("tvRate"+"_"+productIdDynamic);
-
+		txtVwRate.setEnabled(false);
 
 		String value=hmapPrdctVolRatTax.get(productIdDynamic).toString();
 
@@ -3039,7 +3138,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		if(hmapProductflgPriceAva.get(productIdDynamic).equals("1"))
 		{
-			txtVwRate.setEnabled(true);
+			txtVwRate.setEnabled(false);
+			//txtVwRate.setEnabled(true);
 		}
 		if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
 		{
@@ -3051,224 +3151,34 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		}
 
 
-		txtVwRate.setOnFocusChangeListener(this);
+
+
 
 		final EditText et_Stock=(EditText) viewProduct.findViewById(R.id.et_Stock);
-		final EditText et_LstStock=(EditText) viewProduct.findViewById(R.id.et_LstStock);
-		if(hmapProductIdLastStock.containsKey(productIdDynamic))
-		{
-			et_LstStock.setText(""+hmapProductIdLastStock.get(productIdDynamic));
-		}
-		else
-		{
-			et_LstStock.setText("");
-		}
+
 		et_Stock.setTag("etStock"+"_"+productIdDynamic);
-		et_Stock.setEnabled(false);
-		if(flgOrderType==1)
-		{
-			et_Stock.setBackgroundResource(R.drawable.edit_text_diable_bg_transprent);
-			if(hmapFetchPDASavedData!=null && hmapFetchPDASavedData.containsKey(productIdDynamic))
-			{
-
-				et_Stock.setText(hmapFetchPDASavedData.get(productIdDynamic));
 
 
-				hmapProductIdStock.put(productIdDynamic,hmapFetchPDASavedData.get(productIdDynamic));
 
-
-			}
-			else
-			{
-				hmapProductIdStock.put(productIdDynamic,"0");
-			}
-		}
-		else
-		{
-			et_Stock.setEnabled(true);
-		}
-		et_Stock.setOnFocusChangeListener(this);
 
 
 		final EditText et_SampleQTY=(EditText) viewProduct.findViewById(R.id.et_SampleQTY);
 
 		et_SampleQTY.setTag("etSampleQty"+"_"+productIdDynamic);
 
-		et_SampleQTY.setOnFocusChangeListener(this);
+
 
 
 
 		final EditText et_OrderQty=(EditText) viewProduct.findViewById(R.id.et_OrderQty);
 
 		et_OrderQty.setTag("etOrderQty"+"_"+productIdDynamic);
-
-
-
-		et_OrderQty.setOnFocusChangeListener(this);
-
-		txtVwRate.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				int getPIDTag=Integer.parseInt(txtVwRate.getTag().toString().split("_")[1].toString());
-
-
-
-				if(TextUtils.isEmpty(txtVwRate.getText().toString().trim())) {
-					String productiD = String.valueOf(getPIDTag);
-					if (hmapProductflgPriceAva.get(productiD).equals("1")) {
-						EditText ediTextOrder = (EditText) ll_prdct_detal.findViewWithTag("etOrderQty" + "_" + productiD);
-						if (ediTextOrder != null) {
-
-							ediTextOrder.setText("");
-						}
-
-
-					}
-				}
-
-				if(!txtVwRate.getText().equals(""))
-				{
-					String boxQty="-99";
-
-					if(txtVwRate.getText().toString().equals("") || txtVwRate.getText().equals("0") || txtVwRate.getText().equals("Rate") || txtVwRate.getText().equals("Rate") || txtVwRate.getText().equals("0.0") || txtVwRate.getText().equals("0.00"))
-					{
-
-						boxQty="-99";
-
-					}
-					else
-					{
-						boxQty =txtVwRate.getText().toString();
-					}
-					hmapProductStandardRate.put(""+getPIDTag, ""+boxQty);
-					if(Integer.parseInt(hmapPrdctOdrQty.get(""+getPIDTag))>0)
-					{
-						((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).setSelected(true);
-						((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).requestFocus();
-					}
-
-				}
-				else
-				{
-
-					//txtVwRate.setText("");
-
-					txtVwRate.setHint(OrderReview.this.getResources().getString(R.string.Rate));
-
-
-
-					hmapProductStandardRate.put(""+getPIDTag, "-99");
-
-
-
-				}
-
-			}
-		});
-
-		et_OrderQty.addTextChangedListener(new TextWatcher()
-		{
-
-			@Override
-
-			public void onTextChanged(CharSequence s, int start, int before, int count)
-			{
-
-				// TODO Auto-generated method stub
-
-				System.out.println("EditValue onTextchange : "+s.toString());
-
-			}
-
-
-
-			@Override
-
-			public void beforeTextChanged(CharSequence s, int start, int count,int after)
-			{
-
-				// TODO Auto-generated method stub
-				System.out.println("EditValue before : "+s.toString());
-			}
-
-
-
-			@Override
-
-			public void afterTextChanged(Editable s)
-			{
-
-
-				productIdOnLastEditTextVal=s.toString();
-				String tagOrder=et_OrderQty.getTag().toString();
-				String productIdOfTag=tagOrder.split(Pattern.quote("_"))[1];
-
-				if(!TextUtils.isEmpty(et_OrderQty.getText().toString().trim()))
-				{
-					if(hmapProductflgPriceAva.get(productIdOfTag).equals("1"))
-					{
-						EditText ediTextRate= (EditText) ll_prdct_detal.findViewWithTag("tvRate"+"_"+productIdOfTag);
-						if(ediTextRate!=null)
-						{
-							if(TextUtils.isEmpty(ediTextRate.getText().toString().trim()))
-							{
-								et_OrderQty.clearFocus();
-								ediTextRate.requestFocus();
-								ediTextRate.setCursorVisible(true);
-								ediTextRate.setError(OrderReview.this.getResources().getString(R.string.PleasefillRatefirst));
-								et_OrderQty.setText("");
-							}
-							else if(Double.parseDouble(ediTextRate.getText().toString())<0)
-							{
-								et_OrderQty.clearFocus();
-								ediTextRate.requestFocus();
-								ediTextRate.setCursorVisible(true);
-								ediTextRate.setError(OrderReview.this.getResources().getString(R.string.PleasefillproperRatefirst));
-								et_OrderQty.setText("");
-							}
-
-						}
-
-					}
-				}
-
-				System.out.println("EditValue after : "+s.toString());
-
-
-				if(!viewCurrentBoxValue.equals(s.toString()))
-				{
-					if(btnExcptn.getVisibility()==View.VISIBLE)
-					{
-
-						btnExcptn.setVisibility(View.INVISIBLE);
-					}
-				}
-				else
-				{
-					if(isbtnExceptionVisible==1)
-					{
-
-						btnExcptn.setVisibility(View.VISIBLE);
-					}
-				}
+//		et_OrderQty.setEnabled(false);
 
 
 
 
 
-			}
-
-		});
 
 
 	          imgDel.setOnClickListener(new OnClickListener() {
@@ -3293,10 +3203,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			            public void onClick(DialogInterface dialog,int which) {
 
 			            // Write your code here to invoke YES event
-
-
-
-
 			            	hmapPrdctIdPrdctNameVisible.remove(productIdToDel);
 
 							if (hmapDistPrdctStockCount.containsKey(productIdToDel)) {
@@ -3333,16 +3239,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			            	String getPIdToremove=vtag.split("_")[1];
 			            	try
 			            	{
-			            		dbengine.fnDeleteProductDetailsFromReturnTables(storeID, getPIdToremove, strGlobalOrderID);
+			            		dbengine.fnDeleteProductDetailsFromReturnTables(storeID, getPIdToremove, strGlobalOrderID,strGlobalInvoiceNumber);
 								hmapPrdctOdrQty.put(""+getPIdToremove,"0");
 								hmapPrdctFreeQty.put(""+getPIdToremove,"0");
 
 								hmapProductIdStock.put(""+getPIdToremove,"0");
-								getOrderData(getPIdToremove);
-
-
-
-
 			            	}
 			            	catch(Exception ex)
 			            	{
@@ -3355,7 +3256,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			  	           {
 			  	        	   createProductRowColor();
 			  	           }
-							orderBookingTotalCalc();
+
 			            	 //ll_prdct_detal.removeViewInLayout((LinearLayout) (ll_prdct_detal).findViewWithTag(vtag));
 
 			            }
@@ -3365,7 +3266,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			        alertDialog.setNegativeButton(OrderReview.this.getResources().getString(R.string.AlertDialogNoButton), new DialogInterface.OnClickListener() {
 			            public void onClick(DialogInterface dialog, int which) {
 			            // Write your code here to invoke NO event
-			            Toast.makeText(getApplicationContext(), OrderReview.this.getResources().getString(R.string.YouclickedonNO), Toast.LENGTH_SHORT).show();
+			           // Toast.makeText(getApplicationContext(), OrderReview.this.getResources().getString(R.string.YouclickedonNO), Toast.LENGTH_SHORT).show();
 			            dialog.cancel();
 			            }
 			        });
@@ -3421,7 +3322,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		et_ProductMRP.setTag("etProductMRP"+"_"+productIdDynamic);
 
-		et_ProductMRP.setOnFocusChangeListener(this);
+	//	et_ProductMRP.setOnFocusChangeListener(this);
 
 
 		if(hmapProductMRP.get(productIdDynamic).equals("-99.0") || hmapProductMRP.get(productIdDynamic).equals("-99.00") || hmapProductMRP.get(productIdDynamic).equals("-99"))
@@ -3452,11 +3353,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		{
 
 
-			//et_Stock.setText(ProductValuesToFill.split(Pattern.quote("^"))[1]);
-			if(flgOrderType!=1)
-			{
-				et_Stock.setText(ProductValuesToFill.split(Pattern.quote("^"))[1]);
-			}
+
+			et_Stock.setText(ProductValuesToFill.split(Pattern.quote("^"))[1]);
 
 			et_OrderQty.setText(ProductValuesToFill.split(Pattern.quote("^"))[2]);
 
@@ -3467,8 +3365,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			tv_DisVal.setText(ProductValuesToFill.split(Pattern.quote("^"))[5]);
 
 			et_SampleQTY.setText(ProductValuesToFill.split(Pattern.quote("^"))[6]);
-			//	txtVwRate.setText(ProductValuesToFill.split(Pattern.quote("^"))[7]);
-			hmapProductStandardRate.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[7]);
+			txtVwRate.setText(ProductValuesToFill.split(Pattern.quote("^"))[7]);
+			//hmapProductStandardRate.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[7]);
 
 			if(hmapProductStandardRate.get(productIdDynamic).equals("-99.0") || hmapProductStandardRate.get(productIdDynamic).equals("-99.00") || hmapProductStandardRate.get(productIdDynamic).equals("-99"))
 			{
@@ -3508,24 +3406,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 			{
 
-			/*	et_Stock.setText("");
+				et_Stock.setText("");
 
-				et_Stock.setHint(OrderReview.this.getResources().getString(R.string.StockQty));*/
-				if(flgOrderType!=1)
-				{
-					et_Stock.setText("");
-
-					et_Stock.setHint(OrderReview.this.getResources().getString(R.string.StockQty));
-				}
+				et_Stock.setHint(OrderReview.this.getResources().getString(R.string.StockQty));
 
 			}
 
 
-			//hmapProductIdStock.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[1]);
-			if(flgOrderType!=1)
-			{
-				hmapProductIdStock.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[1]);
-			}
+
+			hmapProductIdStock.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[1]);
 
 			hmapPrdctOdrQty.put(productIdDynamic, ProductValuesToFill.split(Pattern.quote("^"))[2]);
 
@@ -3542,13 +3431,27 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		}
 
+
+
+
+
+
+
+
+		ll_prdct_detal.addView(viewProduct);
+
+
+
+
+
+		//txtVwRate.setOnFocusChangeListener(this);
 		et_OrderQty.setOnFocusChangeListener(this);
 
 		// txtVwRate.setOnClickListener(this);
 
 		// tv_product_name.setOnClickListener(this);
 
-		et_Stock.setOnClickListener(this);
+		//et_Stock.setOnClickListener(this);
 
 		et_OrderQty.setOnClickListener(this);
 
@@ -3558,9 +3461,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		//tv_DisVal.setOnClickListener(this);
 
-		et_SampleQTY.setOnClickListener(this);
+	//	et_SampleQTY.setOnClickListener(this);
 
 
+/*
 
 		et_SampleQTY.addTextChangedListener(new TextWatcher() {
 
@@ -3709,16 +3613,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				else
 
 				{
+
 					et_Stock.setText("0");
 
 					hmapProductIdStock.put(""+getPIDTag, "0");
-
-					if(flgOrderType!=1)
-					{
-						et_Stock.setText("0");
-
-						hmapProductIdStock.put(""+getPIDTag, "0");
-					}
 
 				}
 
@@ -3730,40 +3628,156 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 
-		et_OrderQty.addTextChangedListener(new TextWatcher() {
+		txtVwRate.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+			}
 
 			@Override
-
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				int getPIDTag=Integer.parseInt(txtVwRate.getTag().toString().split("_")[1].toString());
+
+
+
+				if(TextUtils.isEmpty(txtVwRate.getText().toString().trim())) {
+					String productiD = String.valueOf(getPIDTag);
+					if (hmapProductflgPriceAva.get(productiD).equals("1")) {
+						EditText ediTextOrder = (EditText) ll_prdct_detal.findViewWithTag("etOrderQty" + "_" + productiD);
+						if (ediTextOrder != null) {
+
+							ediTextOrder.setText("");
+						}
+
+
+					}
+				}
+
+				if(!txtVwRate.getText().equals(""))
+				{
+					String boxQty="-99";
+
+					if(txtVwRate.getText().toString().equals("") || txtVwRate.getText().equals("0") || txtVwRate.getText().equals("Rate") || txtVwRate.getText().equals("Rate") || txtVwRate.getText().equals("0.0") || txtVwRate.getText().equals("0.00"))
+					{
+
+						boxQty="-99";
+
+					}
+					else
+					{
+						boxQty =txtVwRate.getText().toString();
+					}
+					//	hmapProductStandardRate.put(""+getPIDTag, ""+boxQty);
+					if(Integer.parseInt(hmapPrdctOdrQty.get(""+getPIDTag))>0)
+					{
+						((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).setSelected(true);
+						((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).requestFocus();
+					}
+
+				}
+				else
+				{
+
+					//txtVwRate.setText("");
+
+					txtVwRate.setHint(OrderReview.this.getResources().getString(R.string.Rate));
+
+
+
+					hmapProductStandardRate.put(""+getPIDTag, "-99");
+
+
+
+				}
+
+			}
+		});
+*/
+
+		et_OrderQty.addTextChangedListener(new TextWatcher()
+		{
+
+			@Override
+
+			public void onTextChanged(CharSequence s, int start, int before, int count)
+			{
 				// TODO Auto-generated method stub
-
-				// TODO Auto-generated method stub
-
-
-
 			}
 
 
 
 			@Override
 
-			public void beforeTextChanged(CharSequence s, int start, int count,
-
-										  int after) {
-
+			public void beforeTextChanged(CharSequence s, int start, int count,int after)
+			{
 				// TODO Auto-generated method stub
-
-
-
 			}
 
 
 
 			@Override
 
-			public void afterTextChanged(Editable arg0) {
+			public void afterTextChanged(Editable s)
+			{
+				productIdOnLastEditTextVal=s.toString();
+				String tagOrder=et_OrderQty.getTag().toString();
+				String productIdOfTag=tagOrder.split(Pattern.quote("_"))[1];
 
+				if(!TextUtils.isEmpty(et_OrderQty.getText().toString().trim()))
+				{
+					if(hmapProductflgPriceAva.get(productIdOfTag).equals("1"))
+					{
+						EditText ediTextRate= (EditText) ll_prdct_detal.findViewWithTag("tvRate"+"_"+productIdOfTag);
+						if(ediTextRate!=null)
+						{
+							if(TextUtils.isEmpty(ediTextRate.getText().toString().trim()))
+							{
+								et_OrderQty.clearFocus();
+								ediTextRate.requestFocus();
+								//	ediTextRate.setCursorVisible(true);
+								ediTextRate.setError(OrderReview.this.getResources().getString(R.string.PleasefillproperRatefirst));
+								et_OrderQty.setText("");
+							}
+							else if(Double.parseDouble(ediTextRate.getText().toString())<0)
+							{
+								et_OrderQty.clearFocus();
+								ediTextRate.requestFocus();
+								//ediTextRate.setCursorVisible(true);
+								ediTextRate.setError(OrderReview.this.getResources().getString(R.string.PleasefillproperRatefirst));
+								et_OrderQty.setText("");
+							}
+
+						}
+
+					}
+				}
+
+
+
+
+				/*if(!viewCurrentBoxValue.equals(s.toString()))
+				{
+					if(btnExcptn.getVisibility()==View.VISIBLE)
+					{
+
+						btnExcptn.setVisibility(View.INVISIBLE);
+					}
+				}
+				else
+				{
+					if(isbtnExceptionVisible==1)
+					{
+
+						btnExcptn.setVisibility(View.VISIBLE);
+					}
+				}
+
+*/
 				int getPIDTag=Integer.parseInt(et_OrderQty.getTag().toString().split("_")[1].toString());
 
 				if(!et_OrderQty.getText().equals(""))
@@ -3781,11 +3795,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						boxQty =Integer.parseInt(et_OrderQty.getText().toString());
 					}
 					hmapPrdctOdrQty.put(""+getPIDTag, ""+boxQty);
-					if(hmapProductStandardRate.get(""+getPIDTag).equals("-99.0") || hmapProductMRP.get(""+getPIDTag).equals("-99.00") || hmapProductMRP.get(""+getPIDTag).equals("-99"))
-					{
-						//((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).setSelected(true);
-						((EditText)ll_prdct_detal.findViewWithTag("tvRate_"+getPIDTag)).requestFocus();
-					}
+
 
 				}
 				else
@@ -3812,18 +3822,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 
-
-
-
-		ll_prdct_detal.addView(viewProduct);
-
-
-
-
-
-
-
-
 	}
 
 
@@ -3838,7 +3836,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	           String[] arrStorePurcaseProducts=null;//=dbengine.fnGetProductPurchaseList(StoreID);
 	           if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1)
 	           {
-	            arrStorePurcaseProducts=dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID);
+	            arrStorePurcaseProducts=dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
 	            System.out.println("Abhinav Nitish Ankit New Val :"+arrStorePurcaseProducts.length);
 	            
 	            LayoutInflater inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -4501,7 +4499,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		}		
 	}
 
-	@Override
+	/*@Override
 	public void onFocusChange(View v, boolean hasFocus) {
 		// TODO Auto-generated method stub
 
@@ -4596,8 +4594,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					if(v.getId()==R.id.et_SampleQTY)
 					{
 						et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.SmplQty));
-						/*hmapPrdctSmpl.remove(ProductIdOnClickedControl);
-						hmapPrdctSmpl.put(ProductIdOnClickedControl, et_ValueOnFocuslost.getText().toString().trim());*/
+						*//*hmapPrdctSmpl.remove(ProductIdOnClickedControl);
+						hmapPrdctSmpl.put(ProductIdOnClickedControl, et_ValueOnFocuslost.getText().toString().trim());*//*
 					}
 					if(v.getId()==R.id.et_OrderQty)
 					{
@@ -4618,12 +4616,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 									int netStockLeft=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+lastOrgnlQntty;
 									hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockLeft);
 
-
-									TextView tv_product_name= (TextView) ll_prdct_detal.findViewWithTag("tvProductName"+"_"+ProductIdOnClickedEdit);
-									if(tv_product_name!=null)
-									{
-										tv_product_name.setText(hmapPrdctIdPrdctName.get(ProductIdOnClickedEdit)+"( Avl : "+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+")");
-									}
 
 
 
@@ -4658,92 +4650,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 							}
 
-						}
-
-
-						if(!TextUtils.isEmpty(ed_LastEditextFocusd.getText().toString()))
-						{
-							if(hmapProductMinMax!=null && hmapProductMinMax.containsKey(ProductIdOnClickedEdit))
-							{
-								String fnlSchmIdSlabId="0";
-								ArrayList<String> listValData=hmapProductMinMax.get(ProductIdOnClickedEdit);
-								for(String prdctData:listValData)
-								{
-									String minMaxVal=prdctData.split(Pattern.quote("^"))[0];
-									String otherVal=prdctData.split(Pattern.quote("^"))[1];
-									String slabBcktTyp=otherVal.split(Pattern.quote("#"))[0];
-									String schmIdSlabId=otherVal.split(Pattern.quote("#"))[1];
-									//1. Product Quantity
-									if(slabBcktTyp.equals("1"))
-									{
-
-										int ordrQty=Integer.parseInt(ed_LastEditextFocusd.getText().toString());
-										int minVal=Integer.parseInt(minMaxVal.split(Pattern.quote("~"))[0]);
-										int maxVal=Integer.parseInt(minMaxVal.split(Pattern.quote("~"))[1]);
-										if((minVal<=ordrQty) && (ordrQty<=maxVal))
-										{
-											fnlSchmIdSlabId=schmIdSlabId;
-											break;
-										}
-
-									}
-									//4. Product Value
-									else if(slabBcktTyp.equals("4"))
-									{
-										Double minVal=Double.parseDouble(minMaxVal.split(Pattern.quote("~"))[0]);
-										Double maxVal=Double.parseDouble(minMaxVal.split(Pattern.quote("~"))[1]);
-										int ordrQty=Integer.parseInt(ed_LastEditextFocusd.getText().toString());
-										Double prodVolume= Double.parseDouble(hmapPrdctVolRatTax.get(ProductIdOnClickedEdit).split(Pattern.quote("^"))[0]);
-										Double oderVolumeOfCurrentMapedProduct=prodVolume * ordrQty;
-										if((minVal<=oderVolumeOfCurrentMapedProduct) && (oderVolumeOfCurrentMapedProduct<=maxVal))
-										{
-											fnlSchmIdSlabId=schmIdSlabId;
-											break;
-										}
-									}
-									//5. Product Volume
-									else if(slabBcktTyp.equals("5"))
-									{
-
-										Double minVal=Double.parseDouble(minMaxVal.split(Pattern.quote("~"))[0]);
-										Double maxVal=Double.parseDouble(minMaxVal.split(Pattern.quote("~"))[1]);
-										int ordrQty=Integer.parseInt(ed_LastEditextFocusd.getText().toString());
-
-										Double prodRate= Double.parseDouble(hmapPrdctVolRatTax.get(ProductIdOnClickedEdit).split(Pattern.quote("^"))[1]);
-										Double oderRateOfCurrentMapedProduct=prodRate * ordrQty;
-
-										if((minVal<=oderRateOfCurrentMapedProduct) && (oderRateOfCurrentMapedProduct<=maxVal))
-										{
-											fnlSchmIdSlabId=schmIdSlabId;
-											break;
-										}
-									}
-
-								}
-
-								if(!fnlSchmIdSlabId.equals("0"))
-								{
-									if((hmapSchmDscrptnAndBenfit!=null) && (hmapSchmDscrptnAndBenfit.containsKey(fnlSchmIdSlabId)))
-									{
-										String benifitDescr=hmapSchmDscrptnAndBenfit.get(fnlSchmIdSlabId);
-										AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(OrderReview.this);
-										alertDialogNoConn.setTitle(OrderReview.this.getResources().getString(R.string.genTermInformation));
-										alertDialogNoConn.setMessage(benifitDescr.split(Pattern.quote("^"))[0]+"\nAND\n"+benifitDescr.split(Pattern.quote("^"))[1]);
-										//alertDialogNoConn.setMessage(getText(R.string.connAlertErrMsg));
-										alertDialogNoConn.setNeutralButton(OrderReview.this.getResources().getString(R.string.AlertDialogOkButton),
-												new DialogInterface.OnClickListener() {
-													public void onClick(DialogInterface dialog, int which)
-													{
-														dialog.dismiss();
-
-													}
-												});
-										alertDialogNoConn.setIcon(R.drawable.info_ico);
-										AlertDialog alert = alertDialogNoConn.create();
-										alert.show();
-									}
-								}
-							}
 						}
 
 						if(Integer.parseInt(hmapPrdctOdrQty.get(ProductIdOnClickedEdit))>0)
@@ -4786,6 +4692,323 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 				EditText edtBox=(EditText) v;
+
+				if (Build.VERSION.SDK_INT >= 11) {
+					edtBox.setRawInputType(InputType.TYPE_CLASS_NUMBER);
+					edtBox.setTextIsSelectable(true);
+				} else {
+					edtBox.setRawInputType(InputType.TYPE_NULL);
+					edtBox.setFocusable(true);
+				}
+				//edtBox.setInputType(InputType.TYPE_NULL);
+
+				mCustomKeyboardNumWithoutDecimal.hideCustomKeyboardNum(v);
+				mCustomKeyboardNum.hideCustomKeyboardNum(v);
+
+
+				//ProductIdOnClickedEdit
+				ProductIdOnClickedEdit=edtBox.getTag().toString().split(Pattern.quote("_"))[1];
+				ed_LastEditextFocusd=edtBox;
+				CtaegoryIddOfClickedView=hmapCtgryPrdctDetail.get(ProductIdOnClickedEdit);
+				condtnOddEven=hmapProductViewTag.get(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit);
+				// View viewParent;
+				if(condtnOddEven.equals("even"))
+				{
+					// viewParent=ll_prdct_detal.findViewWithTag(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit+"_"+"even");
+				}
+				else
+				{
+					// viewParent=ll_prdct_detal.findViewWithTag(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit+"_"+"odd");
+				}
+				// viewParent.setBackgroundResource(R.drawable.edit_text_diable_bg_clicked);
+				if(v.getId()==R.id.et_OrderQty)
+				{
+
+					mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
+					mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
+
+
+					edtBox.setHint("");
+					viewCurrentBoxValue=edtBox.getText().toString().trim();
+					if(((ImageView) ll_prdct_detal.findViewWithTag("btnException_"+(ProductIdOnClickedEdit))).getVisibility()==View.VISIBLE)
+					{
+						isbtnExceptionVisible=1;
+					}
+
+				}
+
+				if(v.getId()==R.id.et_SampleQTY)
+				{
+					mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
+					mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
+
+					edtBox.setHint("");
+
+
+
+				}
+				if(v.getId()==R.id.et_Stock)
+				{
+					mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
+					mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
+
+					edtBox.setHint("");
+				}
+				if(v.getId()==R.id.txtVwRate)
+				{
+					mCustomKeyboardNum.registerEditText(edtBox);
+					mCustomKeyboardNum.showCustomKeyboard(v);
+
+					edtBox.setHint("");
+				}
+			}
+
+			if(hmapProductRelatedSchemesList.size()>0)
+			{
+				if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl))
+				{
+					fnUpdateSchemeNameOnScehmeControl(ProductIdOnClickedControl);
+				}
+				else
+				{
+					//SchemeNameOnScehmeControl="No Scheme Applicable";
+					txtVw_schemeApld.setText("No Scheme Applicable");
+					txtVw_schemeApld.setTag("0");
+				}
+			}
+			else
+			{
+				//SchemeNameOnScehmeControl="No Scheme Applicable";
+				txtVw_schemeApld.setText("No Scheme Applicable");
+				txtVw_schemeApld.setTag("0");
+			}
+
+
+
+
+		}
+
+		*//*if(v.getId()==R.id.et_OrderQty)
+		{
+			*//**//*if(flgnwstausforfocus==false) {
+				EditText temped = (EditText) ll_prdct_detal.findViewWithTag("etOrderQty_" + ed_LastEditextFocusd.getTag().toString().split(Pattern.quote("_"))[1]);
+				if (temped.getText().length() != 0) {
+
+					if ((!hmapProductStandardRate.get(ed_LastEditextFocusd.getTag().toString().split(Pattern.quote("_"))[1]).equals("") && !hmapProductStandardRate.get(ed_LastEditextFocusd.getTag().toString().split(Pattern.quote("_"))[1]).equals("-99")) && !hmapProductStandardRate.get(ed_LastEditextFocusd.getTag().toString().split(Pattern.quote("_"))[1]).equals("-99.00") && !hmapProductStandardRate.get(ed_LastEditextFocusd.getTag().toString().split(Pattern.quote("_"))[1]).equals("-99.0")) {
+						orderBookingTotalCalc();
+					} else {
+						flgnwstausforfocus = true;
+					*//**//**//**//*ed_LastEditextFocusd.setSelected(true);
+					ed_LastEditextFocusd.requestFocus();*//**//**//**//*
+					}
+				}
+			}*//**//*
+		}
+*//*
+
+
+		orderBookingTotalCalc();
+
+
+	}
+*/
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		// TODO Auto-generated method stub
+
+
+		txtVw_schemeApld.setText("No Scheme Applicable");
+		txtVw_schemeApld.setTag("0");
+
+		EditText et_ValueOnFocuslostnew=null;
+		String ProductIdOnClickedControl=v.getTag().toString().split("_")[1];
+		if(!hasFocus)
+		{
+			isbtnExceptionVisible=0;
+
+			View viewRow=(View) v.getParent();
+
+			//hideSoftKeyboard(v);
+			if(v instanceof EditText)
+			{
+
+
+				//ProductIdOnClickedEdit
+				EditText et_ValueOnFocuslost=(EditText) v;
+				//et_ValueOnFocuslost.setCursorVisible(false);
+				et_ValueOnFocuslostnew=et_ValueOnFocuslost;
+				ProductIdOnClickedEdit=et_ValueOnFocuslost.getTag().toString().split(Pattern.quote("_"))[1];
+				CtaegoryIddOfClickedView=hmapCtgryPrdctDetail.get(ProductIdOnClickedEdit);
+				condtnOddEven=hmapProductViewTag.get(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit);
+				// View viewOldBackgound;
+				if(condtnOddEven.equals("even"))
+				{
+					// viewOldBackgound=ll_prdct_detal.findViewWithTag(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit+"_"+"even");
+					// viewOldBackgound.setBackgroundResource(R.drawable.card_background_even);
+				}
+				else
+				{
+					//viewOldBackgound=ll_prdct_detal.findViewWithTag(CtaegoryIddOfClickedView+"_"+ProductIdOnClickedEdit+"_"+"odd");
+
+					//viewOldBackgound.setBackgroundResource(R.drawable.card_background_odd);
+				}
+
+				if(v.getId()==R.id.et_Stock)
+				{
+					et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.Stock));
+
+				}//txtVwRate
+				if(v.getId()==R.id.txtVwRate)
+				{
+					et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.Rate));
+					et_ValueOnFocuslost.setError(null);
+					if (hmapProductflgPriceAva.get(ProductIdOnClickedEdit).equals("1"))
+					{
+						EditText ediTextOrder = (EditText) ll_prdct_detal.findViewWithTag("etOrderQty" + "_" + ProductIdOnClickedEdit);
+						if(TextUtils.isEmpty(et_ValueOnFocuslost.getText().toString().trim()))
+						{
+							if (ediTextOrder != null) {
+
+								ediTextOrder.setText("");
+							}
+						}
+
+
+
+					}
+
+				}
+				if(v.getId()==R.id.et_SampleQTY)
+				{
+					et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.SmplQty));
+
+				}
+				if(v.getId()==R.id.et_OrderQty)
+				{
+					et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.OQty));
+				}
+				if(!viewCurrentBoxValue.equals(et_ValueOnFocuslost.getText().toString().trim()))
+				{
+					if(v.getId()==R.id.et_Stock)
+					{
+						et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.Stock));
+
+					}
+
+					if(v.getId()==R.id.txtVwRate)
+					{
+						et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.Rate));
+
+						EditText temped=(EditText) ll_prdct_detal.findViewWithTag("etOrderQty_"+et_ValueOnFocuslost.getTag().toString().split(Pattern.quote("_"))[1]);
+						EditText temprt=(EditText) ll_prdct_detal.findViewWithTag("tvRate_"+et_ValueOnFocuslost.getTag().toString().split(Pattern.quote("_"))[1]);
+
+
+					}
+					if(v.getId()==R.id.et_SampleQTY)
+					{
+						et_ValueOnFocuslost.setHint(OrderReview.this.getResources().getString(R.string.SmplQty));
+						/*hmapPrdctSmpl.remove(ProductIdOnClickedControl);
+						hmapPrdctSmpl.put(ProductIdOnClickedControl, et_ValueOnFocuslost.getText().toString().trim());*/
+					}
+					if(v.getId()==R.id.et_OrderQty)
+					{
+
+						if (hmapDistPrdctStockCount.containsKey(ProductIdOnClickedEdit))
+						{
+							if(hmapPrdctIdOutofStock!=null && hmapPrdctIdOutofStock.size()>0)
+							{
+								if(hmapPrdctIdOutofStock.containsKey(ProductIdOnClickedEdit))
+								{
+									int lastOrgnlQntty=Integer.parseInt(hmapPrdctIdOutofStock.get(ProductIdOnClickedEdit));
+									int netStockLeft=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+lastOrgnlQntty;
+									hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStockLeft);
+
+								}
+							}
+							int originalNetQntty=0;
+							if(!TextUtils.isEmpty(et_ValueOnFocuslost.getText().toString()))
+							{
+								originalNetQntty=Integer.parseInt(et_ValueOnFocuslost.getText().toString());
+							}
+							int totalStockLeft = hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);
+
+							int netStock=totalStockLeft-originalNetQntty;
+							hmapDistPrdctStockCount.put(ProductIdOnClickedEdit,netStock);
+
+									/*change*/
+							TextView tv_VanStock= (TextView) ll_prdct_detal.findViewWithTag("etVanStock"+"_"+ProductIdOnClickedEdit);
+							if(tv_VanStock!=null)
+							{
+								tv_VanStock.setText(""+hmapDistPrdctStockCount.get(ProductIdOnClickedEdit));
+							}
+
+
+							if(originalNetQntty!=0)
+							{
+								hmapPrdctIdOutofStock.put(ProductIdOnClickedEdit,et_ValueOnFocuslost.getText().toString().trim());
+							}
+							else
+							{
+								hmapPrdctIdOutofStock.remove(ProductIdOnClickedEdit);
+								dbengine.deleteExistStockTable(distID,strGlobalOrderID,ProductIdOnClickedEdit);
+							}
+							if (originalNetQntty>totalStockLeft)
+							{
+
+								alertForOrderExceedStock(ProductIdOnClickedEdit,et_ValueOnFocuslost,et_ValueOnFocuslost,-1);
+							}
+							else
+							{
+
+							}
+
+						}
+
+						if(Integer.parseInt(hmapPrdctOdrQty.get(ProductIdOnClickedEdit))>0)
+						{
+							if((!hmapProductStandardRate.get(ProductIdOnClickedEdit).equals("") && !hmapProductStandardRate.get(ProductIdOnClickedEdit).equals("-99")) && !hmapProductStandardRate.get(ProductIdOnClickedEdit).equals("-99.00") && !hmapProductStandardRate.get(ProductIdOnClickedEdit).equals("-99.0"))
+							{
+								if(PriceApplyDiscountLevelType==0)
+								{
+									getOrderData(ProductIdOnClickedEdit);
+								}
+
+							}
+							else
+							{
+								EditText temprt=(EditText) ll_prdct_detal.findViewWithTag("tvRate_"+et_ValueOnFocuslostnew.getTag().toString().split(Pattern.quote("_"))[1]);
+								temprt.setSelected(true);
+								temprt.requestFocus();
+								temprt.setCursorVisible(true);
+							}
+						}
+
+
+
+
+					}
+
+
+				}
+			}
+
+		}
+
+		else
+		{
+
+
+			txtVw_schemeApld.setText("No Scheme Applicable");
+			txtVw_schemeApld.setTag("0");
+
+			if(v instanceof EditText)
+			{
+				//showSoftKeyboard(v);
+
+
+				EditText edtBox=(EditText) v;
+
 				if (Build.VERSION.SDK_INT >= 11) {
 					edtBox.setRawInputType(InputType.TYPE_CLASS_NUMBER);
 					edtBox.setTextIsSelectable(true);
@@ -4817,9 +5040,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				// viewParent.setBackgroundResource(R.drawable.edit_text_diable_bg_clicked);
 				if(v.getId()==R.id.et_OrderQty)
 				{
+
 					mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
 					mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
-
 
 					edtBox.setHint("");
 					viewCurrentBoxValue=edtBox.getText().toString().trim();
@@ -4834,7 +5057,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				{
 					mCustomKeyboardNumWithoutDecimal.registerEditText(edtBox);
 					mCustomKeyboardNumWithoutDecimal.showCustomKeyboard(v);
-
 
 					edtBox.setHint("");
 
@@ -4853,14 +5075,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					mCustomKeyboardNum.registerEditText(edtBox);
 					mCustomKeyboardNum.showCustomKeyboard(v);
 
-
 					edtBox.setHint("");
 				}
 			}
 
-			if(hmapProductRelatedSchemesList.size()>0 || hmapProductAddOnSchemesList.size()>0)
+			if(hmapProductRelatedSchemesList.size()>0)
 			{
-				if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl) || hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl))
+				if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl))
 				{
 					fnUpdateSchemeNameOnScehmeControl(ProductIdOnClickedControl);
 				}
@@ -4908,472 +5129,271 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	}
 
 	private void getOrderData(String ProductIdOnClickedControl123)
-	{
+	 {
+		
 
 		isbtnExceptionVisible=0;
-
-		if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl123) || hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl123))
+		
+		if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl123))
 		{
-
-			String SchIdsCompleteSchemeIdListOnProductID="";
-			if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl123))
-			{
-				SchIdsCompleteSchemeIdListOnProductID=hmapProductRelatedSchemesList.get(ProductIdOnClickedControl123);
-			}
-
-			if(hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl123))
-			{
-				if(!TextUtils.isEmpty(SchIdsCompleteSchemeIdListOnProductID))
-				{
-					SchIdsCompleteSchemeIdListOnProductID=SchIdsCompleteSchemeIdListOnProductID+"#"+hmapProductAddOnSchemesList.get(ProductIdOnClickedControl123);
-				}
-				else
-				{
-					SchIdsCompleteSchemeIdListOnProductID =  hmapProductAddOnSchemesList.get(ProductIdOnClickedControl123);
-				}
-
-			}
+			/*String[] OldProds=dbengine.fnGetProductsAgainstBenifitTable(storeID, ProductIdOnClickedControl);
+		      for(int i=0;i<OldProds.length;i++)
+		      {
+		       hmapPrdctIdPrdctDscnt.put(OldProds[i], "0.00");
+		       ((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+OldProds[i])).setText("0.00");
+		      }
+		      */
+			//fnUpdateSchemeNameOnScehmeControl(ProductIdOnClickedControl123);
+			String SchIdsCompleteSchemeIdListOnProductID=hmapProductRelatedSchemesList.get(ProductIdOnClickedControl123);
 			fnDeletePreviousEntriesSchemeIDsAppliedOverProductAfterValueChange(SchIdsCompleteSchemeIdListOnProductID,ProductIdOnClickedControl123);
-
+		
 		}
-
+		
 		else if(dbengine.isFreeProductIdExist(Integer.parseInt(ProductIdOnClickedControl123)))
 		{
 			String productIdAgaingtFreeProductId=dbengine.getFreeProductIdAgainstFreeProductId(Integer.parseInt(ProductIdOnClickedControl123));
 			String SchIdsCompleteSchemeIdListOnProductID=hmapProductRelatedSchemesList.get(productIdAgaingtFreeProductId);
-			if(hmapProductAddOnSchemesList.containsKey(productIdAgaingtFreeProductId))
-			{
-				if((!SchIdsCompleteSchemeIdListOnProductID.equals("null")) && (!SchIdsCompleteSchemeIdListOnProductID.equals("")) && (SchIdsCompleteSchemeIdListOnProductID!=null)) {
-					SchIdsCompleteSchemeIdListOnProductID = SchIdsCompleteSchemeIdListOnProductID + "#" + hmapProductAddOnSchemesList.get(productIdAgaingtFreeProductId);
-				}
-				else
-				{
-					SchIdsCompleteSchemeIdListOnProductID =  hmapProductAddOnSchemesList.get(productIdAgaingtFreeProductId);
-				}
-			}
 			fnDeletePreviousEntriesSchemeIDsAppliedOverProductAfterValueChange(SchIdsCompleteSchemeIdListOnProductID,productIdAgaingtFreeProductId);
 		}
-	/*	 producTidToCalc=ProductIdOnClickedControl123;
-		 pDialog2STANDBYabhi=ProgressDialog.show(ProductOrderFilterSearch.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.Calculating), false,true);
-		 myThread = new Thread(mySchemeRunnable);
-		 myThread.setPriority(Thread.MAX_PRIORITY);
-		 myThread.start();
-*/
 
-
+		
 	}
 
-	public void fnCheckNewSchemeIDsAppliedAfterValueChange(String SchIdsCompleteListOnProductID,String ProductIdOnClicked) {
-		arredtboc_OderQuantityFinalSchemesToApply = new ArrayList<String>();
-		//Example :-1075_1_0_1!1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
-		String valForVolumetQTYToMultiply = "0";
-		productFullFilledSlabGlobal = new ArrayList<String>();
-		if (SchIdsCompleteListOnProductID != null)
+	public void fnCheckNewSchemeIDsAppliedAfterValueChange(String SchIdsCompleteListOnProductID,String ProductIdOnClicked)
+	{ 
+		arredtboc_OderQuantityFinalSchemesToApply=new ArrayList<String>();
+	//Example :-1075_1_0_1!1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
+	String valForVolumetQTYToMultiply="0";
+	productFullFilledSlabGlobal=new ArrayList<String>();
+	String[] arrSchIdsListOnProductID=SchIdsCompleteListOnProductID.split("#");
+	for(int pSchIdsAppliCount=0;pSchIdsAppliCount<arrSchIdsListOnProductID.length;pSchIdsAppliCount++)
+	{
+		String schOverviewDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[0];   //Example :-1075_1_0_1
+		String schOverviewOtherDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[1]; //Example :-1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
+		int schId=Integer.parseInt(schOverviewDetails.split("_")[0]);                           //Example :-1075
+		int schAppRule=Integer.parseInt(schOverviewDetails.split("_")[1]);                                                                                        //Example :-1
+		int schApplicationId=Integer.parseInt(schOverviewDetails.split("_")[2]);                                                              //Example :-0
+		int SchTypeId=Integer.parseInt(schOverviewDetails.split("_")[3]);                                                                                           //Example :-1 // 1=Check Combined Skus, 2=Bundle,3=Simple with Check on Individual SKU
+		String[] arrschSlbIDsOnSchIdBasis=schOverviewOtherDetails.split("@");                                                                               //Split for multiple slabs Example :-1026$1^1|1^23^1^10^0, 1025$1^1|1^22^1^20^0
+
+		int exitWhenSlabToExit=0;
+
+		if(hmapSchemeIdStoreID.containsKey(""+schId))
 		{
-			String[] arrSchIdsListOnProductID = SchIdsCompleteListOnProductID.split("#");
-		for (int pSchIdsAppliCount = 0; pSchIdsAppliCount < arrSchIdsListOnProductID.length; pSchIdsAppliCount++) {
-			//35_1_0_2 where 35=shcemId, 1= SchAppRule, 2= schemeTypeId
-			String schOverviewDetails = arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[0];   //Example :-1075_1_0_1
-			String schOverviewOtherDetails = arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[1]; //Example :-1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
-			int schId = Integer.parseInt(schOverviewDetails.split("_")[0]);                           //Example :-1075
-			int schAppRule = Integer.parseInt(schOverviewDetails.split("_")[1]);                                                                                        //Example :-1
-			int schApplicationId = Integer.parseInt(schOverviewDetails.split("_")[2]);                                                              //Example :-0
-			int SchTypeId = Integer.parseInt(schOverviewDetails.split("_")[3]);                                                                                           //Example :-1 // 1=Check Combined Skus, 2=Bundle,3=Simple with Check on Individual SKU
-			String[] arrschSlbIDsOnSchIdBasis = schOverviewOtherDetails.split("@");   //Split for multiple slabs Example :-1026$1^1|1^23^1^10^0, 1025$1^1|1^22^1^20^0
-			boolean bucketCndtnSchemeFullFill = false;
-			int exitWhenSlabToExit = 0;
+			boolean bucketCndtnFullFillisReally=false;
+			for(int pSchSlbCount=0;pSchSlbCount<arrschSlbIDsOnSchIdBasis.length;pSchSlbCount++)
+			{
+				//Exmaple Slab:- 1026$1^1|1^23^1^10^0
+				int schSlabId=Integer.parseInt((arrschSlbIDsOnSchIdBasis[pSchSlbCount]).split(Pattern.quote("$"))[0]); //Exmaple Slab ID:- 1026
+				String schSlabOtherDetails=arrschSlbIDsOnSchIdBasis[pSchSlbCount].split(Pattern.quote("$"))[1]; //Exmaple Slab OtherDetails:- 1^1|1^23^1^10^0
+				String[] arrSchSlabBuckWiseDetails=schSlabOtherDetails.split(Pattern.quote("~")); //Example Split For Multiple Buckets
+				for(int pSchSlbBuckCnt=0;pSchSlbBuckCnt<arrSchSlabBuckWiseDetails.length;pSchSlbBuckCnt++)
+				{
+					String schSlbBuckDetails=arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[0]; // Eaxmple:-1^1
+					String schSlbBuckOtherDetails=arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[1];  // Eaxmple:-1^23^1^10^0
+					int schSlbBuckId=Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[0]);  //Exmaple Slab Bucket ID:- 1
+					int schSlbBuckCnt=Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[1]);            //Example Number of Buckets under this Slab, Count:-1
 
-			if (hmapSchemeIdStoreID.containsKey("" + schId)) {
-				boolean bucketCndtnFullFillisReally = false;
-				for (int pSchSlbCount = 0; pSchSlbCount < arrschSlbIDsOnSchIdBasis.length; pSchSlbCount++) {
-					//Exmaple Slab:- 1026$1^1|1^23^1^10^0
-					int schSlabId = Integer.parseInt((arrschSlbIDsOnSchIdBasis[pSchSlbCount]).split(Pattern.quote("$"))[0]); //Exmaple Slab ID:- 1026
-					String schSlabOtherDetails = arrschSlbIDsOnSchIdBasis[pSchSlbCount].split(Pattern.quote("$"))[1]; //Exmaple Slab OtherDetails:- 1^1|1^23^1^10^0
-					String[] arrSchSlabBuckWiseDetails = schSlabOtherDetails.split(Pattern.quote("~")); //Example Split For Multiple Buckets (OR Condition)
-					for (int pSchSlbBuckCnt = 0; pSchSlbBuckCnt < arrSchSlabBuckWiseDetails.length; pSchSlbBuckCnt++) {
-						String schSlbBuckDetails = arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[0]; // Eaxmple:-1^1
-						String schSlbBuckOtherDetails = arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[1];  // Eaxmple:-1^23^1^10^0
-						int schSlbBuckId = Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[0]);  //Exmaple Slab Bucket ID:- 1
-						int schSlbBuckCnt = Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[1]);            //Example Number of Buckets under this Slab, Count:-1
-
-						String[] arrSubBucketDetails = schSlbBuckOtherDetails.split(Pattern.quote("*"));  //Example Split For Multiple Sub Buckets(AND Condition)
-						String[] arrMaintainDetailsOfBucketConditionsAgainstBuckId = new String[schSlbBuckCnt];  //Example Length of Buckes in Slab and which condition is true in case of OR
-						// variables for calculating total sub bucket
-						ArrayList<String> productFullFilledSlab = new ArrayList<String>();
-						ArrayList<String> schSlabRowIdFullFilledSlab = new ArrayList<String>();
-						ArrayList<String> productFullFilledSlabForInvoice = new ArrayList<String>();
-						int totalProductQnty = 0;
-						double totalProductVol = 0.0;
-
-						double totalProductVal = 0.0;
-						int totalProductLine = 0;
-						double totalInvoice = 0.0;
-
-						//product invoice
-						for (Entry<String, String> entryProduct : hmapPrdctOdrQty.entrySet()) {
-							if (hmapPrdctOdrQty.containsKey(entryProduct.getKey())) {
-								if (Integer.parseInt(hmapPrdctOdrQty.get(entryProduct.getKey())) > (0)) {
-									int curntProdQty = Integer.parseInt(entryProduct.getValue());
-									String curntProdVolumeRate = hmapPrdctVolRatTax.get(entryProduct.getKey());
-									Double curntProdRate = Double.parseDouble(curntProdVolumeRate.split(Pattern.quote("^"))[1]);
-
-									Double currentProductOverAllPriceQtywise = curntProdRate * curntProdQty;
-									totalInvoice = totalInvoice + currentProductOverAllPriceQtywise;
-									productFullFilledSlabForInvoice.add(entryProduct.getKey());
-								}
-							}
-
-						}
-						// end product invoice
-						//sub bucket starts here
-						LinkedHashMap<String, String> hmapSubBucketDetailsData = new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalQntty = new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalValue = new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalVolume = new LinkedHashMap<String, String>();
-
-						for (int cntSubBucket = 0; cntSubBucket < arrSubBucketDetails.length; cntSubBucket++) {
-							// Eaxmple:-1^23^1^10^0
-							int schSlbSubBuckID = Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[0]); //Slab Sub BucketID Eaxmple:-1  subBucketId
-							int schSlbSubRowID = Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[1]);  //Slab Sub Bucket RowID Eaxmple:-23  rowid
-							int schSlabSubBucketType = Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[2]);  ///Slab Sub Bucket Type Eaxmple:-1
-
-							Double schSlabSubBucketValue = Double.parseDouble(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[3]);  ///Slab Sub Bucket Value Eaxmple:-10
-							int schSubBucketValType = Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[4]); ///Slab Sub Bucket Value Type Eaxmple:-0
-
-
-							int totalOderQtyProductsAgainstRowId = 0;
-							Double totalVolProductsAgainstRowId = 0.0;
-							Double totalValProductsAgainstRowId = 0.0;
-
-
-							//String[] productFullFilledSlab=new String[arrProductIDMappedInSchSlbSubBukRowId.length];
-							int positionOfProductHavingQntty = 0;
-							ArrayList<String> arrProductIDMappedInSchSlbSubBukRowId = new ArrayList<String>();
-
-							//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Starts Here To Check the Products
-
-							if (SchTypeId == 1 || SchTypeId == 2) {
-								arrProductIDMappedInSchSlbSubBukRowId = dbengine.fectProductIDMappedInSchSlbSubBukRowIdTemp(schSlbSubRowID);
-							}
-							if (SchTypeId == 3) {
-								arrProductIDMappedInSchSlbSubBukRowId.add(ProductIdOnClicked);
-							}
-
-							//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Ends Here To Check the Products
-							//SlabSubBucketValType
-							//I           =Invoice Value                  Order Value After Tax
-							//G         =Gross Value                     Order Value Before Tax
-							//N         =Net Value                                         Order Value After Tax
-
-
-							if (arrProductIDMappedInSchSlbSubBukRowId.size() > 0) {
-
-
-								for (String productMappedWithScheme : arrProductIDMappedInSchSlbSubBukRowId) {
-									schSlabRowIdFullFilledSlab.add(productMappedWithScheme + "^" + schSlbSubRowID);
-									productFullFilledSlab.add(productMappedWithScheme + "^" + schId);// productLine
-
-									String hmapSubBucketDetailsData_Value = schId + "^" + schSlabId + "^" + schSlbBuckId + "^" + schSlabSubBucketValue + "^" + schSubBucketValType + "^" + schSlabSubBucketType + "^" + ProductIdOnClicked + "^" + valForVolumetQTYToMultiply + "^" + schSlbSubRowID + "^" + SchTypeId;
-									hmapSubBucketDetailsData.put(productMappedWithScheme + "^" + schSlbSubRowID, hmapSubBucketDetailsData_Value);
-									if (hmapPrdctOdrQty.containsKey(productMappedWithScheme)) {
-										if (Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme)) > (0)) {
-											//1. Product Quantity
-
-
-											int oderQtyOnProd = Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme));
-
-											totalProductQnty = totalProductQnty + oderQtyOnProd;
-											totalOderQtyProductsAgainstRowId = totalOderQtyProductsAgainstRowId + oderQtyOnProd;
-
-											hmapSubBucketTotalQntty.put("" + schSlbSubRowID, "" + totalOderQtyProductsAgainstRowId);
-											// product volume
-											Double prodVolume = Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[0]);
-											Double oderVolumeOfCurrentMapedProduct = prodVolume * oderQtyOnProd;
-											totalProductVol = totalProductVol + oderVolumeOfCurrentMapedProduct;
-											totalVolProductsAgainstRowId = totalVolProductsAgainstRowId + oderVolumeOfCurrentMapedProduct;
-
-											hmapSubBucketTotalVolume.put("" + schSlbSubRowID, "" + totalVolProductsAgainstRowId);
-											//product value
-
-											Double prodRate = Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[1]);
-											Double oderRateOfCurrentMapedProduct = prodRate * oderQtyOnProd;
-											//oderRateOnProduct=oderRateOnProduct + oderRateOfCurrentMapedProduct;
-											totalProductVal = totalProductVal + oderRateOfCurrentMapedProduct;
-											totalValProductsAgainstRowId = totalValProductsAgainstRowId + oderRateOfCurrentMapedProduct;
-											hmapSubBucketTotalValue.put("" + schSlbSubRowID, "" + totalValProductsAgainstRowId);
-
-
-										}
-
-
-									}
-
-
-								}// for loops ends here productMappedWithScheme:arrProductIDMappedInSchSlbSubBukRowId
-
-
-							}// ends if(arrProductIDMappedInSchSlbSubBukRowId.size()>0)
-
-
-						} //sub bucket ends here
-
-						//schSlabSubBucketType
-						//1. Product Quantity
-						//5. Product Volume
-						//2. Invoice Value
-						//3. Product Lines
-						//4. Product Value
-						boolean bucketCndtnFullFill = true;
-						String stringValHmap = "";
-						String stringValHmapInvoice = "";
-						ArrayList<String> listStrValHmapForSchm2 = new ArrayList<String>();
-						if (productFullFilledSlabForInvoice != null && productFullFilledSlabForInvoice.size() > 0) {
-							for (String productIdFullFilledSlabInvoiceWithQty : productFullFilledSlabForInvoice) {
-								if (hmapSubBucketDetailsData.containsKey(productIdFullFilledSlabInvoiceWithQty)) {
-									stringValHmapInvoice = hmapSubBucketDetailsData.get(productIdFullFilledSlabInvoiceWithQty);
-									String schSlabSubBucketType = stringValHmapInvoice.split(Pattern.quote("^"))[5];
-									Double schSlabSubBucketVal = Double.valueOf(stringValHmapInvoice.split(Pattern.quote("^"))[3]);
-									if (schSlabSubBucketType.equals("2")) {
-										if (totalInvoice >= schSlabSubBucketVal) {
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabInvoiceWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-											break;
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											stringValHmapInvoice = "";
-											break;
-										}
-
-									} else {
-										stringValHmapInvoice = "";
-									}
-								}
-
+					String[] arrSubBucketDetails=schSlbBuckOtherDetails.split(Pattern.quote("*"));  //Example Split For Multiple Sub Buckets
+					String[] arrMaintainDetailsOfBucketConditionsAgainstBuckId=new String[schSlbBuckCnt];  //Example Length of Buckes in Slab and which condition is true in case of OR
+				// variables for calculating total sub bucket
+					ArrayList<String> productFullFilledSlab=new ArrayList<String>();
+					ArrayList<String> productFullFilledSlabForInvoice=new ArrayList<String>();
+					int totalProductQnty=0;
+					double totalProductVol=0.0;
+					
+					double totalProductVal=0.0;
+					int totalProductLine=0;
+					double totalInvoice=0.0;
+					
+					//product invoice
+					for(Entry<String, String> entryProduct:hmapPrdctOdrQty.entrySet())
+					{
+						if(hmapPrdctOdrQty.containsKey(entryProduct.getKey()))
+						{
+							if(Integer.parseInt(hmapPrdctOdrQty.get(entryProduct.getKey()))>(0))
+							{
+								int curntProdQty = Integer.parseInt(entryProduct.getValue()) ;
+								String curntProdVolumeRate = hmapPrdctVolRatTax.get(entryProduct.getKey());
+							    Double curntProdRate=Double.parseDouble(curntProdVolumeRate.split(Pattern.quote("^"))[1]);
+							    
+							    Double currentProductOverAllPriceQtywise=curntProdRate * curntProdQty;
+							    totalInvoice=totalInvoice+currentProductOverAllPriceQtywise;
+							    productFullFilledSlabForInvoice.add(entryProduct.getKey());
 							}
 						}
-						if (schSlabRowIdFullFilledSlab != null && schSlabRowIdFullFilledSlab.size() > 0) {
-							for (String productIdRowIDFullFilledSlabWithQty : schSlabRowIdFullFilledSlab) {
-								String productIdFullFilledSlabWithQty = productIdRowIDFullFilledSlabWithQty.split(Pattern.quote("^"))[0];
-								String RowIDFullFilledSlabWithQty = productIdRowIDFullFilledSlabWithQty.split(Pattern.quote("^"))[1];
-								stringValHmap = hmapSubBucketDetailsData.get(productIdRowIDFullFilledSlabWithQty);
-								String schSlabSubBucketType = stringValHmap.split(Pattern.quote("^"))[5];
-								Double schSlabSubBucketVal = Double.valueOf(stringValHmap.split(Pattern.quote("^"))[3]);
-								if (SchTypeId == 1 || SchTypeId == 3) {
+					 
+					}
+					// end product invoice
+					//sub bucket starts here
+				LinkedHashMap<String, String> hmapSubBucketDetailsData=new LinkedHashMap<String, String>();
+					for(int cntSubBucket=0;cntSubBucket<arrSubBucketDetails.length;cntSubBucket++)
+					{
+						// Eaxmple:-1^23^1^10^0
+						int schSlbSubBuckID=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[0]); //Slab Sub BucketID Eaxmple:-1
+						int schSlbSubRowID=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[1]);  //Slab Sub Bucket RowID Eaxmple:-23
+						int schSlabSubBucketType=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[2]);  ///Slab Sub Bucket Type Eaxmple:-1
 
+						Double schSlabSubBucketValue=Double.parseDouble(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[3]);  ///Slab Sub Bucket Value Eaxmple:-10
+						int schSubBucketValType=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[4]); ///Slab Sub Bucket Value Type Eaxmple:-0
 
-									if (schSlabSubBucketType.equals("1")) {
-										if (totalProductQnty >= schSlabSubBucketVal) {
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
+						
+						int totalOderQtyProductsAgainstRowId=0;
+						
+					
+						ArrayList<String> arrProductIDMappedInSchSlbSubBukRowId=new ArrayList<String>();
+						
+						
 
-										} else {
+						//String[] productFullFilledSlab=new String[arrProductIDMappedInSchSlbSubBukRowId.length];
+						int positionOfProductHavingQntty=0;
+						
 
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											stringValHmap = "";
-											break;
-										}
+						//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Starts Here To Check the Products
 
-									}
-									//Product Line
-									if (schSlabSubBucketType.equals("3")) {
-										if (productFullFilledSlab.size() >= schSlabSubBucketVal) {
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											stringValHmap = "";
-											break;
-										}
-									}
-									//product Value
-									if (schSlabSubBucketType.equals("4")) {
-										if (totalProductVal >= schSlabSubBucketVal) {
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											stringValHmap = "";
-											break;
-										}
+						if(SchTypeId==1 || SchTypeId==2)
+						{
+							arrProductIDMappedInSchSlbSubBukRowId=dbengine.fectProductIDMappedInSchSlbSubBukRowIdTemp(schSlbSubRowID);
+						}
+						if(SchTypeId==3)
+						{
+							arrProductIDMappedInSchSlbSubBukRowId.add(ProductIdOnClicked);
+						}
 
-									}
-									//product volume
-									if (schSlabSubBucketType.equals("5")) {
-										if (totalProductVol >= (schSlabSubBucketVal * 1000)) {
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											stringValHmap = "";
-											break;
-										}
-									}
+						//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Ends Here To Check the Products
+						//SlabSubBucketValType                                             
+						//I           =Invoice Value                  Order Value After Tax
+						//G         =Gross Value                     Order Value Before Tax
+						//N         =Net Value                                         Order Value After Tax
 
-								} else // scheme typeid=2
+					
+						if(arrProductIDMappedInSchSlbSubBukRowId.size()>0)
+						{
+							
+						
+							for(String productMappedWithScheme:arrProductIDMappedInSchSlbSubBukRowId)
+							{
+								
+								String hmapSubBucketDetailsData_Value=	schId+"^"+schSlabId+"^"+schSlbBuckId+"^"+schSlabSubBucketValue+"^"+schSubBucketValType+"^"+schSlabSubBucketType+"^"+ProductIdOnClicked +"^"+valForVolumetQTYToMultiply+"^"+schSlbSubRowID+"^"+SchTypeId;
+								hmapSubBucketDetailsData.put(productMappedWithScheme,hmapSubBucketDetailsData_Value );
+								if(hmapPrdctOdrQty.containsKey(productMappedWithScheme))
 								{
-
-									if (schSlabSubBucketType.equals("1")) {
-										if (hmapSubBucketTotalQntty.containsKey(RowIDFullFilledSlabWithQty)) {
-											int quantity = Integer.parseInt(hmapSubBucketTotalQntty.get(RowIDFullFilledSlabWithQty));
-											if (quantity >= schSlabSubBucketVal) {
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-												listStrValHmapForSchm2.add(stringValHmap);
-											} else {
-												dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-												bucketCndtnFullFill = false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-										/*if(hmapPrdctOdrQty.containsKey(productIdFullFilledSlabWithQty))
-										{
-											if(Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty))>=schSlabSubBucketVal)
-											{
-												listStrValHmapForSchm2.add(stringValHmap);
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-
-											}
-											else
-											{
-												dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-												bucketCndtnFullFill=false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										}
-
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-*/
+									if(Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme))>(0))
+									{
+										//1. Product Quantity
+										
+										productFullFilledSlab.add(productMappedWithScheme);// productLine
+										int oderQtyOnProd=Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme));
+										totalProductQnty=totalProductQnty+oderQtyOnProd;
+									
+										// product volume
+										Double prodVolume= Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[0]);
+										Double oderVolumeOfCurrentMapedProduct=prodVolume * oderQtyOnProd;
+										totalProductVol=totalProductVol + oderVolumeOfCurrentMapedProduct;
+										
+										//product value
+										
+										Double prodRate= Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[1]);
+										Double oderRateOfCurrentMapedProduct=prodRate * oderQtyOnProd;
+										//oderRateOnProduct=oderRateOnProduct + oderRateOfCurrentMapedProduct;
+										totalProductVal=totalProductVal+oderRateOfCurrentMapedProduct;
+										
+										
 									}
-
-									if (schSlabSubBucketType.equals("3")) {
-
-										if (productFullFilledSlab.size() >= schSlabSubBucketVal) {
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-									}
-									if (schSlabSubBucketType.equals("4")) {
-										Double singleProdRate = Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[1]);
-										Double singlePrdctOderRate = singleProdRate * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-										if (hmapSubBucketTotalValue.containsKey(RowIDFullFilledSlabWithQty)) {
-											Double prdctVal = Double.parseDouble(hmapSubBucketTotalValue.get(RowIDFullFilledSlabWithQty));
-											if (prdctVal >= schSlabSubBucketVal) {
-												listStrValHmapForSchm2.add(stringValHmap);
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-											}
-										/*if(singlePrdctOderRate>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}*/
-											else {
-												dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-												bucketCndtnFullFill = false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-
-
-									}
-									if (schSlabSubBucketType.equals("5")) {
-										Double singleProdVol = Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[0]);
-										Double singlePrdctOderVol = singleProdVol * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-										if (hmapSubBucketTotalVolume.containsKey(RowIDFullFilledSlabWithQty)) {
-											Double prdctVol = Double.parseDouble(hmapSubBucketTotalVolume.get(RowIDFullFilledSlabWithQty));
-											if (prdctVol >= (schSlabSubBucketVal * 1000)) {
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty, "" + schSlabId, "" + schId, strGlobalOrderID);
-												listStrValHmapForSchm2.add(stringValHmap);
-											}
-										/*if(singlePrdctOderVol>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}*/
-											else {
-												dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-												bucketCndtnFullFill = false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										} else {
-											dbengine.deleteAlertValueSlab(storeID, "" + schSlabId, strGlobalOrderID);
-											bucketCndtnFullFill = false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-
-									}
-
-
 								}
-
-
+								
+								
+							}// for loops ends here productMappedWithScheme:arrProductIDMappedInSchSlbSubBukRowId
+						
+						
+						}// ends if(arrProductIDMappedInSchSlbSubBukRowId.size()>0)
+						
+						
+						
+					} //sub bucket ends here
+					
+					//schSlabSubBucketType
+					//1. Product Quantity
+					//5. Product Volume
+					//2. Invoice Value
+					//3. Product Lines
+					//4. Product Value
+					boolean bucketCndtnFullFill=true;
+					String stringValHmap="";
+					String stringValHmapInvoice="";
+					ArrayList<String> listStrValHmapForSchm2=new ArrayList<String>();
+					if(productFullFilledSlabForInvoice!=null && productFullFilledSlabForInvoice.size()>0)
+					{
+						for(String productIdFullFilledSlabInvoiceWithQty:productFullFilledSlabForInvoice)
+						{
+							if(hmapSubBucketDetailsData.containsKey(productIdFullFilledSlabInvoiceWithQty))
+							{
+								stringValHmapInvoice=hmapSubBucketDetailsData.get(productIdFullFilledSlabInvoiceWithQty);
+								String schSlabSubBucketType=stringValHmapInvoice.split(Pattern.quote("^"))[5];
+								Double schSlabSubBucketVal=Double.valueOf(stringValHmapInvoice.split(Pattern.quote("^"))[3]);
+								if(schSlabSubBucketType.equals("2"))
+								{
+									if(totalInvoice>=schSlabSubBucketVal)
+									{
+									  dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabInvoiceWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
+										break;	
+									}
+									else
+									{
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
+										bucketCndtnFullFill=false;
+										stringValHmapInvoice="";
+										break;
+									}
+										
+								}
+								else
+								{
+									stringValHmapInvoice="";
+								}
 							}
-
-
+					
 						}
-					/*if(productFullFilledSlab!=null && productFullFilledSlab.size()>0)
+					}
+					
+					if(productFullFilledSlab!=null && productFullFilledSlab.size()>0)
 					{
 						for(String productIdFullFilledSlabWithQty:productFullFilledSlab)
 						{
-							productIdFullFilledSlabWithQty=productIdFullFilledSlabWithQty.split(Pattern.quote("^"))[0];
 							stringValHmap=hmapSubBucketDetailsData.get(productIdFullFilledSlabWithQty);
 							String schSlabSubBucketType=stringValHmap.split(Pattern.quote("^"))[5];
 							Double schSlabSubBucketVal=Double.valueOf(stringValHmap.split(Pattern.quote("^"))[3]);
 							if(SchTypeId==1 || SchTypeId==3)
 							{
-
-
+								
+							
 								if(schSlabSubBucketType.equals("1"))
 								{
 									if(totalProductQnty>=schSlabSubBucketVal)
 									{
-										dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-
-									}
+										dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
+										
+									}	
 									else
 									{
-
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										stringValHmap="";
 										break;
 									}
-
+									
 								}
 								//Product Line
 								 if(schSlabSubBucketType.equals("3"))
 								{
 									if(productFullFilledSlab.size()>=schSlabSubBucketVal)
 									{
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										stringValHmap="";
 										break;
@@ -5384,82 +5404,65 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								{
 									if(totalProductVal>=schSlabSubBucketVal)
 									{
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										stringValHmap="";
 										break;
 									}
-
+									
 								}
 								 //product volume
 								 if(schSlabSubBucketType.equals("5"))
 								{
 									 if(totalProductVol>=(schSlabSubBucketVal*1000))
 									{
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										stringValHmap="";
 										break;
 									}
 								}
-
+								
 							}
 							else // scheme typeid=2
 							{
 
 								if(schSlabSubBucketType.equals("1"))
 								{
-									if(totalProductQnty>=schSlabSubBucketVal)
+									if(Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty))>=schSlabSubBucketVal)
 									{
-										dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
 										listStrValHmapForSchm2.add(stringValHmap);
-									}
+										dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
+										
+									}	
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										listStrValHmapForSchm2.clear();
 										break;
 									}
-									*//*if(hmapPrdctOdrQty.containsKey(productIdFullFilledSlabWithQty))
-									{
-										if(Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty))>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-										}*//*
-									}
-
-
-
-
+									
+								}
+								
 								 if(schSlabSubBucketType.equals("3"))
 								{
 									if(productFullFilledSlab.size()>=schSlabSubBucketVal)
 									{
 										listStrValHmapForSchm2.add(stringValHmap);
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										listStrValHmapForSchm2.clear();
 										break;
@@ -5469,101 +5472,99 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								{
 									 Double singleProdRate= Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[1]);
 										Double singlePrdctOderRate=singleProdRate * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-
-
-									if(totalProductVal>=schSlabSubBucketVal)
+										
+									
+									if(singlePrdctOderRate>=schSlabSubBucketVal)
 									{
 										listStrValHmapForSchm2.add(stringValHmap);
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										listStrValHmapForSchm2.clear();
 										break;
 									}
-
+									
 								}
 								 if(schSlabSubBucketType.equals("5"))
 								{
 									 Double singleProdVol= Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[0]);
 										Double singlePrdctOderVol=singleProdVol * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-
-									if(totalProductVol>=schSlabSubBucketVal)
+										
+									if(singlePrdctOderVol>=schSlabSubBucketVal)
 									{
 										listStrValHmapForSchm2.add(stringValHmap);
-										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
+										 dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 									}
 									else
 									{
-										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
+										dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										bucketCndtnFullFill=false;
 										listStrValHmapForSchm2.clear();
 										break;
 									}
 								}
-
-
+							
+							
 							}
-
-
+							
+							
 						}
-
-
-					}*///	if(productFullFilledSlab!=null && productFullFilledSlab.size()>0) ends here
-
-
-						if (bucketCndtnFullFill) {
-							bucketCndtnFullFillisReally = true;
-							if (SchTypeId == 1 || SchTypeId == 3) {
-								if (!TextUtils.isEmpty(stringValHmap.trim())) {
-									for (String allproductFullFilledSlab : productFullFilledSlab) {
-										productFullFilledSlabGlobal.add(allproductFullFilledSlab);
-									}
-
-
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmap + "^" + totalProductQnty + "^" + totalInvoice + "^" + totalProductLine + "^" + totalProductVal + "^" + totalProductVol + "^0");
-								} else if (!TextUtils.isEmpty(stringValHmapInvoice.trim())) {
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice + "^" + totalProductQnty + "^" + totalInvoice + "^" + totalProductLine + "^" + totalProductVal + "^" + totalProductVol + "^0");
-								}
-							} else {
-								if (listStrValHmapForSchm2 != null && listStrValHmapForSchm2.size() > 0) {
-									for (String allproductFullFilledSlab : productFullFilledSlab) {
-										productFullFilledSlabGlobal.add(allproductFullFilledSlab);
-									}
-
-									for (String strVal : listStrValHmapForSchm2) {
-
-										arredtboc_OderQuantityFinalSchemesToApply.add(strVal + "^" + totalProductQnty + "^" + totalInvoice + "^" + totalProductLine + "^" + totalProductVal + "^" + totalProductVol + "^0");
-									}
-								}
-								if (!TextUtils.isEmpty(stringValHmapInvoice.trim())) {
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice + "^" + totalProductQnty + "^" + totalInvoice + "^" + totalProductLine + "^" + totalProductVal + "^" + totalProductVol + "^0");
-								}
-
+						
+					
+					}//	if(productFullFilledSlab!=null && productFullFilledSlab.size()>0) ends here
+					
+						
+					if(bucketCndtnFullFill)
+					{
+						bucketCndtnFullFillisReally=true;
+						if(SchTypeId==1 || SchTypeId==3)
+						{
+							if(!TextUtils.isEmpty(stringValHmap.trim()))
+							{
+								 productFullFilledSlabGlobal=productFullFilledSlab;
+								
+								arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmap+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol);	
 							}
-							break;
-						}//if(bucketCndtnFullFill) ends here
-
-					}// bucket ends here
-
-					if (bucketCndtnFullFillisReally) {
-						bucketCndtnSchemeFullFill = true;
+							else if(!TextUtils.isEmpty(stringValHmapInvoice.trim()))
+							{
+								arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol);
+							}
+						}
+						else
+						{
+							if(listStrValHmapForSchm2!=null && listStrValHmapForSchm2.size()>0)
+							{
+								 productFullFilledSlabGlobal=productFullFilledSlab;
+								
+								for(String strVal:listStrValHmapForSchm2)
+								{
+									
+									arredtboc_OderQuantityFinalSchemesToApply.add(strVal+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol);
+								}
+							}
+							if(!TextUtils.isEmpty(stringValHmapInvoice.trim()))
+							{
+								arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol);
+							}
+							
+						}
 						break;
-					}
+					}//if(bucketCndtnFullFill) ends here
+					
+				}// bucket ends here
+				if(bucketCndtnFullFillisReally)
+				{
+					break;
 				}
 			}
-
 		}
 	}
-		if(hmapProductAddOnSchemesList!=null && hmapProductAddOnSchemesList.containsKey(ProductIdOnClicked))
-		{
-			fnCheckExtraSchemeAfterValueChange(hmapProductAddOnSchemesList.get(ProductIdOnClicked),ProductIdOnClicked);
-		}
-
-		fnAssignSchemeIDsAppliedOverProductAfterValueChange(ProductIdOnClicked);
+	fnAssignSchemeIDsAppliedOverProductAfterValueChange(ProductIdOnClicked);
 	}
+
 	public void fnAssignSchemeIDsAppliedOverProductAfterValueChange(String ProductIdOnClicked)
 	{
 		HashMap<String, ArrayList<String>> noAlrtHshMaptoSaveData=new HashMap<String, ArrayList<String>>();
@@ -5595,7 +5596,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				int totalProductLine=Integer.parseInt(strListMpdWdPrdct.split(Pattern.quote("^"))[12]);
 				double totalProductVal=Double.parseDouble(strListMpdWdPrdct.split(Pattern.quote("^"))[13]);
 				double totalProductVol=Double.parseDouble(strListMpdWdPrdct.split(Pattern.quote("^"))[14]);
-				int flgAddOn=Integer.parseInt(strListMpdWdPrdct.split(Pattern.quote("^"))[15]);
 
 				if(hmapSchemeIdStoreID.containsKey(""+schId))
 				{
@@ -5615,7 +5615,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							Double Per=Double.parseDouble(strProductIDBenifitsListOnPurchase.split(Pattern.quote("^"))[5]);
 							Double UOM=Double.parseDouble(strProductIDBenifitsListOnPurchase.split(Pattern.quote("^"))[6]);
 							int chkflgProDataCalculation=Integer.parseInt(strProductIDBenifitsListOnPurchase.split(Pattern.quote("^"))[7]);
-							int isDiscountOnTotalAmount=Integer.parseInt(strProductIDBenifitsListOnPurchase.split(Pattern.quote("^"))[8]);
 
 							//BenSubBucketType
 							//1. Free Other Product =
@@ -5648,11 +5647,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 									for(String productIdToFillSlab:productFullFilledSlabGlobal)
 									{
-										if((hmapPrdctOdrQty.containsKey(productIdToFillSlab.split(Pattern.quote("^"))[0])) && (Integer.parseInt(hmapPrdctOdrQty.get(productIdToFillSlab.split(Pattern.quote("^"))[0]))>0))
-										{
-											arrProductIDMappedInSchSlbSubBukBenifits.put(hmapPrdctIdPrdctName.get(productIdToFillSlab.split(Pattern.quote("^"))[0]), productIdToFillSlab.split(Pattern.quote("^"))[0]);
-										}
-										//arrProductIDMappedInSchSlbSubBukBenifits.put(hmapPrdctIdPrdctName.get(productIdToFillSlab.split(Pattern.quote("^"))[0]), productIdToFillSlab.split(Pattern.quote("^"))[0]);
+										arrProductIDMappedInSchSlbSubBukBenifits.put(hmapPrdctIdPrdctName.get(productIdToFillSlab), productIdToFillSlab);
 									}
 
 								}
@@ -5672,7 +5667,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 										String productIdForFree=allPrdctNamePrdctId.getValue();
 
 										String maxBenifiAssignedValToCalc="";
-										String maxBenifiAssignedVal=dbengine.getValOfSchemeAlrtSelected(storeID,""+schId,""+schSlabId,strGlobalOrderID);
+										String maxBenifiAssignedVal=dbengine.getValOfSchemeAlrtSelected(storeID,""+schId,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 										if(Double.parseDouble(maxBenifiAssignedVal)>0)
 										{
 
@@ -5681,7 +5676,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 										}
 										else
 										{
-											dbengine.deleteAlertValueProduct(storeID,""+schId,strGlobalOrderID);
+											dbengine.deleteAlertValueProduct(storeID,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 										}
 										boolean defaultSelected=false;
 										if(!maxBenifiAssignedValToCalc.equals(""))
@@ -5752,7 +5747,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 										{
 											String subValues=String.valueOf(schId+"~"+schSlabId+"~"+schSlbBuckId+"~"+schSlabSubBucketValue+"~"+0+"~"+schSlabSubBucketType+"~"+BenifitRowID+"~"+
 													BenSubBucketType+"~"+0+"~"+BenSubBucketValue+"~"+0+"~"+0+"~"+
-													0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId+"~"+chkflgProDataCalculation+"~"+flgAddOn+"~"+isDiscountOnTotalAmount);
+													0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId+"~"+chkflgProDataCalculation);
 											stringSchemeIdWthAllVal.add(subValues);
 											//listArrayHashmapProduct.add(hmapFreeProdID);
 											isHaveMoreBenifits=1;
@@ -5771,14 +5766,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 											String noAlrtsubValues=String.valueOf(accAsignVal+"~"+schId+"~"+schSlabId+"~"+schSlbBuckId+"~"+schSlabSubBucketValue+"~"+0+"~"+schSlabSubBucketType+"~"+BenifitRowID+"~"+
 													BenSubBucketType+"~"+0+"~"+BenSubBucketValue+"~"+0+"~"+0+"~"+
-													0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId+"~"+flgAddOn+"~"+isDiscountOnTotalAmount);
+													0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId);
 
 											noAlrtStringSchemeIdWthAllValTemp.add(noAlrtsubValues);
 
 
 											//String[] arrayProductId=changeHmapToArrayValue(arrProductIDMappedInSchSlbSubBukBenifits);
-
-											noAlrtHshMaptoSaveData.put(productIdForFree+"^"+schId, noAlrtStringSchemeIdWthAllValTemp);
+											noAlrtHshMaptoSaveData.put(productIdForFree, noAlrtStringSchemeIdWthAllValTemp);
 
 										}
 										countAssignVal++;
@@ -5809,7 +5803,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								HashMap<String, String> hmapMultiplePuschasedProductVolumeAndValue=new HashMap<String, String>();
 								HashMap<String, String> arrProductIDMappedInSchSlbSubBukBenifits=new HashMap<String, String>();
 								LinkedHashMap<String, String> hmapFreeProdID=new LinkedHashMap<String, String>();
-								dbengine.open();
+								//dbengine.open();
 
                      /*String productNameValue=hmapPrdctIdPrdctName.get(ProductIdOnClicked);
                      arrProductIDMappedInSchSlbSubBukBenifits.put(productNameValue,ProductIdOnClicked);*/
@@ -5823,7 +5817,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 
-								dbengine.close();
+								//dbengine.close();
 								Double AssigendValue=Double.parseDouble(strBeniftRowIdExistsInSchemeSlabBenefitsValueDetail[0]);
 								double totVolumeofProducts=0.00;
 								double totlCombinedPriceOfProdcuts=0.00;
@@ -5836,12 +5830,12 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 									for(String prdctIdMpdWithScheme:productFullFilledSlabGlobal)
 									{
 
-										prdctIdMpdWithScheme=prdctIdMpdWithScheme.split(Pattern.quote("^"))[0];
+
 										if(Integer.parseInt(hmapPrdctOdrQty.get(prdctIdMpdWithScheme))>0)
 										{
 
 
-											maxBenifiAssignedVal=dbengine.getValOfSchemeAlrtSelected(storeID,""+schId,""+schSlabId,strGlobalOrderID);
+											maxBenifiAssignedVal=dbengine.getValOfSchemeAlrtSelected(storeID,""+schId,""+schSlabId,strGlobalOrderID,strGlobalInvoiceNumber);
 											if(Double.parseDouble(maxBenifiAssignedVal)>0)
 											{
 
@@ -5850,7 +5844,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 											}
 											else
 											{
-												dbengine.deleteAlertValueProduct(storeID,""+schId,strGlobalOrderID);
+												dbengine.deleteAlertValueProduct(storeID,""+schId,strGlobalOrderID,strGlobalInvoiceNumber);
 											}
 											double prdPrice=Double.parseDouble(hmapPrdctVolRatTax.get(prdctIdMpdWithScheme).split(Pattern.quote("^"))[1])*Double.parseDouble(hmapPrdctOdrQty.get(prdctIdMpdWithScheme));
 											double prdVol=Double.parseDouble(hmapPrdctVolRatTax.get(prdctIdMpdWithScheme).split(Pattern.quote("^"))[0])*Double.parseDouble(hmapPrdctOdrQty.get(prdctIdMpdWithScheme));
@@ -6056,7 +6050,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 											{
 												String subValues=String.valueOf(schId+"~"+schSlabId+"~"+schSlbBuckId+"~"+schSlabSubBucketValue+"~"+0+"~"+schSlabSubBucketType+"~"+BenifitRowID+"~"+
 														BenSubBucketType+"~"+0+"~"+calculatedBenifitAssignedValueSKULevel+"~"+0+"~"+0+"~"+
-														0+"~"+0+"~"+0+"~"+Per+"~"+UOM+"~"+schSlbSubRowID+"~"+SchTypeId+"~"+flgAddOn+"~"+isDiscountOnTotalAmount);
+														0+"~"+0+"~"+0+"~"+Per+"~"+UOM+"~"+schSlbSubRowID+"~"+SchTypeId);
 												arrBenifitAssignedVal[cntPurchasedProductList]=String.valueOf(calculatedBenifitAssignedValueSKULevel);
 												stringSchemeIdWthAllVal.add(subValues);
 												isHaveMoreBenifits=1;
@@ -6069,13 +6063,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 												String noAlrtsubValues=String.valueOf(calculatedBenifitAssignedValueSKULevel+"~"+schId+"~"+schSlabId+"~"+schSlbBuckId+"~"+schSlabSubBucketValue+"~"+0+"~"+schSlabSubBucketType+"~"+BenifitRowID+"~"+
 														BenSubBucketType+"~"+0+"~"+BenSubBucketValue+"~"+0+"~"+0+"~"+
-														0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId+"~"+flgAddOn+"~"+isDiscountOnTotalAmount);
+														0+"~"+0+"~"+0+"~"+0.0+"~"+0.0+"~"+schSlbSubRowID+"~"+SchTypeId);
 
 												noAlrtStringSchemeIdWthAllValTemp.add(noAlrtsubValues);
 
 
 												String[] arrayProductId=changeHmapToArrayValue(arrProductIDMappedInSchSlbSubBukBenifits);
-												noAlrtHshMaptoSaveData.put(arrPurchasedProductListVolumeAndValue[cntPurchasedProductList]+"^"+schId, noAlrtStringSchemeIdWthAllValTemp);
+												noAlrtHshMaptoSaveData.put(arrPurchasedProductListVolumeAndValue[cntPurchasedProductList], noAlrtStringSchemeIdWthAllValTemp);
 											}
 
 
@@ -6109,7 +6103,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				}//hmapSchemeIdStoreID.containsKey(""+schId) ends here
 			}// for loops ends here for arredtboc_OderQuantityFinalSchemesToApply
 
-			if(noAlrtHshMaptoSaveData!=null && noAlrtHshMaptoSaveData.size()>0 )
+			if(noAlrtHshMaptoSaveData.size()>0)
 			{
 				boolean flagMappedToProduct=false; // if noAlrtHshMaptoSaveData doenot contains arrProductIDMappedInSchSlbSubBukRowId
 				if(productFullFilledSlabGlobal!=null && productFullFilledSlabGlobal.size()>0)
@@ -6122,17 +6116,15 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						{
 							flagMappedToProduct=true;
 							HashMap<String, ArrayList<String>> noAlrtHshMaptoSaveDataTemp=new HashMap<String, ArrayList<String>>();
-
-							noAlrtHshMaptoSaveDataTemp.put(productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt).split(Pattern.quote("^"))[0], noAlrtHshMaptoSaveData.get(productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt)));
-							saveFreeProductDataWithSchemeToDatabase(noAlrtHshMaptoSaveDataTemp, productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt).split(Pattern.quote("^"))[0]);
+							noAlrtHshMaptoSaveDataTemp.put(productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt), noAlrtHshMaptoSaveData.get(productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt)));
+							saveFreeProductDataWithSchemeToDatabase(noAlrtHshMaptoSaveDataTemp, productFullFilledSlabGlobal.get(cntProdcutsRowIdCnt));
 						}
-
 					}
 
-					if(!flagMappedToProduct)
-					{
-						saveFreeProductDataWithSchemeToDatabase(noAlrtHshMaptoSaveData, ProductIdOnClicked);
-					}
+               /*if(!flagMappedToProduct)
+               {
+                  saveFreeProductDataWithSchemeToDatabase(noAlrtHshMaptoSaveData, ProductIdOnClicked);
+            }*/
 
 				}
 
@@ -6165,8 +6157,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						String defaultVal=(listArrayFreePrdctQty.get(0))[abc].toString();
 
 						String defaultValWithDefltAssigndVal=defaultVal+"~"+stringSchemeIdWthAllVal.get(0).toString();
-						String spinnerValSelected= dbengine.getValOfSchemeAlrtSelected(storeID,(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[1],(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[0],strGlobalOrderID);
-						String[] spinnerPositionSelected=dbengine.getValOfSchemeAlrt(storeID,ProductIdOnClicked,""+(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[1],strGlobalOrderID);
+						String spinnerValSelected= dbengine.getValOfSchemeAlrtSelected(storeID,(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[1],(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[0],strGlobalOrderID,strGlobalInvoiceNumber);
+						String[] spinnerPositionSelected=dbengine.getValOfSchemeAlrt(storeID,ProductIdOnClicked,""+(stringSchemeIdWthAllVal.get(0)).split(Pattern.quote("~"))[1],strGlobalOrderID,strGlobalInvoiceNumber);
 
 
 						arrayListSaveAssigndVal.add(defaultValWithDefltAssigndVal);
@@ -6515,7 +6507,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								HashMap<String, String> hmapMultiplePuschasedProductVolumeAndValue=new HashMap<String, String>();
 								HashMap<String, String> arrProductIDMappedInSchSlbSubBukBenifits=new HashMap<String, String>();
 								LinkedHashMap<String, String> hmapFreeProdID=new LinkedHashMap<String, String>();
-								dbengine.open();
+								//dbengine.open();
 								
 								*//*String productNameValue=hmapPrdctIdPrdctName.get(ProductIdOnClicked);
 								arrProductIDMappedInSchSlbSubBukBenifits.put(productNameValue,ProductIdOnClicked);*//*
@@ -6529,7 +6521,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								
 								
 								
-								dbengine.close();
+								//dbengine.close();
 								Double AssigendValue=Double.parseDouble(strBeniftRowIdExistsInSchemeSlabBenefitsValueDetail[0]);
 								double totVolumeofProducts=0.00;
 								double totlCombinedPriceOfProdcuts=0.00;
@@ -7012,9 +7004,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	 
 
 	  String ProductIdOnClickedControl=v.getTag().toString().split(Pattern.quote("_"))[1];
-	  if(hmapProductRelatedSchemesList.size()>0 || hmapProductAddOnSchemesList.size()>0)
+	  if(hmapProductRelatedSchemesList.size()>0)
 	  {
-	if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl) || hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl))
+	   if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl))
 	   {
 		   
 		   fnUpdateSchemeNameOnScehmeControl(ProductIdOnClickedControl);
@@ -7215,7 +7207,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					
 					
 			
-					String[] productGivenDiscount=dbengine.getValOfSchemeAlrt(storeID,alrtProductIdOnClicked,schemAllString.split(Pattern.quote("~"))[1].toString(),strGlobalOrderID);
+					String[] productGivenDiscount=dbengine.getValOfSchemeAlrt(storeID,alrtProductIdOnClicked,schemAllString.split(Pattern.quote("~"))[1].toString(),strGlobalOrderID,strGlobalInvoiceNumber);
 				
 					LayoutInflater inflater2=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 					final View viewProduct=inflater2.inflate(R.layout.row_free_prodct_qty,null);
@@ -7264,7 +7256,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								for (Entry<String, String> entry : hmapProductNameId.entrySet())
 								{
 									
-										dbengine.insertSchemeAlrtVal(storeID, entry.getValue(),strngPrdctCompltValue , tv_prdct_name.getText().toString(),String.valueOf(adapterProduct.getPosition(strngPrdctCompltValue)),schemAllStringForBen7or10.split(Pattern.quote("~"))[1].toString(),schemAllStringForBen7or10.split(Pattern.quote("~"))[0].toString(),strGlobalOrderID);
+										dbengine.insertSchemeAlrtVal(storeID, entry.getValue(),strngPrdctCompltValue , tv_prdct_name.getText().toString(),String.valueOf(adapterProduct.getPosition(strngPrdctCompltValue)),schemAllStringForBen7or10.split(Pattern.quote("~"))[1].toString(),schemAllStringForBen7or10.split(Pattern.quote("~"))[0].toString(),strGlobalOrderID,strGlobalInvoiceNumber);
 									
 									
 								}
@@ -7397,11 +7389,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		
 			decimalFormat.applyPattern(pattern);
 			//tvCurrentProdName = (TextView) findViewById(R.id.textView1_schemeVAL1111);
-			tvCredAmtVAL =  (TextView) row123.findViewById(R.id.textView1_CredAmtVAL);
+
+		//tv_NetInvAfterDiscount
+		tvCredAmtVAL =  (TextView) row123.findViewById(R.id.textView1_CredAmtVAL);
 			tvINafterCredVAL =  (TextView) row123.findViewById(R.id.textView1_INafterCredVAL);
 			textView1_CredAmtVAL_new = (TextView) row123.findViewById(R.id.textView1_CredAmtVAL_new);
-			
-			
+
+		tvTotalAmtCollected=(TextView) row123.findViewById(R.id.tvTotalAmtCollected);
 			tv_NetInvValue = (TextView)row123.findViewById(R.id.tv_NetInvValue);
 			tvTAmt = (TextView)row123.findViewById(R.id.textView1_v2);
 			tvDis = (TextView)row123.findViewById(R.id.textView1_v3);
@@ -7416,354 +7410,22 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			
 			tvNoOfCouponValue = (EditText)row123.findViewById(R.id.tvNoOfCouponValue);
 			 txttvCouponAmountValue = (EditText)row123.findViewById(R.id.tvCouponAmountValue);
-		tvAmtPrvsOutstandingVAL=(TextView)row123.findViewById(R.id.tvAmtPrvsOutstandingVAL);
 
-		tvAmtPrvsOutstandingVAL.setText(""+outstandingvalue);
-				tvTtlAmtOutstandingVAL=(TextView)row123.findViewById(R.id.tvTtlAmtOutstandingVAL);
+		tvPreAmtOutstandingVALNew=(TextView)row123.findViewById(R.id.tvPreAmtOutstandingVALNew);
 		 ll_scheme_detail.addView(row123);
+
+
+		Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+		tvPreAmtOutstandingVALNew.setText(""+outstandingvalue);
+
+		Double TotalAmtCollected=0.00;//dbengine.fnTotCollectionAmtAgainstStore(storeID,strGlobalInvoiceNumber);
+		tvTotalAmtCollected.setText(""+TotalAmtCollected);
 		 orderBookingTotalCalc();
 		
 	}
 
+
 	/*public void orderBookingTotalCalc()
-	{
-		Double StandardRate=0.00; 
-		Double StandardRateBeforeTax=0.00;
-		Double StandardTax=0.00;
-		Double ActualRateAfterDiscountBeforeTax=0.00;
-		Double DiscountAmount=0.00;
-		Double ActualTax=0.00;
-		Double ActualRateAfterDiscountAfterTax=0.00;
-		
-		String PrdMaxValuePercentageDiscount="";
-		String PrdMaxValueFlatDiscount="";
-		
-		Double TotalFreeQTY=0.00;
-		Double TotalProductLevelDiscount=0.00;
-		Double TotalOrderValBeforeTax=0.00;
-		Double TotAdditionaDiscount=0.00;
-		Double TotOderValueAfterAdditionaDiscount=0.00;
-		Double TotTaxAmount=0.00;
-		Double TotOderValueAfterTax=0.00;
-		
-		int prdListCount =hmapPrdctIdPrdctNameVisible.size();
-		 
-		 for (int index=0; index < prdListCount; index++){
-			 View vRow = ll_prdct_detal.getChildAt(index);
-		       
-		       int PCateIdDetails=Integer.parseInt(vRow.getTag().toString().split(Pattern.quote("_"))[0]);
-		       String ProductID=((TextView)(vRow).findViewById(R.id.tvProdctName)).getTag().toString().split(Pattern.quote("_"))[1];
-		       
-		       if(hmapPrdctOdrQty.containsKey(ProductID))
-				{
-					((TextView)(vRow).findViewById(R.id.tv_FreeQty)).setText(hmapPrdctFreeQty.get(ProductID).toString());
-					TotalFreeQTY=TotalFreeQTY+Integer.parseInt(hmapPrdctFreeQty.get(ProductID));
-					hmapProductTaxValue.put(ProductID, "0.00");
-					((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText("0.00");
-					if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>0)
-					{
-						*//*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
-						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*//*
-						
-										
-						StandardRate=Double.parseDouble(hmapProductStandardRate.get(ProductID));
-						StandardRateBeforeTax=Double.parseDouble(hmapProductStandardRateBeforeTax.get(ProductID));
-						StandardTax=Double.parseDouble(hmapProductStandardTax.get(ProductID));
-						if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
-						{
-							if(hmapMinDlvrQty.containsKey(ProductID))
-							{
-								if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
-								{
-									StandardRateBeforeTax=Double.parseDouble(hmapMinDlvrQtyQPBT.get(ProductID));
-									StandardTax=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
-								}
-							}
-						}
-						
-						
-						
-						PrdMaxValuePercentageDiscount=dbengine.fnctnGetHighestDiscountPercentge(ProductID, storeID);
-						PrdMaxValueFlatDiscount=dbengine.fnctnGetHighestDiscountAmount(ProductID, storeID);
-						int BenifitRowIdPercentageDiscount=0;
-						int BenifitRowIdFlatDiscount=0;
-						//Double per=Double.parseDouble(hmapProductVolumePer.get(ProductID));
-						
-							Double per;
-					       String perProduct=dbengine.fnctnGetfreePerUnitVol(ProductID, storeID);
-					       if(perProduct.equals(""))
-					       {
-					        per=0.0;
-					       }
-					       else
-					       {
-					        per=Double.parseDouble((perProduct.split(Pattern.quote("^"))[0]));
-					       }
-						
-						String value=hmapPrdctVolRatTax.get(ProductID).toString();
-						   StringTokenizer tokens=new StringTokenizer(value,Pattern.quote("^"));
-						   //Volume^Rate^TaxAmount
-						   String prdVolume = tokens.nextElement().toString();
-							
-						StandardRate=Double.parseDouble(new DecimalFormat("##.##").format(StandardRate));
-						//((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(hmapProductStandardRateBeforeTax.get(ProductID));
-						if(PrdMaxValuePercentageDiscount.equals(""))
-					      {
-					    	  PrdMaxValuePercentageDiscount="0.00";
-					      }
-						else
-					      {
-					    	  	BenifitRowIdPercentageDiscount=Integer.parseInt(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[1]);
-					    	  	PrdMaxValuePercentageDiscount=PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0];
-					      }
-						if(PrdMaxValueFlatDiscount.equals(""))
-					      {
-					    	  PrdMaxValueFlatDiscount="0.00";
-					      }else
-					      {
-					    	 
-					    	  if(per.intValue()!=0)
-					    	  {
-					    	   //volume
-					    		*//*int prdQty=Integer.parseInt(hmapPrdctOdrQty.get(ProductID));
-					    		Double perVoume=per;
-					    		Double productSingleUnitVolume=Double.parseDouble(prdVolume);
-					    		Double prodPuchasedQtyBasedVolume=productSingleUnitVolume*prdQty;
-					    		int prdNoOfVolumeCount=(prodPuchasedQtyBasedVolume.intValue()/perVoume.intValue());*//*
-					    		
-					    		BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
-						    	PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
-						    	*//*int finalValue;
-						    	if(prdNoOfVolumeCount!=0)
-						    	{
-						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);//prdNoOfVolumeCount*
-						    	}
-						    	else
-						    	{
-						    		finalValue=0;
-						    	}
-						    	
-						    	if(prdNoOfVolumeCount!=0)
-						    	{
-						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);
-						    	}
-						    	else
-						    	{
-						    		finalValue=prdNoOfVolumeCount*Integer.parseInt(PrdMaxValueFlatDiscount);
-						    	}
-						    	
-						    	PrdMaxValueFlatDiscount=""+finalValue;*//*
-					    	  }
-					    	  else
-					    	  {
-					    	  BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
-					    	  PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
-					    	  }
-					      }
-						if(!PrdMaxValueFlatDiscount.equals("0.00") || !PrdMaxValuePercentageDiscount.equals("0.00"))
-					      {
-							if(Double.parseDouble(PrdMaxValuePercentageDiscount)>=Double.parseDouble(PrdMaxValueFlatDiscount))
-						     {
-								//If Percentage Discount is greater the FlatAmt Code Starts Here
-								ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax/(1+((Double.parseDouble(PrdMaxValuePercentageDiscount)/100)));
-								DiscountAmount=StandardRateBeforeTax-ActualRateAfterDiscountBeforeTax;
-								ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
-								ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-								
-								Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-								
-								Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
-								DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
-								((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
-								
-								TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
-								TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
-								
-								Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-								TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
-								hmapProductTaxValue.put(ProductID, ""+TaxValue);
-								
-								if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
-								{
-									hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
-								}
-								
-								
-								Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-								Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
-								OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
-								((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
-								hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
-								
-								TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));//
-								
-								TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
-								
-								//If Percentage Discount is greater the FlatAmt Code Ends Here
-						     }
-							else
-						     {
-								//If Flat Amount is greater the Percentage Code Starts Here
-								ActualRateAfterDiscountBeforeTax=(StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-Double.parseDouble(PrdMaxValueFlatDiscount);
-								DiscountAmount=Double.parseDouble(PrdMaxValueFlatDiscount);
-								ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
-								ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-								Double DiscAmtOnPreQtyBasic=0.00;
-								if(per.intValue()>0)
-								{
-								DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))*Double.parseDouble(prdVolume))/per);
-								}
-								else
-								{
-									DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))));
-								}
-								Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
-								DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
-								((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
-								
-								TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
-								TotTaxAmount=TotTaxAmount+(ActualTax);/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID)
-								
-								Double TaxValue=ActualTax;/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
-								TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
-								hmapProductTaxValue.put(ProductID, ""+TaxValue);
-								if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
-								{
-									hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
-								}
-								Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax;/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-								Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
-								OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
-								((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
-								hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
-								TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax);/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
-								TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
-								//If Flat Amount is greater the Percentage Code Ends Here
-						     }
-					      }
-						else
-						{
-							//If No Percentage Discount or Flat Discount is Applicable Code Starts Here
-							ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax;
-							DiscountAmount=0.00;
-							ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
-							ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-							
-							Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							
-							Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
-							DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
-							((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
-							
-							
-							TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
-							TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
-							
-							Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
-							hmapProductTaxValue.put(ProductID, ""+TaxValue);
-							if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
-							{
-								hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
-							}
-							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
-							OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
-							((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
-							hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
-							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
-							TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
-							//If No Percentage Discount or Flat Discount is Applicable Code Ends Here
-						}
-
-					}
-				}	
-			 
-		 }
-	//Now the its Time to Show the OverAll Summary Code Starts Here
-		 
-		 tvFtotal.setText((""+ TotalFreeQTY).trim());
-		 
-		 TotalProductLevelDiscount=Double.parseDouble(new DecimalFormat("##.##").format(TotalProductLevelDiscount));
-		 tvDis.setText((""+ TotalProductLevelDiscount).trim());
-		 
-		 TotalOrderValBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(TotalOrderValBeforeTax));
-		 tv_NetInvValue.setText((""+ TotalOrderValBeforeTax).trim());
-		 
-		 String percentBenifitMax=dbengine.fnctnGetMaxAssignedBen8DscntApld1(storeID,strGlobalOrderID);
-		 Double percentMax=0.00;
-		 Double percentMaxGross=0.0;
-		 Double amountMaxGross=0.0;
-		 
-		 String amountBenfitMaxGross=dbengine.fnctnGetMaxAssignedBen9DscntApld2(storeID,strGlobalOrderID);
-		 String percentBenifitMaxGross=dbengine.fnctnGetMaxAssignedBen8DscntApld2(storeID,strGlobalOrderID);
-		 
-		 if(percentBenifitMaxGross.equals(""))
-		 {
-		  percentMaxGross=0.0;
-		 }
-		 else
-		 {
-		  percentMaxGross=Double.parseDouble(percentBenifitMaxGross.split(Pattern.quote("^"))[0]);
-		 }
-		 if(percentBenifitMax.equals("") )
-		 {
-		  percentMax=0.00;
-		 }
-		 else
-		 {
-		  percentMax=Double.parseDouble(percentBenifitMax.split(Pattern.quote("^"))[0]);
-		 }
-		 
-		 String amountBenifitMax=dbengine.fnctnGetMaxAssignedBen9DscntApld1(storeID,strGlobalOrderID);
-		 Double amountMax=0.00;
-		 if(percentBenifitMax.equals(""))
-		 {
-		  amountMax=0.0;
-		 }
-		 else
-		 {
-		  amountMax=Double.parseDouble(amountBenifitMax.split(Pattern.quote("^"))[0]);
-		 }
-		 
-		 
-		 tvAddDisc.setText(""+ "0.00");
-		 
-		 tv_NetInvAfterDiscount.setText(""+ TotalOrderValBeforeTax);
-		 
-		 TotTaxAmount=Double.parseDouble(new DecimalFormat("##.##").format(TotTaxAmount));
-		 tvTAmt.setText(""+ TotTaxAmount);
-		 
-		 Double totalGrossVALMaxPercentage=TotalOrderValBeforeTax-TotalOrderValBeforeTax*(percentMaxGross/100);
-		  Double totalGrossrVALMaxAmount=TotalOrderValBeforeTax-amountMaxGross;
-		  Double totalGrossVALAfterDiscount = 0.0;
-		  if(totalGrossVALMaxPercentage!=totalGrossrVALMaxAmount)
-		  {
-		   totalGrossVALAfterDiscount=Math.min(totalGrossrVALMaxAmount, totalGrossVALMaxPercentage);
-		  }
-		  else
-		  {
-		   totalGrossVALAfterDiscount=totalGrossrVALMaxAmount;
-		  }
-		  
-		  if(totalGrossVALAfterDiscount==totalGrossrVALMaxAmount && totalGrossrVALMaxAmount!=0.0)
-		  {
-		   dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(amountBenfitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID);
-		  }
-		  else if(totalGrossVALAfterDiscount==totalGrossVALMaxPercentage && percentMaxGross!=0.0)
-		  {
-		   dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(percentBenifitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID);
-		  }
-		
-		Double GrossInvValue=totalGrossVALAfterDiscount + TotTaxAmount;
-		GrossInvValue=Double.parseDouble(new DecimalFormat("##.##").format(GrossInvValue));
-		tv_GrossInvVal.setText(""+GrossInvValue);
-	//Now the its Time to Show the OverAll Summary Code Starts Here	 
-	}*/
-
-
-	public void orderBookingTotalCalc()
 	{
 		Double StandardRate=0.00;
 		Double StandardRateBeforeTax=0.00;
@@ -7775,7 +7437,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		String PrdMaxValuePercentageDiscount="";
 		String PrdMaxValueFlatDiscount="";
-		String PrdMaxValuePercentageDiscountInAmount="0";
+
 		Double TotalFreeQTY=0.00;
 		Double TotalProductLevelDiscount=0.00;
 		Double TotalOrderValBeforeTax=0.00;
@@ -7801,9 +7463,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText("0.00");
 				if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>0)
 				{
-						/*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+						*//*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
 						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*/
+						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*//*
 					if(Integer.parseInt(hmapProductflgPriceAva.get(ProductID))>0)
 					{
 						StandardRate=Double.parseDouble(hmapProductStandardRate.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
@@ -7833,10 +7495,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 
 					PrdMaxValuePercentageDiscount=dbengine.fnctnGetHighestDiscountPercentge(ProductID, storeID);
-					String addOnPrdctPercentage=dbengine.fnctnGetADDOnDiscountPercentge(ProductID, storeID);
-
 					PrdMaxValueFlatDiscount=dbengine.fnctnGetHighestDiscountAmount(ProductID, storeID);
-					String addOnPrdctFlatDiscount=dbengine.fnctnGetADDOnHighestDiscountAmount(ProductID, storeID);
 					int BenifitRowIdPercentageDiscount=0;
 					int BenifitRowIdFlatDiscount=0;
 					//Double per=Double.parseDouble(hmapProductVolumePer.get(ProductID));
@@ -7862,72 +7521,30 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					if(PrdMaxValuePercentageDiscount.equals(""))
 					{
 						PrdMaxValuePercentageDiscount="0.00";
-
-						int isDiscountOnTotalAmount=Integer.parseInt(addOnPrdctPercentage.split(Pattern.quote("^"))[2]);
-						if(isDiscountOnTotalAmount==0)
-						{
-							PrdMaxValuePercentageDiscountInAmount="0.00";
-						}
-						else
-						{
-							Double totalVal=StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							PrdMaxValuePercentageDiscountInAmount=String.valueOf(totalVal*(Double.parseDouble(addOnPrdctPercentage)/100));
-						}
-
 					}
 					else
 					{
-						int isDiscountOnTotalAmount=Integer.parseInt(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[2]);
 						BenifitRowIdPercentageDiscount=Integer.parseInt(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[1]);
-
-						if(isDiscountOnTotalAmount==0)
-						{
-							PrdMaxValuePercentageDiscount=PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0];
-						}
-						else
-						{
-							PrdMaxValuePercentageDiscount=String.valueOf(Double.parseDouble(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0])+Double.parseDouble(addOnPrdctPercentage.split(Pattern.quote("^"))[0]));
-						}
-
-						Double totalVal=StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-						PrdMaxValuePercentageDiscountInAmount=String.valueOf(totalVal*(Double.parseDouble(PrdMaxValuePercentageDiscount)/100));
+						PrdMaxValuePercentageDiscount=PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0];
 					}
 					if(PrdMaxValueFlatDiscount.equals(""))
 					{
-						int isDiscountOnTotalAmount=Integer.parseInt(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[2]);
-						if(isDiscountOnTotalAmount==0)
-						{
-							PrdMaxValueFlatDiscount="0.00";
-						}
-						else
-						{
-							PrdMaxValueFlatDiscount=String.valueOf(Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0]));
-						}
-
+						PrdMaxValueFlatDiscount="0.00";
 					}else
 					{
 
 						if(per.intValue()!=0)
 						{
 							//volume
-					    		/*int prdQty=Integer.parseInt(hmapPrdctOdrQty.get(ProductID));
+					    		*//*int prdQty=Integer.parseInt(hmapPrdctOdrQty.get(ProductID));
 					    		Double perVoume=per;
 					    		Double productSingleUnitVolume=Double.parseDouble(prdVolume);
 					    		Double prodPuchasedQtyBasedVolume=productSingleUnitVolume*prdQty;
-					    		int prdNoOfVolumeCount=(prodPuchasedQtyBasedVolume.intValue()/perVoume.intValue());*/
+					    		int prdNoOfVolumeCount=(prodPuchasedQtyBasedVolume.intValue()/perVoume.intValue());*//*
 
 							BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
-							int isDiscountOnTotalAmount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[2]);
-							if(isDiscountOnTotalAmount==0)
-							{
-								PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
-							}
-							else
-							{
-								PrdMaxValueFlatDiscount=String.valueOf(Double.parseDouble(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0])+(Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0])));
-							}
-
-						    	/*int finalValue;
+							PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+						    	*//*int finalValue;
 						    	if(prdNoOfVolumeCount!=0)
 						    	{
 						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);//prdNoOfVolumeCount*
@@ -7946,64 +7563,26 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						    		finalValue=prdNoOfVolumeCount*Integer.parseInt(PrdMaxValueFlatDiscount);
 						    	}
 
-						    	PrdMaxValueFlatDiscount=""+finalValue;*/
+						    	PrdMaxValueFlatDiscount=""+finalValue;*//*
 						}
 						else
 						{
 							BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
-							int isDiscountOnTotalAmount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[2]);
-							if(isDiscountOnTotalAmount==0)
-							{
-								PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
-							}
-							else
-							{
-								PrdMaxValueFlatDiscount=String.valueOf(Double.parseDouble(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0])+(Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0])));
-							}
-							// PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+							PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
 						}
 					}
 					if(!PrdMaxValueFlatDiscount.equals("0.00") || !PrdMaxValuePercentageDiscount.equals("0.00"))
 					{
-						if(Double.parseDouble(PrdMaxValuePercentageDiscountInAmount)>=Double.parseDouble(PrdMaxValueFlatDiscount))
+						if(Double.parseDouble(PrdMaxValuePercentageDiscount)>=Double.parseDouble(PrdMaxValueFlatDiscount))
 						{
 							//If Percentage Discount is greater the FlatAmt Code Starts Here
-
-							int flgAppilied=-1;
+							//If Percentage Discount is greater the FlatAmt Code Starts Here
 							ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax-(StandardRateBeforeTax*(((Double.parseDouble(PrdMaxValuePercentageDiscount)/100))));
-							int isDiscountOnAddTotalPercnt=Integer.parseInt(addOnPrdctPercentage.split(Pattern.quote("^"))[2]);
-							int DiscountOnAddTotalPercnt=Integer.parseInt(addOnPrdctPercentage.split(Pattern.quote("^"))[0]);
-							if(DiscountOnAddTotalPercnt!=0)
-							{
-								if(isDiscountOnAddTotalPercnt==0)
-								{
-									flgAppilied=0;
-									ActualRateAfterDiscountBeforeTax=ActualRateAfterDiscountBeforeTax-(ActualRateAfterDiscountBeforeTax*(((Double.parseDouble(""+DiscountOnAddTotalPercnt)/100))));
-								}
-							}
-
-
 							DiscountAmount=StandardRateBeforeTax-ActualRateAfterDiscountBeforeTax;
+							ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+							ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax+ActualTax;//ActualRateAfterDiscountBeforeTax*((Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+
 							Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-
-
-
-							int isDiscountOnAddTotalAmount=Integer.parseInt(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[2]);
-							Double DiscountOnAddTotalAmount=Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0]);
-							if(DiscountOnAddTotalAmount!=0)
-							{
-								if(isDiscountOnAddTotalAmount==0)
-								{
-									flgAppilied=1;
-									DiscAmtOnPreQtyBasic=DiscAmtOnPreQtyBasic+Double.parseDouble(""+DiscountOnAddTotalAmount);
-								}
-							}
-							Double totalValAfterDiscount=((ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-DiscountOnAddTotalAmount)/Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							//ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
-							//ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax+ActualTax;//ActualRateAfterDiscountBeforeTax*((Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-							ActualTax=totalValAfterDiscount*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
-							ActualRateAfterDiscountAfterTax=totalValAfterDiscount+ActualTax;//ActualRateAfterDiscountBeforeTax*((Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
-
 
 							Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
 							DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
@@ -8022,24 +7601,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							}
 
 							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							Double ActualRateAfterDiscountBeforeTaxTotal;
-							if(flgAppilied==1)
-							{
-
-								OrderValPrdQtyBasis=OrderValPrdQtyBasis-(Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0]));
-								ActualRateAfterDiscountBeforeTaxTotal=	(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-(Double.parseDouble(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0]));
-							}
-							else
-							{
-								ActualRateAfterDiscountBeforeTaxTotal=ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
-							}
 							Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
-
-
 							OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
 							((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
 							hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
-							TotalOrderValBeforeTax=TotalOrderValBeforeTax+ActualRateAfterDiscountBeforeTaxTotal;//
+							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));//
 
 							TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
 
@@ -8048,61 +7614,39 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						else
 						{
 							//If Flat Amount is greater the Percentage Code Starts Here
-
-							int flgAppilied=-1;
-
-							int isDiscountOnAddTotalAmount=Integer.parseInt(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[2]);
-							int DiscountOnAddTotalAmount=Integer.parseInt(addOnPrdctFlatDiscount.split(Pattern.quote("^"))[0]);
-							if(DiscountOnAddTotalAmount!=0)
-							{
-								if(isDiscountOnAddTotalAmount==0)
-								{
-									PrdMaxValueFlatDiscount=String.valueOf(Double.parseDouble(PrdMaxValueFlatDiscount)+(Double.parseDouble(""+DiscountOnAddTotalAmount)));
-								}
-							}
-
 							ActualRateAfterDiscountBeforeTax=(StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-Double.parseDouble(PrdMaxValueFlatDiscount);
-							int isDiscountOnAddTotalPercnt=Integer.parseInt(addOnPrdctPercentage.split(Pattern.quote("^"))[2]);
-							int DiscountOnAddTotalPercnt=Integer.parseInt(addOnPrdctPercentage.split(Pattern.quote("^"))[0]);
-							if(DiscountOnAddTotalPercnt!=0)
-							{
-								if(isDiscountOnAddTotalPercnt==0)
-								{
-									ActualRateAfterDiscountBeforeTax=ActualRateAfterDiscountBeforeTax-(ActualRateAfterDiscountBeforeTax*(((Double.parseDouble(""+DiscountOnAddTotalPercnt)/100))));
-								}
-							}
 							DiscountAmount=Double.parseDouble(PrdMaxValueFlatDiscount);
 							ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
 							ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
 							Double DiscAmtOnPreQtyBasic=0.00;
 							if(per.intValue()>0)
 							{
-								DiscAmtOnPreQtyBasic=DiscountAmount;//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))*Double.parseDouble(prdVolume))/per);
+								DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))*Double.parseDouble(prdVolume))/per);
 							}
 							else
 							{
-								DiscAmtOnPreQtyBasic=DiscountAmount;//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))));
+								DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))));
 							}
 							Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
 							DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
 							((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
 							hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
 							TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
-							TotTaxAmount=TotTaxAmount+(ActualTax);//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID)
+							TotTaxAmount=TotTaxAmount+(ActualTax);/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID)
 
-							Double TaxValue=ActualTax;//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+							Double TaxValue=ActualTax;/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
 							TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
 							hmapProductTaxValue.put(ProductID, ""+TaxValue);
 							if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
 							{
 								hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
 							}
-							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax;//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax;/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
 							Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
 							OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
 							((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
 							hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
-							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax);//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax);/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
 							TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
 							//If Flat Amount is greater the Percentage Code Ends Here
 						}
@@ -8224,102 +7768,880 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		Double GrossInvValue=totalGrossVALAfterDiscount + TotTaxAmount;
 		GrossInvValue=Double.parseDouble(new DecimalFormat("##.##").format(GrossInvValue));
 		tv_GrossInvVal.setText(""+GrossInvValue);
-		Double totalInvcVal= outstandingvalue+GrossInvValue;
-		tvTtlAmtOutstandingVAL.setText(""+totalInvcVal);
+		//Now the its Time to Show the OverAll Summary Code Starts Here
+	}*/
+
+	public void orderBookingTotalCalc()
+	{
+		Double StandardRate=0.00;
+		Double StandardRateBeforeTax=0.00;
+		Double StandardTax=0.00;
+		Double ActualRateAfterDiscountBeforeTax=0.00;
+		Double DiscountAmount=0.00;
+		Double ActualTax=0.00;
+		Double ActualRateAfterDiscountAfterTax=0.00;
+
+		String PrdMaxValuePercentageDiscount="";
+		String PrdMaxValueFlatDiscount="";
+
+		Double TotalFreeQTY=0.00;
+		Double TotalProductLevelDiscount=0.00;
+		Double TotalOrderValBeforeTax=0.00;
+		Double TotAdditionaDiscount=0.00;
+		Double TotOderValueAfterAdditionaDiscount=0.00;
+		Double TotTaxAmount=0.00;
+		Double TotOderValueAfterTax=0.00;
+
+		int flgWholeSellApplicable=0;
+		Double PriceRangeWholeSellApplicable=0.00;
+
+		int prdListCount =hmapPrdctIdPrdctNameVisible.size();
+		tvRateHeading.setText("Rate-S");
+		for (int index=0; index < prdListCount; index++){
+			View vRow = ll_prdct_detal.getChildAt(index);
+
+			int PCateIdDetails=Integer.parseInt(vRow.getTag().toString().split(Pattern.quote("_"))[0]);
+			String ProductID=((TextView)(vRow).findViewById(R.id.tvProdctName)).getTag().toString().split(Pattern.quote("_"))[1];
+
+			if(hmapPrdctOdrQty.containsKey(ProductID))
+			{
+				flgWholeSellApplicable=Integer.parseInt(hmapflgWholeSellApplicable.get(ProductID));
+				PriceRangeWholeSellApplicable=Double.parseDouble(hmapPriceRangeWholeSellApplicable.get(ProductID));
+
+				((TextView)(vRow).findViewById(R.id.tv_FreeQty)).setText(hmapPrdctFreeQty.get(ProductID).toString());
+				TotalFreeQTY=TotalFreeQTY+Integer.parseInt(hmapPrdctFreeQty.get(ProductID));
+				hmapProductTaxValue.put(ProductID, "0.00");
+				hmapMinDlvrQtyQPTaxAmount.put(ProductID, "0.00");
+				((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText("0.00");
+				if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>0)
+				{
+						/*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*/
+					((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapProductStandardRate.get(ProductID));
+						if(PriceApplyDiscountLevelType!=0)
+					{
+
+
+						Double ProductOrderValueBeforeWholeSaleBeforeTax=Double.parseDouble(hmapProductStandardRateBeforeTax.get(ProductID))*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+						ProductOrderValueBeforeWholeSaleBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(ProductOrderValueBeforeWholeSaleBeforeTax));
+						hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.put(ProductID,""+ProductOrderValueBeforeWholeSaleBeforeTax);
+					}
+					if(Integer.parseInt(hmapProductflgPriceAva.get(ProductID))>0)
+					{
+						StandardRate=Double.parseDouble(hmapProductStandardRate.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+					}
+					else
+					{
+						StandardRate=Double.parseDouble(hmapProductStandardRate.get(ProductID));
+						StandardRateBeforeTax=Double.parseDouble(hmapProductStandardRateBeforeTax.get(ProductID));
+						StandardTax=Double.parseDouble(hmapProductStandardTax.get(ProductID));
+
+					}
+
+					if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
+					{
+						if(hmapMinDlvrQty.containsKey(ProductID))
+						{
+							if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
+							{
+								StandardRateBeforeTax=Double.parseDouble(hmapMinDlvrQtyQPBT.get(ProductID));
+								StandardTax=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
+							}
+						}
+					}
+
+
+
+					PrdMaxValuePercentageDiscount=dbengine.fnctnGetHighestDiscountPercentge(ProductID, storeID,strGlobalInvoiceNumber);
+					PrdMaxValueFlatDiscount=dbengine.fnctnGetHighestDiscountAmount(ProductID, storeID,strGlobalInvoiceNumber);
+					int BenifitRowIdPercentageDiscount=0;
+					int BenifitRowIdFlatDiscount=0;
+					//Double per=Double.parseDouble(hmapProductVolumePer.get(ProductID));
+
+					Double per;
+					String perProduct=dbengine.fnctnGetfreePerUnitVol(ProductID, storeID,strGlobalInvoiceNumber);
+					if(perProduct.equals(""))
+					{
+						per=0.0;
+					}
+					else
+					{
+						per=Double.parseDouble((perProduct.split(Pattern.quote("^"))[0]));
+					}
+
+					String value=hmapPrdctVolRatTax.get(ProductID).toString();
+					StringTokenizer tokens=new StringTokenizer(value,Pattern.quote("^"));
+					//Volume^Rate^TaxAmount
+					String prdVolume = tokens.nextElement().toString();
+
+					StandardRate=Double.parseDouble(new DecimalFormat("##.##").format(StandardRate));
+					//		((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(hmapProductStandardRateBeforeTax.get(ProductID));
+					if(PrdMaxValuePercentageDiscount.equals(""))
+					{
+						PrdMaxValuePercentageDiscount="0.00";
+					}
+					else
+					{
+						BenifitRowIdPercentageDiscount=Integer.parseInt(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[1]);
+						PrdMaxValuePercentageDiscount=PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0];
+					}
+					if(PrdMaxValueFlatDiscount.equals(""))
+					{
+						PrdMaxValueFlatDiscount="0.00";
+					}else
+					{
+
+						if(per.intValue()!=0)
+						{
+							//volume
+					    		/*int prdQty=Integer.parseInt(hmapPrdctOdrQty.get(ProductID));
+					    		Double perVoume=per;
+					    		Double productSingleUnitVolume=Double.parseDouble(prdVolume);
+					    		Double prodPuchasedQtyBasedVolume=productSingleUnitVolume*prdQty;
+					    		int prdNoOfVolumeCount=(prodPuchasedQtyBasedVolume.intValue()/perVoume.intValue());*/
+
+							BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
+							PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+						    	/*int finalValue;
+						    	if(prdNoOfVolumeCount!=0)
+						    	{
+						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);//prdNoOfVolumeCount*
+						    	}
+						    	else
+						    	{
+						    		finalValue=0;
+						    	}
+
+						    	if(prdNoOfVolumeCount!=0)
+						    	{
+						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);
+						    	}
+						    	else
+						    	{
+						    		finalValue=prdNoOfVolumeCount*Integer.parseInt(PrdMaxValueFlatDiscount);
+						    	}
+
+						    	PrdMaxValueFlatDiscount=""+finalValue;*/
+						}
+						else
+						{
+							BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
+							PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+						}
+					}
+					if(!PrdMaxValueFlatDiscount.equals("0.00") || !PrdMaxValuePercentageDiscount.equals("0.00"))
+					{
+						if(Double.parseDouble(PrdMaxValuePercentageDiscount)>=Double.parseDouble(PrdMaxValueFlatDiscount))
+						{
+							//If Percentage Discount is greater the FlatAmt Code Starts Here
+							ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax-(StandardRateBeforeTax*(((Double.parseDouble(PrdMaxValuePercentageDiscount)/100))));
+							DiscountAmount=StandardRateBeforeTax-ActualRateAfterDiscountBeforeTax;
+							ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+							ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax+ActualTax;//ActualRateAfterDiscountBeforeTax*((Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+
+							Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+
+							Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
+							DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+							((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+							hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+							TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+							TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+
+							Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+							TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+							hmapProductTaxValue.put(ProductID, ""+TaxValue);
+
+							if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+							{
+								hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+							}
+
+							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+							Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+							OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+							((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+							hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));//
+
+							TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+
+							//If Percentage Discount is greater the FlatAmt Code Ends Here
+						}
+						else
+						{
+							//If Flat Amount is greater the Percentage Code Starts Here
+							ActualRateAfterDiscountBeforeTax=(StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-Double.parseDouble(PrdMaxValueFlatDiscount);
+							DiscountAmount=Double.parseDouble(PrdMaxValueFlatDiscount);
+							ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+							ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+							Double DiscAmtOnPreQtyBasic=0.00;
+							if(per.intValue()>0)
+							{
+								DiscAmtOnPreQtyBasic=DiscountAmount;//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))*Double.parseDouble(prdVolume))/per);
+							}
+							else
+							{
+								DiscAmtOnPreQtyBasic=DiscountAmount;//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))));
+							}
+							Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
+							DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+							((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+							hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+							TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+							TotTaxAmount=TotTaxAmount+(ActualTax);//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID)
+
+							Double TaxValue=ActualTax;//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+							TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+							hmapProductTaxValue.put(ProductID, ""+TaxValue);
+							if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+							{
+								hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+							}
+							Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax;//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+							Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+							OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+							((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+							hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+							TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax);//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+							TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+							//If Flat Amount is greater the Percentage Code Ends Here
+						}
+					}
+					else
+					{
+						//If No Percentage Discount or Flat Discount is Applicable Code Starts Here
+						ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax;
+						DiscountAmount=0.00;
+						ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+						ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+
+						Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+
+						Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
+						DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+						((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+						hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+
+						TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+						TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+
+						Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+						TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+						hmapProductTaxValue.put(ProductID, ""+TaxValue);
+						if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+						{
+							hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+						}
+						Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+						Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+						OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+						((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+						hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+						TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+						TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+						//If No Percentage Discount or Flat Discount is Applicable Code Ends Here
+					}
+
+				}
+
+			}
+
+		}
+		//Now the its Time to Show the OverAll Summary Code Starts Here
+
+		tvFtotal.setText((""+ TotalFreeQTY).trim());
+
+		TotalProductLevelDiscount=Double.parseDouble(new DecimalFormat("##.##").format(TotalProductLevelDiscount));
+		tvDis.setText((""+ TotalProductLevelDiscount).trim());
+
+		TotalOrderValBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(TotalOrderValBeforeTax));
+		tv_NetInvValue.setText((""+ TotalOrderValBeforeTax).trim());
+
+		String percentBenifitMax=dbengine.fnctnGetMaxAssignedBen8DscntApld1(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+		Double percentMax=0.00;
+		Double percentMaxGross=0.0;
+		Double amountMaxGross=0.0;
+
+		String amountBenfitMaxGross=dbengine.fnctnGetMaxAssignedBen9DscntApld2(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+		String percentBenifitMaxGross=dbengine.fnctnGetMaxAssignedBen8DscntApld2(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+
+		if(percentBenifitMaxGross.equals(""))
+		{
+			percentMaxGross=0.0;
+		}
+		else
+		{
+			percentMaxGross=Double.parseDouble(percentBenifitMaxGross.split(Pattern.quote("^"))[0]);
+		}
+		if(percentBenifitMax.equals("") )
+		{
+			percentMax=0.00;
+		}
+		else
+		{
+			percentMax=Double.parseDouble(percentBenifitMax.split(Pattern.quote("^"))[0]);
+		}
+
+		String amountBenifitMax=dbengine.fnctnGetMaxAssignedBen9DscntApld1(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+		Double amountMax=0.00;
+		if(percentBenifitMax.equals(""))
+		{
+			amountMax=0.0;
+		}
+		else
+		{
+			amountMax=Double.parseDouble(amountBenifitMax.split(Pattern.quote("^"))[0]);
+		}
+
+
+		tvAddDisc.setText(""+ "0.00");
+
+		tv_NetInvAfterDiscount.setText(""+ TotalOrderValBeforeTax);
+
+		TotTaxAmount=Double.parseDouble(new DecimalFormat("##.##").format(TotTaxAmount));
+		tvTAmt.setText(""+ TotTaxAmount);
+
+		Double totalGrossVALMaxPercentage=TotalOrderValBeforeTax-TotalOrderValBeforeTax*(percentMaxGross/100);
+		Double totalGrossrVALMaxAmount=TotalOrderValBeforeTax-amountMaxGross;
+		Double totalGrossVALAfterDiscount = 0.0;
+		if(totalGrossVALMaxPercentage!=totalGrossrVALMaxAmount)
+		{
+			totalGrossVALAfterDiscount=Math.min(totalGrossrVALMaxAmount, totalGrossVALMaxPercentage);
+		}
+		else
+		{
+			totalGrossVALAfterDiscount=totalGrossrVALMaxAmount;
+		}
+
+		if(totalGrossVALAfterDiscount==totalGrossrVALMaxAmount && totalGrossrVALMaxAmount!=0.0)
+		{
+			dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(amountBenfitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID,strGlobalInvoiceNumber);
+		}
+		else if(totalGrossVALAfterDiscount==totalGrossVALMaxPercentage && percentMaxGross!=0.0)
+		{
+			dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(percentBenifitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID,strGlobalInvoiceNumber);
+		}
+
+		Double GrossInvValue=totalGrossVALAfterDiscount + TotTaxAmount;
+		GrossInvValue=Double.parseDouble(new DecimalFormat("##.##").format(GrossInvValue));
+
+		Double CollectionAmt=0.00;//dbengine.fnTotCollectionAmtAgainstStore(storeID,strGlobalInvoiceNumber);
+		CollectionAmt=Double.parseDouble(new DecimalFormat("##.##").format(CollectionAmt));
+		if(GrossInvValue>0.0)
+		{
+			VisitTypeStatus="2";
+		}
+		if(CollectionAmt>0.0)
+		{
+			VisitTypeStatus="3";
+		}
+		if(CollectionAmt>0.0 && GrossInvValue>0.0)
+		{
+			VisitTypeStatus="4";
+		}
+		//dbengine.updateVisitTypeStatusOfStore(storeID,VisitTypeStatus);
+		tv_GrossInvVal.setText(""+GrossInvValue);
+		if(PriceApplyDiscountLevelType!=0) {
+			if(PriceApplyDiscountLevelType==1) {// Invoice Level Whole Sell Price Applicable but Not At Invoice Level
+				//if (flgWholeSellApplicable != 0) {
+				if (GrossInvValue >= cutoffvalue) {
+					tvRateHeading.setText("Rate-W");
+					flgAllTotalOrderValueCrossesCutOff=true;
+					CalculateInvoiceLevelOrProductLevelWholeSaleValue(PriceApplyDiscountLevelType);
+				}
+				//}
+			}
+			if(PriceApplyDiscountLevelType==2) {//Product Level Whole Sell Price Applicable but Not At Invoice Level
+				CalculateInvoiceLevelOrProductLevelWholeSaleValue(PriceApplyDiscountLevelType);
+			}
+		}
 		//Now the its Time to Show the OverAll Summary Code Starts Here
 	}
 
 
+	public void CalculateInvoiceLevelOrProductLevelWholeSaleValue(int flgPriceApplyDiscountLevelType)
+	{
+		Double StandardRate=0.00;
+		Double StandardRateBeforeTax=0.00;
+		Double StandardTax=0.00;
+		Double ActualRateAfterDiscountBeforeTax=0.00;
+		Double DiscountAmount=0.00;
+		Double ActualTax=0.00;
+		Double ActualRateAfterDiscountAfterTax=0.00;
+
+		String PrdMaxValuePercentageDiscount="";
+		String PrdMaxValueFlatDiscount="";
+
+		Double TotalFreeQTY=0.00;
+		Double TotalProductLevelDiscount=0.00;
+		Double TotalOrderValBeforeTax=0.00;
+		Double TotAdditionaDiscount=0.00;
+		Double TotOderValueAfterAdditionaDiscount=0.00;
+		Double TotTaxAmount=0.00;
+		Double TotOderValueAfterTax=0.00;
+
+		int flgWholeSellApplicable=0;
+		Double PriceRangeWholeSellApplicable=0.00;
+
+		int prdListCount =hmapPrdctIdPrdctNameVisible.size();
+
+		for (int index=0; index < prdListCount; index++){
+			View vRow = ll_prdct_detal.getChildAt(index);
+
+			int PCateIdDetails=Integer.parseInt(vRow.getTag().toString().split(Pattern.quote("_"))[0]);
+			String ProductID=((TextView)(vRow).findViewById(R.id.tvProdctName)).getTag().toString().split(Pattern.quote("_"))[1];
+			if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID))
+			{
+				if(hmapPrdctOdrQty.containsKey(ProductID))
+				{
+					flgWholeSellApplicable=Integer.parseInt(hmapflgWholeSellApplicable.get(ProductID));
+					PriceRangeWholeSellApplicable=Double.parseDouble(hmapPriceRangeWholeSellApplicable.get(ProductID));
+					hmapPrdctFreeQty.put(ProductID,"0");
+					((TextView)(vRow).findViewById(R.id.tv_FreeQty)).setText(hmapPrdctFreeQty.get(ProductID).toString());
+					TotalFreeQTY=TotalFreeQTY+Integer.parseInt(hmapPrdctFreeQty.get(ProductID));
+					hmapProductTaxValue.put(ProductID, "0.00");
+					hmapMinDlvrQtyQPTaxAmount.put(ProductID, "0.00");
+					((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText("0.00");
+					if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>0)
+					{
+						/*StandardRate=Double.parseDouble(hmapProductMRP.get(ProductID))/((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+						StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+						StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);*/
+						if(flgPriceApplyDiscountLevelType==1)
+						{
+							if(Integer.parseInt(hmapProductflgPriceAva.get(ProductID))>0)
+							{
+								StandardRate=Double.parseDouble(hmapStandardRateWholeSale.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+								StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+								StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+								((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapStandardRateWholeSale.get(ProductID));
+							}
+							else
+							{
+								StandardRate=Double.parseDouble(hmapStandardRateWholeSale.get(ProductID));
+								StandardRateBeforeTax=Double.parseDouble(hmapStandardRateBeforeTaxWholeSell.get(ProductID));
+								StandardTax=Double.parseDouble(hmapStandardTaxWholeSale.get(ProductID));
+								((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapStandardRateWholeSale.get(ProductID));
+							}
+
+						}
+						if(flgPriceApplyDiscountLevelType==2)
+						{
+							if(hmapflgWholeSellApplicable.containsKey(ProductID))
+							{
+								if(Double.parseDouble(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.get(ProductID))>=Double.parseDouble(hmapPriceRangeWholeSellApplicable.get(ProductID)))
+								{
+									if(Integer.parseInt(hmapProductflgPriceAva.get(ProductID))>0)
+									{
+										StandardRate=Double.parseDouble(hmapStandardRateWholeSale.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+										StandardRateBeforeTax=StandardRate/(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+										StandardTax=StandardRateBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+										((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapStandardRateWholeSale.get(ProductID));
+									}
+									else
+									{
+										StandardRate=Double.parseDouble(hmapStandardRateWholeSale.get(ProductID));
+										StandardRateBeforeTax=Double.parseDouble(hmapStandardRateBeforeTaxWholeSell.get(ProductID));
+										StandardTax=Double.parseDouble(hmapStandardTaxWholeSale.get(ProductID));
+										((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(""+hmapStandardRateWholeSale.get(ProductID));
+
+									}
+								}
+								else
+								{
+									if (Integer.parseInt(hmapProductflgPriceAva.get(ProductID)) > 0) {
+										StandardRate = Double.parseDouble(hmapProductStandardRate.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+										StandardRateBeforeTax = StandardRate / (1 + (Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID)) / 100));
+										StandardTax = StandardRateBeforeTax * (Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID)) / 100);
+									} else {
+										StandardRate = Double.parseDouble(hmapProductStandardRate.get(ProductID));
+										StandardRateBeforeTax = Double.parseDouble(hmapProductStandardRateBeforeTax.get(ProductID));
+										StandardTax = Double.parseDouble(hmapProductStandardTax.get(ProductID));
+
+									}
+								}
+							}
+							else {
+								if (Integer.parseInt(hmapProductflgPriceAva.get(ProductID)) > 0) {
+									StandardRate = Double.parseDouble(hmapProductStandardRate.get(ProductID));///((1+(Double.parseDouble(hmapProductRetailerMarginPercentage.get(ProductID))/100)));
+									StandardRateBeforeTax = StandardRate / (1 + (Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID)) / 100));
+									StandardTax = StandardRateBeforeTax * (Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID)) / 100);
+								} else {
+									StandardRate = Double.parseDouble(hmapProductStandardRate.get(ProductID));
+									StandardRateBeforeTax = Double.parseDouble(hmapProductStandardRateBeforeTax.get(ProductID));
+									StandardTax = Double.parseDouble(hmapProductStandardTax.get(ProductID));
+
+								}
+							}
+						}
+
+			/*if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
+			{
+				if(hmapMinDlvrQty.containsKey(ProductID))
+				{
+					if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
+					{
+						StandardRateBeforeTax=Double.parseDouble(hmapMinDlvrQtyQPBT.get(ProductID));
+						StandardTax=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
+					}
+				}
+			}*/
+
+
+
+			/*PrdMaxValuePercentageDiscount=dbengine.fnctnGetHighestDiscountPercentge(ProductID, storeID);
+			PrdMaxValueFlatDiscount=dbengine.fnctnGetHighestDiscountAmount(ProductID, storeID);
+			int BenifitRowIdPercentageDiscount=0;
+			int BenifitRowIdFlatDiscount=0;
+			//Double per=Double.parseDouble(hmapProductVolumePer.get(ProductID));
+
+			Double per;
+			String perProduct=dbengine.fnctnGetfreePerUnitVol(ProductID, storeID);
+			if(perProduct.equals(""))
+			{
+				per=0.0;
+			}
+			else
+			{
+				per=Double.parseDouble((perProduct.split(Pattern.quote("^"))[0]));
+			}*/
+
+						String value=hmapPrdctVolRatTax.get(ProductID).toString();
+						StringTokenizer tokens=new StringTokenizer(value,Pattern.quote("^"));
+						//Volume^Rate^TaxAmount
+						String prdVolume = tokens.nextElement().toString();
+
+						StandardRate=Double.parseDouble(new DecimalFormat("##.##").format(StandardRate));
+
+
+
+						//		((TextView)(vRow).findViewById(R.id.txtVwRate)).setText(hmapProductStandardRateBeforeTax.get(ProductID));
+			/*if(PrdMaxValuePercentageDiscount.equals(""))
+			{
+				PrdMaxValuePercentageDiscount="0.00";
+			}
+			else
+			{
+				BenifitRowIdPercentageDiscount=Integer.parseInt(PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[1]);
+				PrdMaxValuePercentageDiscount=PrdMaxValuePercentageDiscount.split(Pattern.quote("^"))[0];
+			}
+			if(PrdMaxValueFlatDiscount.equals(""))
+			{
+				PrdMaxValueFlatDiscount="0.00";
+			}else
+			{
+
+				if(per.intValue()!=0)
+				{
+					//volume
+					    		*//*int prdQty=Integer.parseInt(hmapPrdctOdrQty.get(ProductID));
+					    		Double perVoume=per;
+					    		Double productSingleUnitVolume=Double.parseDouble(prdVolume);
+					    		Double prodPuchasedQtyBasedVolume=productSingleUnitVolume*prdQty;
+					    		int prdNoOfVolumeCount=(prodPuchasedQtyBasedVolume.intValue()/perVoume.intValue());*//*
+
+					BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
+					PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+						    	*//*int finalValue;
+						    	if(prdNoOfVolumeCount!=0)
+						    	{
+						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);//prdNoOfVolumeCount*
+						    	}
+						    	else
+						    	{
+						    		finalValue=0;
+						    	}
+
+						    	if(prdNoOfVolumeCount!=0)
+						    	{
+						    		finalValue=Integer.parseInt(PrdMaxValueFlatDiscount);
+						    	}
+						    	else
+						    	{
+						    		finalValue=prdNoOfVolumeCount*Integer.parseInt(PrdMaxValueFlatDiscount);
+						    	}
+
+						    	PrdMaxValueFlatDiscount=""+finalValue;*//*
+				}
+				else
+				{
+					BenifitRowIdFlatDiscount=Integer.parseInt(PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[1]);
+					PrdMaxValueFlatDiscount=PrdMaxValueFlatDiscount.split(Pattern.quote("^"))[0];
+				}
+			}*/
+			/*if(!PrdMaxValueFlatDiscount.equals("0.00") || !PrdMaxValuePercentageDiscount.equals("0.00"))
+			{
+				if(Double.parseDouble(PrdMaxValuePercentageDiscount)>=Double.parseDouble(PrdMaxValueFlatDiscount))
+				{
+					//If Percentage Discount is greater the FlatAmt Code Starts Here
+					ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax-(StandardRateBeforeTax*(((Double.parseDouble(PrdMaxValuePercentageDiscount)/100))));
+					DiscountAmount=StandardRateBeforeTax-ActualRateAfterDiscountBeforeTax;
+					ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+					ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax+ActualTax;//ActualRateAfterDiscountBeforeTax*((Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+
+					Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+
+					Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
+					DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+					((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+					hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+					TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+					TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+
+					Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+					TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+					hmapProductTaxValue.put(ProductID, ""+TaxValue);
+
+					if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+					{
+						hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+					}
+
+					Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+					Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+					OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+					((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+					hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+					TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));//
+
+					TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+
+					//If Percentage Discount is greater the FlatAmt Code Ends Here
+				}
+				else
+				{
+					//If Flat Amount is greater the Percentage Code Starts Here
+					ActualRateAfterDiscountBeforeTax=(StandardRateBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)))-Double.parseDouble(PrdMaxValueFlatDiscount);
+					DiscountAmount=Double.parseDouble(PrdMaxValueFlatDiscount);
+					ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+					ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+					Double DiscAmtOnPreQtyBasic=0.00;
+					if(per.intValue()>0)
+					{
+						DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))*Double.parseDouble(prdVolume))/per);
+					}
+					else
+					{
+						DiscAmtOnPreQtyBasic=DiscountAmount;/*//*((Double.parseDouble(hmapPrdctOdrQty.get(ProductID))));
+					}
+					Double DiscAmtOnPreQtyBasicToDisplay=DiscAmtOnPreQtyBasic;
+					DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+					((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+					hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+					TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+					TotTaxAmount=TotTaxAmount+(ActualTax);/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID)
+
+					Double TaxValue=ActualTax;/*//* Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+					TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+					hmapProductTaxValue.put(ProductID, ""+TaxValue);
+					if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+					{
+						hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+					}
+					Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax;/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+					Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+					OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+					((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+					hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+					TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax);/*//*Double.parseDouble(hmapPrdctOdrQty.get(ProductID))
+					TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+					//If Flat Amount is greater the Percentage Code Ends Here
+				}
+			}
+			else
+			{*/
+						//If No Percentage Discount or Flat Discount is Applicable Code Starts Here
+						ActualRateAfterDiscountBeforeTax=StandardRateBeforeTax;
+						DiscountAmount=0.00;
+						ActualTax=ActualRateAfterDiscountBeforeTax*(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100);
+						ActualRateAfterDiscountAfterTax=ActualRateAfterDiscountBeforeTax*(1+(Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID))/100));
+
+						Double DiscAmtOnPreQtyBasic=DiscountAmount*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+
+						Double DiscAmtOnPreQtyBasicToDisplay=0.00;//DiscAmtOnPreQtyBasic;
+						DiscAmtOnPreQtyBasicToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(DiscAmtOnPreQtyBasicToDisplay));
+						((TextView)(vRow).findViewById(R.id.tv_DisVal)).setText(""+DiscAmtOnPreQtyBasicToDisplay);
+						hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
+
+						TotalProductLevelDiscount=TotalProductLevelDiscount+DiscAmtOnPreQtyBasic;
+						TotTaxAmount=TotTaxAmount+(ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+
+						Double TaxValue=ActualTax * Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+						TaxValue=Double.parseDouble(new DecimalFormat("##.##").format(TaxValue));
+						hmapProductTaxValue.put(ProductID, ""+TaxValue);
+				/*if(hmapMinDlvrQtyQPTaxAmount.containsKey(ProductID))
+				{
+					hmapMinDlvrQtyQPTaxAmount.put(ProductID, ""+TaxValue);
+				}*/
+						Double OrderValPrdQtyBasis=ActualRateAfterDiscountAfterTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID));
+						Double OrderValPrdQtyBasisToDisplay=OrderValPrdQtyBasis;
+						OrderValPrdQtyBasisToDisplay=Double.parseDouble(new DecimalFormat("##.##").format(OrderValPrdQtyBasisToDisplay));
+						((TextView)(vRow).findViewById(R.id.tv_Orderval)).setText(""+OrderValPrdQtyBasisToDisplay);
+						hmapProductIdOrdrVal.put(ProductID, ""+OrderValPrdQtyBasis);
+						TotalOrderValBeforeTax=TotalOrderValBeforeTax+(ActualRateAfterDiscountBeforeTax*Double.parseDouble(hmapPrdctOdrQty.get(ProductID)));
+						TotOderValueAfterTax=TotOderValueAfterTax+OrderValPrdQtyBasis;
+						//If No Percentage Discount or Flat Discount is Applicable Code Ends Here
+						//}
+
+					}
+
+				}
+			}
+
+
+		}
+		//Now the its Time to Show the OverAll Summary Code Starts Here
+
+		tvFtotal.setText((""+ TotalFreeQTY).trim());
+
+		TotalProductLevelDiscount=Double.parseDouble(new DecimalFormat("##.##").format(TotalProductLevelDiscount));
+		tvDis.setText((""+ TotalProductLevelDiscount).trim());
+
+		TotalOrderValBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(TotalOrderValBeforeTax));
+		tv_NetInvValue.setText((""+ TotalOrderValBeforeTax).trim());
+
+		/*String percentBenifitMax=dbengine.fnctnGetMaxAssignedBen8DscntApld1(storeID,strGlobalOrderID);
+		Double percentMax=0.00;
+		Double percentMaxGross=0.0;
+		Double amountMaxGross=0.0;
+
+		String amountBenfitMaxGross=dbengine.fnctnGetMaxAssignedBen9DscntApld2(storeID,strGlobalOrderID);
+		String percentBenifitMaxGross=dbengine.fnctnGetMaxAssignedBen8DscntApld2(storeID,strGlobalOrderID);
+
+		if(percentBenifitMaxGross.equals(""))
+		{
+			percentMaxGross=0.0;
+		}
+		else
+		{
+			percentMaxGross=Double.parseDouble(percentBenifitMaxGross.split(Pattern.quote("^"))[0]);
+		}
+		if(percentBenifitMax.equals("") )
+		{
+			percentMax=0.00;
+		}
+		else
+		{
+			percentMax=Double.parseDouble(percentBenifitMax.split(Pattern.quote("^"))[0]);
+		}
+
+		String amountBenifitMax=dbengine.fnctnGetMaxAssignedBen9DscntApld1(storeID,strGlobalOrderID);
+		Double amountMax=0.00;
+		if(percentBenifitMax.equals(""))
+		{
+			amountMax=0.0;
+		}
+		else
+		{
+			amountMax=Double.parseDouble(amountBenifitMax.split(Pattern.quote("^"))[0]);
+		}
+
+*/
+		tvAddDisc.setText(""+ "0.00");
+
+		tv_NetInvAfterDiscount.setText(""+ TotalOrderValBeforeTax);
+
+		TotTaxAmount=Double.parseDouble(new DecimalFormat("##.##").format(TotTaxAmount));
+		tvTAmt.setText(""+ TotTaxAmount);
+		Double totalGrossVALAfterDiscount = TotalOrderValBeforeTax;
+		/*Double totalGrossVALMaxPercentage=TotalOrderValBeforeTax-TotalOrderValBeforeTax*(percentMaxGross/100);
+		Double totalGrossrVALMaxAmount=TotalOrderValBeforeTax-amountMaxGross;
+
+		*//*if(totalGrossVALMaxPercentage!=totalGrossrVALMaxAmount)
+		{
+			totalGrossVALAfterDiscount=Math.min(totalGrossrVALMaxAmount, totalGrossVALMaxPercentage);
+		}
+		else
+		{
+			totalGrossVALAfterDiscount=totalGrossrVALMaxAmount;
+		}
+
+		if(totalGrossVALAfterDiscount==totalGrossrVALMaxAmount && totalGrossrVALMaxAmount!=0.0)
+		{
+			dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(amountBenfitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID);
+		}
+		else if(totalGrossVALAfterDiscount==totalGrossVALMaxPercentage && percentMaxGross!=0.0)
+		{
+			dbengine.updatewhatAppliedFlag(1, storeID, Integer.parseInt(percentBenifitMaxGross.split(Pattern.quote("^"))[1]),strGlobalOrderID);
+		}
+*/
+		Double GrossInvValue=totalGrossVALAfterDiscount + TotTaxAmount;
+		GrossInvValue=Double.parseDouble(new DecimalFormat("##.##").format(GrossInvValue));
+		tv_GrossInvVal.setText(""+GrossInvValue);
+
+		//Now the its Time to Show the OverAll Summary Code Starts Here
+	}
 	public void fnUpdateSchemeNameOnScehmeControl(String ProductIdOnClickedControl)
 	{
 		String SchemeNamesApplies="No Scheme Applicable";
 		String scIds="0";
-
-		if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl) || hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl))
+		if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl))
 		{
-			String SchemeOnProduct="";
-
-			if(hmapProductRelatedSchemesList.containsKey(ProductIdOnClickedControl))
-			{
-				SchemeOnProduct=hmapProductRelatedSchemesList.get(ProductIdOnClickedControl).toString();
-				if(hmapProductAddOnSchemesList.containsKey(ProductIdOnClickedControl))
-				{
-					SchemeOnProduct=SchemeOnProduct+"#"+hmapProductAddOnSchemesList.get(ProductIdOnClickedControl);
-				}
-
-			}
-			else
-			{
-
-				SchemeOnProduct=hmapProductAddOnSchemesList.get(ProductIdOnClickedControl);
-
-			}
-
-			String[] arrSchIdsListOnProductID=SchemeOnProduct.split("#");
-
-
-			for(int pSchIdsAppliCount=0;pSchIdsAppliCount<arrSchIdsListOnProductID.length;pSchIdsAppliCount++)
-			{
-				String schOverviewDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split(Pattern.quote("!"))[0];
-				String schId=schOverviewDetails.split(Pattern.quote("_"))[0];
-				if(hmapSchemeIdStoreID.containsKey(schId))
-				{
-					if(SchemeNamesApplies.equals("No Scheme Applicable"))
-					{
-						SchemeNamesApplies=hmapSchemeIDandDescr.get(schId);
-						scIds=schId;
-					}
-					else
-					{
-						SchemeNamesApplies=SchemeNamesApplies+" , "+hmapSchemeIDandDescr.get(schId);
-						scIds=scIds+"^"+schId;
-					}
-				}
+			String SchemeOnProduct=hmapProductRelatedSchemesList.get(ProductIdOnClickedControl).toString();
+			 String[] arrSchIdsListOnProductID=SchemeOnProduct.split("#");
+			 
+			 
+			 for(int pSchIdsAppliCount=0;pSchIdsAppliCount<arrSchIdsListOnProductID.length;pSchIdsAppliCount++)
+			 { 
+			  String schOverviewDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split(Pattern.quote("!"))[0];
+			  String schId=schOverviewDetails.split(Pattern.quote("_"))[0];
+			  if(hmapSchemeIdStoreID.containsKey(schId))
+			  {
+			   if(SchemeNamesApplies.equals("No Scheme Applicable"))
+			   {
+			    SchemeNamesApplies=hmapSchemeIDandDescr.get(schId);
+			    scIds=schId;
+			   }
+			   else
+			   {
+			    SchemeNamesApplies=SchemeNamesApplies+" , "+hmapSchemeIDandDescr.get(schId);
+			    scIds=scIds+"^"+schId;
+			   }  
+			  }
 			 /* else
 			  {
 			   SchemeNamesApplies="Not Applicable Here";
 			   scIds="0";
 			  }*/
-			}
+			 }
 		}
-
-
-		txtVw_schemeApld.setTextColor(Color.parseColor("#3f51b5"));
-		SpannableString content = new SpannableString(SchemeNamesApplies);
-		content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-		txtVw_schemeApld.setText(SchemeNamesApplies);
-		txtVw_schemeApld.setTag(scIds);
-
+	 
+	 
+	 txtVw_schemeApld.setTextColor(Color.parseColor("#3f51b5"));
+	 SpannableString content = new SpannableString(SchemeNamesApplies);
+	 content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+	 txtVw_schemeApld.setText(SchemeNamesApplies);
+	 txtVw_schemeApld.setTag(scIds);
+	 
 	}
 
 
 	public void fnDeletePreviousEntriesSchemeIDsAppliedOverProductAfterValueChange(String CompleteSchemeIdListOnProductID,String ProductIdOnClicked)
 	{
-
-		ArrayList<String> listProductChecked=new ArrayList<>();
+		
 		//53_1_0_1!95$1^1|1^25^5^75^0@94$1^1|1^24^5^50^0@93$1^1|1^23^5^35^0@92$1^1|1^22^5^20^0@91$1^1|1^21^5^15^0@90$1^1|1^20^5^10^0@89$1^1|1^19^5^1^0#
-		String[] werer=CompleteSchemeIdListOnProductID.split(Pattern.quote("#"));
-		for(int pos=0;pos<werer.length;pos++)
-		{
-
-			String schIdforBen10="0";
-			if(!werer[pos].split(Pattern.quote("_"))[0].equals("null"))
+			String[] werer=CompleteSchemeIdListOnProductID.split(Pattern.quote("#"));
+			for(int pos=0;pos<werer.length;pos++)
 			{
-				schIdforBen10=werer[pos].split(Pattern.quote("_"))[0].toString();
-			}
-			//String schmTypeId=werer[pos]..split(Pattern.quote("_")))[1].toString();
-
-			String[] arrProductRelatedToProject=dbengine.fnGetDistinctProductIdAgainstStoreProduct(storeID,schIdforBen10,strGlobalOrderID);
-			if(arrProductRelatedToProject.length>0)
-			{
-
-				for(int i=0;i<arrProductRelatedToProject.length;i++)
+				
+			String schIdforBen10=(CompleteSchemeIdListOnProductID.split(Pattern.quote("#"))[0].split(Pattern.quote("_")))[0].toString();
+			String schmTypeId=(CompleteSchemeIdListOnProductID.split(Pattern.quote("#"))[0].split(Pattern.quote("_")))[1].toString();
+			
+				String[] arrProductRelatedToProject=dbengine.fnGetDistinctProductIdAgainstStoreProduct(storeID,schIdforBen10,strGlobalOrderID,strGlobalInvoiceNumber);
+				if(arrProductRelatedToProject.length>0)
 				{
-					if(arrProductRelatedToProject[i]!=null)
+					
+					for(int i=0;i<arrProductRelatedToProject.length;i++)
 					{
-
+						if(arrProductRelatedToProject[i]!=null)
+						{
+						
 						//BenSubBucketType,FreeProductID,BenifitAssignedValue,BenifitDiscountApplied,BenifitCouponCode
-
+						
 						int BenSubBucketType=Integer.parseInt(arrProductRelatedToProject[i].split(Pattern.quote("^"))[0]);
 						int FreeProductID=Integer.parseInt(arrProductRelatedToProject[i].split(Pattern.quote("^"))[1]);
 						Double BenifitAssignedValue=Double.parseDouble(""+arrProductRelatedToProject[i].split(Pattern.quote("^"))[2]);//Actually Given Values
@@ -8328,126 +8650,119 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						String CurrentSchemeIDOnProduct=arrProductRelatedToProject[i].split(Pattern.quote("^"))[5];
 						int schSlbRowId=Integer.parseInt(arrProductRelatedToProject[i].split(Pattern.quote("^"))[6]);
 						int SchTypeId=Integer.parseInt(arrProductRelatedToProject[i].split(Pattern.quote("^"))[7]);
-
-						String[] AllProductInSchSlab=dbengine.fnGetProductsSchIdSlabRow(storeID,schSlbRowId,strGlobalOrderID);
-
-
+						
+						String[] AllProductInSchSlab=dbengine.fnGetProductsSchIdSlabRow(storeID,schSlbRowId,strGlobalOrderID,strGlobalInvoiceNumber);
+						
+						
 						if(AllProductInSchSlab.length>0)
-						{
-
-							if(BenSubBucketType==10 || BenSubBucketType==7)
 							{
+								
+								if(BenSubBucketType==10 || BenSubBucketType==7)
+								{
 									/*for(int mm=0;mm<AllProductInSchSlab.length;mm++)
 									{*/
-								//Get the Object of Free Quantity TextBox of FreeProductID
-								//Get the value inside the TextBox of FreeProductID
-								//TextBox of  FreeProductID=TextBox of FreeProductID-BenifitAssignedValue
-
-								//hmapPrdctFreeQty.put(""+FreeProductID, ""+(Integer.parseInt(hmapPrdctFreeQty.get(""+FreeProductID).toString())-BenifitAssignedValue.intValue()));
-								//((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+FreeProductID)).setText(""+(Integer.parseInt(((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+FreeProductID)).getText().toString())-BenifitAssignedValue));
+									//Get the Object of Free Quantity TextBox of FreeProductID
+									//Get the value inside the TextBox of FreeProductID
+									//TextBox of  FreeProductID=TextBox of FreeProductID-BenifitAssignedValue
+								
+									//hmapPrdctFreeQty.put(""+FreeProductID, ""+(Integer.parseInt(hmapPrdctFreeQty.get(""+FreeProductID).toString())-BenifitAssignedValue.intValue()));
+									//((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+FreeProductID)).setText(""+(Integer.parseInt(((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+FreeProductID)).getText().toString())-BenifitAssignedValue));
 									/*}*/
-								//dbengine.fnDeleteOldSchemeRowIdRecords(schSlbRowId);
+									//dbengine.fnDeleteOldSchemeRowIdRecords(schSlbRowId);
 
-								String[] bensubBucket10Product=dbengine.fnctnGetBensubBucket10Column(CurrentSchemeIDOnProduct,storeID,strGlobalOrderID);
-								if(bensubBucket10Product.length>0)
-								{
-									for(int index=0;index<bensubBucket10Product.length;index++)
+									String[] bensubBucket10Product=dbengine.fnctnGetBensubBucket10Column(CurrentSchemeIDOnProduct,storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+									if(bensubBucket10Product.length>0)
 									{
-
-										ImageView buttonException=(ImageView) ll_prdct_detal.findViewWithTag("btnException_"+(bensubBucket10Product[index]).split(Pattern.quote("^"))[0]);
+										for(int index=0;index<bensubBucket10Product.length;index++)
 										{
 
-											if(buttonException.getVisibility()==View.VISIBLE)
-											{
-												buttonException.setVisibility(View.INVISIBLE);
-
-											}
-
+											ImageView buttonException=(ImageView) ll_prdct_detal.findViewWithTag("btnException_"+(bensubBucket10Product[index]).split(Pattern.quote("^"))[0]);
+					                        	{
+												 
+					                        		if(buttonException.getVisibility()==View.VISIBLE)
+					                        		{
+					                        			buttonException.setVisibility(View.INVISIBLE);
+					                        			
+					                        		}
+					
+					                        	}
+					                        	if(SchTypeId==3)
+					                        	{
+					                        		 hmapPrdctFreeQty.put(ProductIdOnClicked, "0");
+											         hmapPrdctFreeQty.put(ProductIdOnClicked, "0");
+											         //hmapPrdctFreeQty.put(bensubBucket10Product[index], "0");
+											         hmapProductVolumePer.put(""+ProductIdOnClicked,"0.00");
+											         
+											         hmapPrdctIdPrdctDscnt.put(""+ProductIdOnClicked,"0.00");
+											         ((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+ProductIdOnClicked)).setText("0.00");
+											         if(Integer.parseInt(ProductIdOnClicked)!=0)
+											         {
+											          ((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+ProductIdOnClicked)).setText("0");
+											         }
+											         ((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+ProductIdOnClicked)).setText("0");
+											       
+											         dbengine.deleteProductOldSlab215(storeID, schIdforBen10,strGlobalOrderID,strGlobalInvoiceNumber);
+											         dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,ProductIdOnClicked,strGlobalOrderID,strGlobalInvoiceNumber);
+					                        	}
+					                        	else
+					                        	{
+					                        		 hmapPrdctFreeQty.put(((bensubBucket10Product[index]).split(Pattern.quote("^")))[0], "0");
+											         hmapPrdctFreeQty.put(((bensubBucket10Product[index]).split(Pattern.quote("^")))[1], "0");
+											         //hmapPrdctFreeQty.put(bensubBucket10Product[index], "0");
+											         hmapProductVolumePer.put(""+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0],"0.00");
+											         
+											         hmapPrdctIdPrdctDscnt.put(""+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0],"0.00");
+											         ((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0])).setText("0.00");
+											         if(Integer.parseInt(((bensubBucket10Product[index]).split(Pattern.quote("^")))[1].toString())!=0)
+											         {
+											          ((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+((bensubBucket10Product[index]).split(Pattern.quote("^")))[1].toString())).setText("0");
+											         }
+											         ((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+((bensubBucket10Product[index]).split(Pattern.quote("^"))[0]))).setText("0");
+											       
+											         dbengine.deleteProductOldSlab215(storeID, schIdforBen10,strGlobalOrderID,strGlobalInvoiceNumber);
+											         dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,((bensubBucket10Product[index]).split(Pattern.quote("^")))[1],strGlobalOrderID,strGlobalInvoiceNumber);
+					                        	}
+										
+								         
 										}
-										if(SchTypeId==3)
-										{
-											hmapPrdctFreeQty.put(ProductIdOnClicked, "0");
-											hmapPrdctFreeQty.put(ProductIdOnClicked, "0");
-											//hmapPrdctFreeQty.put(bensubBucket10Product[index], "0");
-											hmapProductVolumePer.put(""+ProductIdOnClicked,"0.00");
-
-											hmapPrdctIdPrdctDscnt.put(""+ProductIdOnClicked,"0.00");
-											((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+ProductIdOnClicked)).setText("0.00");
-											if(Integer.parseInt(ProductIdOnClicked)!=0)
-											{
-												((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+ProductIdOnClicked)).setText("0");
-											}
-											((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+ProductIdOnClicked)).setText("0");
-
-											dbengine.deleteProductOldSlab215(storeID, schIdforBen10,strGlobalOrderID);
-											dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-											dbengine.fnDeleteRecordsStoreProductAddOnSchemeApplied(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-										}
-										else
-										{
-											hmapPrdctFreeQty.put(((bensubBucket10Product[index]).split(Pattern.quote("^")))[0], "0");
-											hmapPrdctFreeQty.put(((bensubBucket10Product[index]).split(Pattern.quote("^")))[1], "0");
-											//hmapPrdctFreeQty.put(bensubBucket10Product[index], "0");
-											hmapProductVolumePer.put(""+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0],"0.00");
-											hmapProductVolumePerFinal.remove(""+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0]+"^"+schIdforBen10);
-											hmapPrdctIdPrdctDscnt.put(""+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0],"0.00");
-											((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+((bensubBucket10Product[index]).split(Pattern.quote("^")))[0])).setText("0.00");
-											if(Integer.parseInt(((bensubBucket10Product[index]).split(Pattern.quote("^")))[1].toString())!=0)
-											{
-												((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+((bensubBucket10Product[index]).split(Pattern.quote("^")))[1].toString())).setText("0");
-											}
-											((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+((bensubBucket10Product[index]).split(Pattern.quote("^"))[0]))).setText("0");
-
-											dbengine.deleteProductOldSlab215(storeID, schIdforBen10,strGlobalOrderID);
-											// dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,((bensubBucket10Product[index]).split(Pattern.quote("^")))[1],strGlobalOrderID);
-											//dbengine.fnDeleteRecordsStoreProductAddOnSchemeApplied(storeID,((bensubBucket10Product[index]).split(Pattern.quote("^")))[1],strGlobalOrderID);
-											dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-											dbengine.fnDeleteRecordsStoreProductAddOnSchemeApplied(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-
-
-
-										}
-
-
+										
+										
 									}
-
-
+								
+									
 								}
-
-
-							}
-						}
-
-
-
-
-
-
-
+							}	
+							
+						
+						
+						
+								
+						
+					
 					}
+						}
+					
+					
+					
 				}
-
-
-
-			}
-
-
-
+				
+			
+			
 			else
 			{
-				//String arrSchmesRelatedToProject=dbengine.fnGetDistinctSchIdsAgainstStoreProduct(storeID,ProductIdOnClicked,Integer.parseInt(schIdforBen10));
-
-				String arrSchmesRelatedToProject=dbengine.fnGetDistinctSchIdsAgainstStoreForDelete(storeID,ProductIdOnClicked,Integer.parseInt(schIdforBen10));
-
-
-				if(!TextUtils.isEmpty(arrSchmesRelatedToProject))
-				{
-
-
-
+				String arrSchmesRelatedToProject=dbengine.fnGetDistinctSchIdsAgainstStoreProduct(storeID,ProductIdOnClicked,Integer.parseInt(schIdforBen10));
+				
+				
+				
+				
+			if(!TextUtils.isEmpty(arrSchmesRelatedToProject))
+			{
+				
+				
+					
 					//BenSubBucketType,FreeProductID,BenifitAssignedValue,BenifitDiscountApplied,BenifitCouponCode
-
-
+					
+					
 					//int FreeProductID=Integer.parseInt(arrSchmesRelatedToProject[i].split(Pattern.quote("^"))[1]);
 					//Double BenifitAssignedValue=Double.parseDouble(""+arrSchmesRelatedToProject[i].split(Pattern.quote("^"))[2]);//Actually Given Values
 					//Double BenifitDiscountApplied=Double.parseDouble(""+arrSchmesRelatedToProject[i].split(Pattern.quote("^"))[3]);//BenifitAssignedValueType on Net Order or Invoice
@@ -8459,22 +8774,22 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					ArrayList<String> AllProductInSchSlab=new ArrayList<String>();
 					if(SchTypeId==1 || SchTypeId==2)
 					{
-						AllProductInSchSlab=dbengine.fnGetProductsSchIdSlabRowList(storeID,schSlbRowId,strGlobalOrderID);
+						AllProductInSchSlab=dbengine.fnGetProductsSchIdSlabRowList(storeID,schSlbRowId,strGlobalOrderID,strGlobalInvoiceNumber);
 					}
 					else
 					{
 						AllProductInSchSlab.add(ProductIdOnClicked);
 					}
-
-
-
-
-
-
-
-
+					
+					
+					
+				
+					
+					
+							
+					
 					//BenSubBucketType
-					//1. Free Other Product
+					//1. Free Other Product 
 					//2. Discount in Percentage with other product
 					//3. Discount in Amount with other product
 					//4. Coupons
@@ -8483,97 +8798,70 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					//7. Discount in Amount with same product
 					//8. Percentage On Invoice
 					//9.  Amount On Invoice
+					
+						((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+ProductIdOnClicked)).setText("0.00");
+						ImageView buttonException=(ImageView) ll_prdct_detal.findViewWithTag("btnException_"+ProductIdOnClicked);
+		             	{
+							 
+		             		if(buttonException.getVisibility()==View.VISIBLE)
+		             		{
+		             			buttonException.setVisibility(View.INVISIBLE);
+		             			
+		             		}
 
-					((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+ProductIdOnClicked)).setText("0.00");
-					ImageView buttonException=(ImageView) ll_prdct_detal.findViewWithTag("btnException_"+ProductIdOnClicked);
-					{
-
-						if(buttonException.getVisibility()==View.VISIBLE)
-						{
-							buttonException.setVisibility(View.INVISIBLE);
-
-						}
-
-					}
-
-
-					for(String prodctMpdWdSchm:AllProductInSchSlab)
-					{
-						String freePrdctId_benassVal=dbengine.fnGetBenifitAssignedValue(storeID, Integer.valueOf(prodctMpdWdSchm),Integer.parseInt(schIdforBen10) );
-
-						if(!TextUtils.isEmpty(freePrdctId_benassVal.trim()))
-						{
-							String freePrdctId=freePrdctId_benassVal.split(Pattern.quote("^"))[0];
-							Double besnAssignVal=Double.valueOf(freePrdctId_benassVal.split(Pattern.quote("^"))[1]);
-							int BenSubBucketType=Integer.parseInt(freePrdctId_benassVal.split(Pattern.quote("^"))[2]);
-							if(BenSubBucketType==1 || BenSubBucketType==5)
-							{
-								hmapPrdctFreeQty.put(""+freePrdctId, ""+(Integer.valueOf(hmapPrdctFreeQty.get(freePrdctId))-Math.abs(besnAssignVal.intValue())));
-								hmapPrdctFreeQtyFinal.remove(""+freePrdctId+"^"+schIdforBen10);
-								((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+freePrdctId)).setText(hmapPrdctFreeQty.get(""+freePrdctId).toString());
-							}
-							else if(BenSubBucketType==2 || BenSubBucketType==6)
-							{
-								hmapProductDiscountPercentageGive.put(""+freePrdctId, ""+(Double.valueOf(hmapProductDiscountPercentageGive.get(freePrdctId))-besnAssignVal));
-								hmapProductDiscountPercentageGiveFinal.remove(""+freePrdctId+"^"+schIdforBen10);
-								((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+freePrdctId)).setText("0.0");
-							}
-							else if(BenSubBucketType==3 || BenSubBucketType==7)
-							{
-								hmapPrdctIdPrdctDscnt.put(""+freePrdctId, ""+(Double.valueOf(hmapPrdctIdPrdctDscnt.get(freePrdctId))-besnAssignVal));
-
-								((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+freePrdctId)).setText(hmapPrdctIdPrdctDscnt.get(""+freePrdctId).toString());
-							}
-							if(SchTypeId==1 || SchTypeId==3)
-							{
-								dbengine.fnDeleteRecordsAllRecordsForClickedProdoductIdSchm_1_3(storeID,Integer.parseInt(prodctMpdWdSchm),strGlobalOrderID,Integer.parseInt(schIdforBen10));
-								dbengine.fnDeleteRecordsStoreProductAddOnSchemeAppliedSchm_1_3(storeID,Integer.parseInt(prodctMpdWdSchm),strGlobalOrderID,Integer.parseInt(schIdforBen10));
-
-							}
-							else {
-								dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-								dbengine.fnDeleteRecordsStoreProductAddOnSchemeApplied(storeID,Integer.parseInt(schIdforBen10),strGlobalOrderID);
-
-							}
-							dbengine.deleteProductSchemeType3(storeID, prodctMpdWdSchm,strGlobalOrderID);
-
-
-						}
-
-					}
-
-
-
-
-
-					for(String prodctMpdWdSchm:AllProductInSchSlab)
-					{
-						if(!ProductIdOnClicked.equals(prodctMpdWdSchm) && (!listProductChecked.contains(prodctMpdWdSchm)))
-						{
-							if(hmapProductRelatedSchemesList.containsKey(prodctMpdWdSchm))
-							{
-								listProductChecked.add(prodctMpdWdSchm);
-								fnCheckNewSchemeIDsAppliedAfterValueChange(hmapProductRelatedSchemesList.get(prodctMpdWdSchm),prodctMpdWdSchm);
-							}
-						}
-
-
-					}
-
-
-
-				}
-				else
-				{
-
-
-				}
+		             	}
+		             	
+		             	
+		             		for(String prodctMpdWdSchm:AllProductInSchSlab)
+		             		{
+		             			String freePrdctId_benassVal=dbengine.fnGetBenifitAssignedValue(storeID, Integer.valueOf(prodctMpdWdSchm),Integer.parseInt(schIdforBen10),strGlobalInvoiceNumber );
+		             			if(!TextUtils.isEmpty(freePrdctId_benassVal.trim()))
+		             			{
+		             				String freePrdctId=freePrdctId_benassVal.split(Pattern.quote("^"))[0];
+			             			Double besnAssignVal=Double.valueOf(freePrdctId_benassVal.split(Pattern.quote("^"))[1]);
+			             			int BenSubBucketType=Integer.parseInt(freePrdctId_benassVal.split(Pattern.quote("^"))[2]);
+			             			if(BenSubBucketType==1 || BenSubBucketType==5)
+			             			{
+			             				hmapPrdctFreeQty.put(""+freePrdctId, ""+(Integer.valueOf(hmapPrdctFreeQty.get(freePrdctId))-Math.abs(besnAssignVal.intValue())));
+										((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+freePrdctId)).setText(hmapPrdctFreeQty.get(""+freePrdctId).toString());
+			             			}
+			             			else if(BenSubBucketType==2 || BenSubBucketType==6)
+			             			{
+			             				hmapProductDiscountPercentageGive.put(""+freePrdctId, ""+(Double.valueOf(hmapProductDiscountPercentageGive.get(freePrdctId))-besnAssignVal));
+										((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+freePrdctId)).setText("0.0");
+			             			}
+			             			else if(BenSubBucketType==3 || BenSubBucketType==7)
+			             			{
+			             				hmapPrdctIdPrdctDscnt.put(""+freePrdctId, ""+(Double.valueOf(hmapPrdctIdPrdctDscnt.get(freePrdctId))-besnAssignVal));
+										((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+freePrdctId)).setText(hmapPrdctIdPrdctDscnt.get(""+freePrdctId).toString());
+			             			}
+			             			
+			             			dbengine.fnDeleteRecordsAllRecordsForClickedProdoductId(storeID,prodctMpdWdSchm,strGlobalOrderID,strGlobalInvoiceNumber);
+									dbengine.deleteProductSchemeType3(storeID, prodctMpdWdSchm,strGlobalOrderID,strGlobalInvoiceNumber);
+		             			}
+		             			
+		             		}
+		             	
+					
+					
+				
+					
+					
+				
+				
+				
+			}
+			else
+			{
+				
+			
 			}
 		}
-
-
-		fnCheckNewSchemeIDsAppliedAfterValueChange(hmapProductRelatedSchemesList.get(ProductIdOnClicked),ProductIdOnClicked);
-
+		}
+			
+			
+			fnCheckNewSchemeIDsAppliedAfterValueChange(CompleteSchemeIdListOnProductID,ProductIdOnClicked);
+			
 	}
 
 
@@ -8844,10 +9132,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 						public void onClick(DialogInterface dialog, int which)
 						{
 							 butClickForGPS=3;
-							 dbengine.open();
-							 if ((dbengine.PrevLocChk(storeID.trim())) )
+							 //dbengine.open();
+							 if ((dbengine.PrevLocChk(storeID.trim(),"abc")) )
 								{
-								 dbengine.close();
+								 //dbengine.close();
 								 try
 								    {
 									FullSyncDataNow task = new FullSyncDataNow(OrderReview.this);
@@ -8861,7 +9149,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								}
 							 else
 							 {
-								/* dbengine.close();
+								/* //dbengine.close();
 
 									// TODO Auto-generated method stub
 									boolean isGPSok = false;
@@ -8900,7 +9188,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							      
 									
 								
-								// appLocationService=new AppLocationService();
+								 appLocationService=new AppLocationService();
 								 
 								/* pm = (PowerManager) getSystemService(POWER_SERVICE);
 								 *//*  wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
@@ -8909,13 +9197,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							        wl.acquire();*/
 							       
 							        
-							       /* pDialog2STANDBY=ProgressDialog.show(OrderReview.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
+							        pDialog2STANDBY=ProgressDialog.show(OrderReview.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
 									   pDialog2STANDBY.setIndeterminate(true);
 										
 										pDialog2STANDBY.setCancelable(false);
-										pDialog2STANDBY.show();*/
+										pDialog2STANDBY.show();
 										
-								/*if(isGooglePlayServicesAvailable()) {
+								if(isGooglePlayServicesAvailable()) {
 									 createLocationRequest();
 									 
 									 mGoogleApiClient = new GoogleApiClient.Builder(OrderReview.this)
@@ -8931,9 +9219,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								Location gpsLocation=appLocationService.getLocation(locationManager,LocationManager.NETWORK_PROVIDER,location);
 								 countDownTimer2 = new CoundownClass2(startTime, interval);
 						         countDownTimer2.start();
-*/
-								 LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-								 llaaa.locationRetrievingAndDistanceCalculating(OrderReview.this,false,50);
+
+								
 							   
 								 
 							 }
@@ -8951,13 +9238,13 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 							String StampEndsTime = df.format(dateobj);
 							
 							
-							dbengine.open();
+							//dbengine.open();
 							dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
 							dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3");
 							
 							dbengine.UpdateStoreFlag(storeID.trim(), 3);
 							//dbengine.deleteStoreRecordFromtblStoreSchemeFreeProQtyOtherDetailsOnceSubmitted(fStoreID);
-							dbengine.close();*/
+							//dbengine.close();*/
 							
 							//new FullSyncDataNow().execute();
 							
@@ -8987,13 +9274,14 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	 {
 	        //Change Ostat Val=2
 		 int Outstat=1;
+		 InvoiceTableDataDeleteAndSaving(Outstat);
 		    TransactionTableDataDeleteAndSaving(Outstat);
-			InvoiceTableDataDeleteAndSaving(Outstat);
-			dbengine.open();
+
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
-			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID);
-			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID);
-			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID);
+			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,strGlobalInvoiceNumber);
+			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
+			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
 			
 		    long  syncTIMESTAMP = System.currentTimeMillis();
 			Date dateobj = new Date(syncTIMESTAMP);
@@ -9002,16 +9290,16 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			
 			
 			dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
-			dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
-			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID)==0)
+			//dbengine.close();
+			//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
+			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
-					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1");
-					dbengine.close();
+					//dbengine.open();
+					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",strGlobalInvoiceNumber);
+					//dbengine.close();
 				}
 			}
 	 }
@@ -9022,13 +9310,14 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		 
 		    //change by Sunil
 		   int Outstat=1;
+		 InvoiceTableDataDeleteAndSaving(Outstat);
 		    TransactionTableDataDeleteAndSaving(Outstat);
-			InvoiceTableDataDeleteAndSaving(Outstat);
-			dbengine.open();
+
+			//dbengine.open();
 			dbengine.UpdateStoreFlag(storeID.trim(), 1);
-			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID);
-			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID);
-			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID);
+			dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 1,strGlobalOrderID,strGlobalInvoiceNumber);
+			dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
+			dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"1",strGlobalOrderID,strGlobalInvoiceNumber);
 			
 			 long  syncTIMESTAMP = System.currentTimeMillis();
 			Date dateobj = new Date(syncTIMESTAMP);
@@ -9037,127 +9326,56 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				
 				
 				dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-			dbengine.close();
-			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID)==0)
+			//dbengine.close();
+			if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 			{
 				String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 				if(!strDefaultPaymentStageForStore.equals(""))
 				{
-					dbengine.open();
-					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1");
-					dbengine.close();
+					//dbengine.open();
+					dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"1",strGlobalInvoiceNumber);
+					//dbengine.close();
 				}
 			}
-		    Intent storeSaveIntent = new Intent(OrderReview.this, LauncherActivity.class);
+
+		 //dbengine.open();
+		 String presentRoute=dbengine.GetActiveRouteID();
+		 //dbengine.close();
+
+		 Intent trans2storeList = new Intent(OrderReview.this, StoreSelection.class);
+		 trans2storeList.putExtra("imei", imei);
+		 trans2storeList.putExtra("userDate", date);
+		 trans2storeList.putExtra("pickerDate", pickerDate);
+		 trans2storeList.putExtra("rID", presentRoute);
+		 startActivity(trans2storeList);
+		 finish();
+		   /* Intent storeSaveIntent = new Intent(OrderReview.this, LauncherActivity.class);
 			startActivity(storeSaveIntent);
-			finish();
+			finish();*/
 		 
 	 }
 	 
 	}
 
 
-	/*public void TransactionTableDataDeleteAndSaving(int Outstat)
-	{
-		
-		 dbengine.deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsaction(storeID,strGlobalOrderID);
-		*//* if (lastKnownLoc == null)
-	     { 
-			 lastKnownLocLatitude=String.valueOf("0.00000");
-	    	 lastKnownLocLongitude=String.valueOf("0.00000");
-	    	 accuracy=String.valueOf("0");
-	    	 locationProvider="Default";
-	     }
-		 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(lastKnownLocLatitude), String.valueOf(lastKnownLocLongitude), "" + accuracy,locationProvider);
-		 *//*
-		 int childcount =hmapPrdctIdPrdctName.size();// hmapPrdctIdPrdctNameVisible.size();
-		 System.out.println("ChildCount"+childcount);
-		 for (Entry<String, String> entry:hmapPrdctIdPrdctName.entrySet() )
-		 {
-		     //  View vRow = ll_prdct_detal.getChildAt(index);
-		       
-		       int PCateId=Integer.parseInt(hmapCtgryPrdctDetail.get(entry.getKey()));
-		       String PName =entry.getValue();
-		       String ProductID=entry.getKey();
-		       String ProductStock =hmapProductIdStock.get(ProductID); 
-		       double TaxRate=0.00;
-		       double TaxValue=0.00;
-		       if(ProductStock.equals(""))
-		       {
-		    	   ProductStock="0";
-		       }
-		       String SampleQTY =hmapPrdctSmpl.get(ProductID);
-		       if(SampleQTY.equals(""))
-		       {
-		    	   SampleQTY="0";
-		       }
-		       String OrderQTY =hmapPrdctOdrQty.get(ProductID);
-		       
-		       if(OrderQTY.equals(""))
-		       {
-		    	   OrderQTY="0";
-		    	   
-		       }
-		       String OrderValue="0";
-		     if(Integer.parseInt(OrderQTY)>0)
-		     {
-		    	 OrderValue =hmapProductIdOrdrVal.get(ProductID);// ((TextView)(vRow).findViewById(R.id.tv_Orderval)).getText().toString();
-			       if(OrderValue.equals(""))
-			       {
-			    	   OrderValue="0";
-			       } 
-		     }
-		       
-		       String OrderFreeQty =hmapPrdctFreeQty.get(ProductID);
-		       if(OrderFreeQty.equals(""))
-		       {
-		    	   OrderFreeQty="0";
-		       }
-		       
-		       String OrderDisVal= hmapProductDiscountPercentageGive.get(ProductID);
-		      if(OrderDisVal.equals("0.00"))
-		       {
-		    	   OrderDisVal="0";
-		       }
-		     //  System.out.println("Raja babu nitish productID= "+productID + ",hmapPrdctVolRatTax="+hmapPrdctVolRatTax.get(productID));
-		       String PRate=hmapPrdctVolRatTax.get(ProductID).split(Pattern.quote("^"))[1];
-		       
-		       TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
-		       TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
-		      // String TransDate=date;
-		       int flgIsQuoteRateApplied=0;
-		       if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
-				{
-					if(hmapMinDlvrQty.containsKey(ProductID))
-					{
-						if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
-						{
-							flgIsQuoteRateApplied=1;
-							PRate=hmapMinDlvrQtyQPAT.get(ProductID);
-							TaxValue=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
-						}
-					}
-				}
-		       if(Integer.valueOf(OrderFreeQty)>0 || Integer.valueOf(SampleQTY)>0 || Integer.valueOf(OrderQTY)>0 || Integer.valueOf(OrderValue)>0 || Integer.valueOf(OrderDisVal)>0 || Integer.valueOf(ProductStock)>0)
-		       {
-		    	   dbengine.open();
-			       StoreCatNodeId=dbengine.fnGetStoreCatNodeId(storeID);
-			       dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY),Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,Double.parseDouble(PRate),Outstat,TaxRate,TaxValue,StoreCatNodeId,strGlobalOrderID,flgIsQuoteRateApplied);
-			       dbengine.close();
-		       }
-		     
-		    
-		     
-		 }
-		 
-	}
-*/
-
 
 	public void TransactionTableDataDeleteAndSaving(int Outstat)
 	{
+		Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,strGlobalInvoiceNumber);
+		cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
+		//strFinalAllotedInvoiceIds=dbengine.fnGetFinalAllotedInvoiceIdsAgainstInvoiceTable(storeID);
+		/*if(Outstat==3) {
+			if (cntInvoceValue > 0.0) {
+				if(strFinalAllotedInvoiceIds.equals("NA"))
+				{
+					strFinalAllotedInvoiceIds=dbengine.fnGetFinalAllotedInvoiceIds(storeID);
+					dbengine.updateFinalAllotedInvoiceIdstblInvoiceCaption();
+				}
 
-		dbengine.deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsaction(storeID,strGlobalOrderID);
+			}
+		}*/
+
+		dbengine.deleteStoreRecordFromtblStorePurchaseDetailsFromProductTrsaction(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
 		/* if (lastKnownLoc == null)
 	     {
 			 lastKnownLocLatitude=String.valueOf("0.00000");
@@ -9168,7 +9386,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(lastKnownLocLatitude), String.valueOf(lastKnownLocLongitude), "" + accuracy,locationProvider);
 		 */
 		int childcount =hmapPrdctIdPrdctName.size();// hmapPrdctIdPrdctNameVisible.size();
-		System.out.println("ChildCount"+childcount);
+
 		for (Entry<String, String> entry:hmapPrdctIdPrdctName.entrySet() )
 		{
 			//  View vRow = ll_prdct_detal.getChildAt(index);
@@ -9213,55 +9431,121 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 			String OrderDisVal= "0";
 			if(Integer.parseInt(OrderQTY)>0) {
+				// hmapPrdctIdPrdctDscnt.put(ProductID,""+DiscAmtOnPreQtyBasicToDisplay);
 				OrderDisVal= hmapPrdctIdPrdctDscnt.get(ProductID);
-				//OrderDisVal= hmapProductDiscountPercentageGive.get(ProductID);
 				if (OrderDisVal.equals("0.00")) {
 					OrderDisVal = "0";
 				}
 			}
-			//  System.out.println("Raja babu nitish productID= "+productID + ",hmapPrdctVolRatTax="+hmapPrdctVolRatTax.get(productID));
-			// String PRate=hmapPrdctVolRatTax.get(ProductID).split(Pattern.quote("^"))[1];
-			String PRate=hmapProductStandardRate.get(ProductID);//.split(Pattern.quote("^"))[1];
-			TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
-			TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+			String PRate="0.00";
 			int flgIsQuoteRateApplied=0;
-			if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
-			{
-				if(hmapMinDlvrQty.containsKey(ProductID))
+			if(PriceApplyDiscountLevelType==0) {
+				PRate=hmapProductStandardRate.get(ProductID);
+				TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
+				TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+
+				if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
 				{
-					if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
+					if(hmapMinDlvrQty.containsKey(ProductID))
 					{
-						flgIsQuoteRateApplied=1;
-						PRate=hmapMinDlvrQtyQPAT.get(ProductID);
-						TaxValue=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
+						if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
+						{
+							flgIsQuoteRateApplied=1;
+							PRate=hmapMinDlvrQtyQPAT.get(ProductID);
+							TaxValue=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
+
+						}
 
 					}
-
 				}
 			}
+			if(PriceApplyDiscountLevelType==1) {
+				if(flgAllTotalOrderValueCrossesCutOff==true)
+				{
+					PRate=hmapStandardRateWholeSale.get(ProductID);
+					TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
+					TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+				}
+				else
+				{
+					PRate=hmapProductStandardRate.get(ProductID);
+					TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
+					TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+				}
+			}
+			if(PriceApplyDiscountLevelType==2) {
+				if(Double.parseDouble(OrderValue)>=Double.parseDouble(hmapPriceRangeWholeSellApplicable.get(ProductID)))
+				{
+					PRate=hmapStandardRateWholeSale.get(ProductID);
+					TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
+					TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+				}
+			}
+			 	/*PRate=hmapProductStandardRate.get(ProductID);
+		       TaxRate=Double.parseDouble(hmapProductVatTaxPerventage.get(ProductID));
+		       TaxValue=Double.parseDouble(hmapProductTaxValue.get(ProductID));
+		       int flgIsQuoteRateApplied=0;
+		       if(hmapMinDlvrQty!=null && hmapMinDlvrQty.size()>0)
+				{
+					if(hmapMinDlvrQty.containsKey(ProductID))
+					{
+						if(Integer.parseInt(hmapPrdctOdrQty.get(ProductID))>(hmapMinDlvrQty.get(ProductID)-1))
+						{
+							flgIsQuoteRateApplied=1;
+							PRate=hmapMinDlvrQtyQPAT.get(ProductID);
+							TaxValue=Double.parseDouble(hmapMinDlvrQtyQPTaxAmount.get(ProductID));
+
+						}
+
+					}
+				}*/
 			// String TransDate=date;
 			if(Integer.valueOf(OrderFreeQty)>0 || Integer.valueOf(SampleQTY)>0 || Integer.valueOf(OrderQTY)>0 || Integer.valueOf(OrderValue)>0 || Integer.valueOf(OrderDisVal)>0 || Integer.valueOf(ProductStock)>0)
 			{
-				dbengine.open();
+				//dbengine.open();
 				StoreCatNodeId=dbengine.fnGetStoreCatNodeId(storeID);
-				dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY),Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,Double.parseDouble(PRate),Outstat,TaxRate,TaxValue,StoreCatNodeId,strGlobalOrderID,flgIsQuoteRateApplied,distID,flgOrderType);
-				dbengine.close();
+				dbengine.fnsaveStoreProdcutPurchaseDetails(imei,storeID,""+PCateId,ProductID,pickerDate,Integer.parseInt(ProductStock),Integer.parseInt(OrderQTY),Double.parseDouble(OrderValue),Integer.parseInt(OrderFreeQty.split(Pattern.quote("."))[0]),Double.parseDouble(OrderDisVal),Integer.parseInt(SampleQTY),PName,Double.parseDouble(PRate),Outstat,TaxRate,TaxValue,StoreCatNodeId,strGlobalOrderID,flgIsQuoteRateApplied,distID,PriceApplyDiscountLevelType,strGlobalInvoiceNumber,strFinalAllotedInvoiceIds);
+				//dbengine.close();
 			}
 
 
 
 		}
-
+		flgAllTotalOrderValueCrossesCutOff=false;
 	}
+
+
+
 	public void InvoiceTableDataDeleteAndSaving(int Outstat)
 	{
-		 
-	    dbengine.deleteOldStoreInvoice(storeID,strGlobalOrderID);
+		Double INval;
+
+		if(!tv_GrossInvVal.getText().toString().isEmpty()){
+
+
+			INval = Double.parseDouble(tv_GrossInvVal.getText().toString().trim());
+		}
+		else{
+			INval = 0.00;
+		}
+
+		//strFinalAllotedInvoiceIds=dbengine.fnGetFinalAllotedInvoiceIdsAgainstInvoiceTable(storeID);
+		/*if(Outstat==3) {
+			if (INval > 0.0) {
+				if(strFinalAllotedInvoiceIds.equals("NA"))
+				{
+					strFinalAllotedInvoiceIds=dbengine.fnGetFinalAllotedInvoiceIds(storeID);
+					dbengine.updateFinalAllotedInvoiceIdstblInvoiceCaption();
+				}
+
+			}
+		}*/
+	    dbengine.deleteOldStoreInvoice(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
 		
 		Double TBtaxDis;
 		Double TAmt;
 		Double Dis;
-		Double INval;
+
 
 		Double AddDis;
 		Double InvAfterDis;
@@ -9295,21 +9579,21 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		else{
 			Dis = 0.00;
 		}
-		if(!tv_GrossInvVal.getText().toString().isEmpty()){
+		/*if(!tv_GrossInvVal.getText().toString().isEmpty()){
 			
-		/*	if(Dis!=0.00)
+		*//*	if(Dis!=0.00)
 			{
 				INval = Double.parseDouble(tvINval.getText().toString().trim())-Dis;
 			}
 			else
 			{
 				INval = Double.parseDouble(tvINval.getText().toString().trim());
-			}*/
+			}*//*
 			INval = Double.parseDouble(tv_GrossInvVal.getText().toString().trim());
 		}
 		else{
 			INval = 0.00;
-		}
+		}*/
 		if(!tvFtotal.getText().toString().isEmpty()){
 			Double FtotalValue=Double.parseDouble(tvFtotal.getText().toString().trim());
 			Ftotal =FtotalValue.intValue();
@@ -9372,69 +9656,12 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		}
 		
 		
-		dbengine.open();
-		dbengine.saveStoreInvoice(imei,storeID, pickerDate, TBtaxDis, TAmt, Dis, INval, Ftotal, InvAfterDis, AddDis, AmtPrevDueVA, AmtCollVA, AmtOutstandingVAL, NoOfCouponValue, TotalCoupunAmount,Outstat,strGlobalOrderID);//, INvalCreditAmt, INvalInvoiceAfterCreditAmt, valInvoiceOrginal);
-	    dbengine.close();
+		//dbengine.open();
+		dbengine.saveStoreInvoice(imei,storeID, pickerDate, TBtaxDis, TAmt, Dis, INval, Ftotal, InvAfterDis, AddDis, AmtPrevDueVA, AmtCollVA, AmtOutstandingVAL, NoOfCouponValue, TotalCoupunAmount,Outstat,strGlobalOrderID,strGlobalInvoiceNumber,strFinalAllotedInvoiceIds);//, INvalCreditAmt, INvalInvoiceAfterCreditAmt, valInvoiceOrginal);
+	    //dbengine.close();
 		
 
 		 	
-	}
-
-	@Override
-	public void testFunctionOne(String fnLati, String fnLongi, String finalAccuracy, String fnAccurateProvider, String GpsLat, String GpsLong, String GpsAccuracy, String NetwLat, String NetwLong, String NetwAccuracy, String FusedLat, String FusedLong, String FusedAccuracy, String AllProvidersLocation, String GpsAddress, String NetwAddress, String FusedAddress, String FusedLocationLatitudeWithFirstAttempt, String FusedLocationLongitudeWithFirstAttempt, String FusedLocationAccuracyWithFirstAttempt, int flgLocationServicesOnOff, int flgGPSOnOff, int flgNetworkOnOff, int flgFusedOnOff, int flgInternetOnOffWhileLocationTracking, String address, String pincode, String city, String state) {
-
-		//(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
-		this.fnLati=fnLati;
-		this.fnLongi=fnLongi;
-		this.fnAccuracy=finalAccuracy;
-		this.fnAccurateProvider=fnAccurateProvider;
-		this.flgLocationServicesOnOffOrderReview=flgLocationServicesOnOff;
-		this.flgGPSOnOffOrderReview=flgGPSOnOff;
-		this.flgNetworkOnOffOrderReview=flgNetworkOnOff;
-		this.flgFusedOnOffOrderReview=flgFusedOnOff;
-		this.flgInternetOnOffWhileLocationTrackingOrderReview=flgInternetOnOffWhileLocationTracking;
-		if(!checkLastFinalLoctionIsRepeated(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy)))
-		{
-
-			fnCreateLastKnownFinalLocation(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy));
-			UpdateLocationAndProductAllData();
-		}
-		else
-		{
-			countSubmitClicked++;
-			if(countSubmitClicked==1)
-			{
-				AlertDialog.Builder alertDialog = new AlertDialog.Builder(OrderReview.this);
-
-				// Setting Dialog Title
-				alertDialog.setTitle(getText(R.string.genTermNoDataConnection));
-				alertDialog.setIcon(R.drawable.error_info_ico);
-				alertDialog.setCancelable(false);
-				// Setting Dialog Message
-				alertDialog.setMessage(OrderReview.this.getResources().getString(R.string.AlertSameLoc));
-
-				// On pressing Settings button
-				alertDialog.setPositiveButton(OrderReview.this.getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						countSubmitClicked++;
-						Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-						startActivity(intent);
-					}
-				});
-
-				// Showing Alert Message
-				alertDialog.show();
-
-
-
-			}
-			else
-			{
-				UpdateLocationAndProductAllData();
-			}
-
-
-		}
 	}
 
 
@@ -9467,8 +9694,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		protected Void doInBackground(Void... params) {
 
 			 int Outstat=3;
+			InvoiceTableDataDeleteAndSaving(Outstat);
 				TransactionTableDataDeleteAndSaving(Outstat);
-				InvoiceTableDataDeleteAndSaving(Outstat);
+
 			 
 			    long  syncTIMESTAMP = System.currentTimeMillis();
 				Date dateobj = new Date(syncTIMESTAMP);
@@ -9476,37 +9704,49 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				String StampEndsTime = df.format(dateobj);
 				
 				
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(storeID, StampEndsTime);
-				dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3",strGlobalOrderID);
-				dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"3",strGlobalOrderID);
+				dbengine.UpdateStoreProductAppliedSchemesBenifitsRecords(storeID.trim(),"3",strGlobalOrderID,strGlobalInvoiceNumber);
+				dbengine.UpdateStoreStoreReturnDetail(storeID.trim(),"3",strGlobalOrderID,strGlobalInvoiceNumber);
 				dbengine.UpdateStoreFlag(storeID.trim(), 3);
-				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 3,strGlobalOrderID);
+				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 3,strGlobalOrderID,strGlobalInvoiceNumber);
 				
 				//dbengine.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
 				
-				dbengine.close();
-				dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
-				if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID)==0)
+				//dbengine.close();
+
+			Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+			outstandingvalue=Double.parseDouble(new DecimalFormat("##.##").format(outstandingvalue));
+			dbengine.updateOutstandingOfStore(storeID,0.0);
+
+			Double CollectionAmtAgainstStore=0.00;//dbengine.fnTotCollectionAmtAgainstStore(storeID.trim(),strGlobalInvoiceNumber);
+			CollectionAmtAgainstStore=Double.parseDouble(new DecimalFormat("##.##").format(CollectionAmtAgainstStore));
+
+			/*Double newOutStandingAmoutForInvoiceSubmission=((outstandingvalue+cntInvoiceValue)-CollectionAmtAgainstStore);
+			newOutStandingAmoutForInvoiceSubmission=Double.parseDouble(new DecimalFormat("##.##").format(newOutStandingAmoutForInvoiceSubmission));
+					dbengine.updateOutstandingOfStore(storeID,newOutStandingAmoutForInvoiceSubmission);*/
+				//dbengine.updateStoreQuoteSubmitFlgInStoreMstr(storeID.trim(),0);
+				if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 				{
 					String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 					if(!strDefaultPaymentStageForStore.equals(""))
 					{
-						dbengine.open();
-						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"3");
-						dbengine.close();
+						//dbengine.open();
+						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"3",strGlobalInvoiceNumber);
+						//dbengine.close();
 					}
 				}
-			dbengine.open();
+
+			//dbengine.open();
 			String presentRoute=dbengine.GetActiveRouteID();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			/*long syncTIMESTAMP = System.currentTimeMillis();
 			Date dateobj = new Date(syncTIMESTAMP);*/
-			SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
+			SimpleDateFormat df1 = new SimpleDateFormat(imei+"."+presentRoute+"."+ "dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 			
-			newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
+			newfullFileName=df1.format(dateobj);
 			
 			
 			 
@@ -9526,31 +9766,32 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				DA.open();
 				DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
 				DA.close();
-				
-				
+
 				//dbengine.deleteAllXmlDataTable( "4");
+			/*	if(chkflgInvoiceAlreadyGenerated==0) {
+					dbengine.updatetblInvoiceCaption(storeID);
+				}*/
 				dbengine.savetbl_XMLfiles(newfullFileName, "3","1");
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreFlag(storeID.trim(), 5);
-				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 5,strGlobalOrderID);
+				dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 5,strGlobalOrderID,strGlobalInvoiceNumber);
 				dbengine.UpdateStoreMaterialphotoFlag(storeID.trim(), 5);
 				dbengine.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
 				dbengine.UpdateNewAddedStorephotoFlag(storeID.trim(), 5);
-				dbengine.UpdateStoreClosephotoWithOutFlag(storeID.trim(), 5);
 
-				dbengine.close();
-				if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID)==0)
+				//dbengine.close();
+				VisitTypeStatus="0";
+				//dbengine.updateVisitTypeStatusOfStore(storeID,VisitTypeStatus);
+				if(dbengine.checkCountIntblStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strGlobalInvoiceNumber)==0)
 				{
 					String strDefaultPaymentStageForStore=dbengine.fnGetDefaultStoreOrderPAymentDetails(storeID);
 					if(!strDefaultPaymentStageForStore.equals(""))
 					{
-						dbengine.open();
-						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"4");
-						dbengine.close();
+						//dbengine.open();
+						dbengine. fnsaveStoreSalesOrderPaymentDetails(storeID,strGlobalOrderID,strDefaultPaymentStageForStore,"4",strGlobalInvoiceNumber);
+						//dbengine.close();
 					}
 				}
-				
-
 			} catch (Exception e) {
 			
 				e.printStackTrace();
@@ -9561,7 +9802,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 			return null;
 		}
-
 		@Override
 		protected void onCancelled() {
 			
@@ -9574,25 +9814,20 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-			
 			try
 			{
 				StoreSelection.flgChangeRouteOrDayEnd=0;
 				Intent syncIntent = new Intent(OrderReview.this, SyncMaster.class);
 				//syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/RSPLSFAXml/" + newfullFileName + ".xml");
 				syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
-
 				syncIntent.putExtra("OrigZipFileName", newfullFileName);
 				syncIntent.putExtra("whereTo", "Regular");
 				startActivity(syncIntent);
 				finish();
-				
-
 			} catch (Exception e) {
 			
 				e.printStackTrace();
 			}
-			
 			
 		}
 	}
@@ -9601,16 +9836,16 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	public void SyncNow()
 	{
 		
-		dbengine.open();
+		//dbengine.open();
 		String presentRoute=dbengine.GetActiveRouteID();
-		dbengine.close();
+		//dbengine.close();
 		
 		
 		long syncTIMESTAMP = System.currentTimeMillis();
 		Date dateobj = new Date(syncTIMESTAMP);
-		SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
+		SimpleDateFormat df = new SimpleDateFormat(imei+"."+presentRoute+"."+ "dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 		
-		String newfullFileName=imei+"."+presentRoute+"."+ df.format(dateobj);
+		String newfullFileName=df.format(dateobj);
 		
 		
 		 
@@ -9653,156 +9888,91 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		public void saveFreeProductDataWithSchemeToDatabase(HashMap<String, ArrayList<String>> hashMapSelectionFreeQty,String savProductIdOnClicked)
 		{
+			/*if(chkflgInvoiceAlreadyGenerated==0) {
 
+				dbengine.updatetblInvoiceCaption(storeID);
+
+				chkflgInvoiceAlreadyGenerated=1;
+			}*/
 			String freeProductID;
 			ArrayList<String> listFreeProdctQtyScheme;
-
-
-			for (Entry<String, ArrayList<String>> entry : hashMapSelectionFreeQty.entrySet())
+			
+			
+			for (Entry<String, ArrayList<String>> entry : hashMapSelectionFreeQty.entrySet()) 
 			{
 				freeProductID=entry.getKey();
 				listFreeProdctQtyScheme=entry.getValue();
-
+				
 				for(String strFreeProdctQtyScheme: listFreeProdctQtyScheme)
 				{
 					//[10.0, 41, 60, 1, 500.0, 0, 4, 2, 6, 0, 10.0, 0, 0, 0, 0, 0, 0.0, 0.0, 2]
-
+					
 					String[] arrayAllValues=strFreeProdctQtyScheme.split(Pattern.quote("~"));
-
+					
 					int schemeId=Integer.parseInt(arrayAllValues[1]);
-
+					
 					int schemeSlabId=Integer.parseInt(arrayAllValues[2]);
-
+					
 					int schemeSlabBcktId=Integer.parseInt((arrayAllValues[3]));
-
+					
 					Double schemeSlabSubBcktVal=Double.parseDouble(arrayAllValues[4]);
-
+					
 					int schemeSubBucktValType=Integer.parseInt(arrayAllValues[5]);
 					//[10.0, 41, 60, 1, 500.0, 0, 4, 2, 6, 0, 10.0, 0, 0, 0, 0, 0, 0.0, 0.0, 2]
 					int schemeSlabSubBucktType=Integer.parseInt(arrayAllValues[6]);
-
+					
 					int benifitRowId=Integer.parseInt(arrayAllValues[7]);
-
+					
 					int benSubBucketType=Integer.parseInt(arrayAllValues[8]);
-
+					
 					int freeProductId=Integer.parseInt(freeProductID);
-
+					
 					Double benifitSubBucketValue=Double.parseDouble(arrayAllValues[10]);
-
+					
 					Double benifitMaxValue=Double.parseDouble(arrayAllValues[11]);
-
+					
 					Double benifitAssignedVal=Double.parseDouble(arrayAllValues[0]);
-
+					
 					Double benifitAssignedValueType=Double.parseDouble(arrayAllValues[13]);
-
+					
 					int benifitDiscountApplied=Integer.parseInt(arrayAllValues[14]);
-
+					
 					String benifitCoupnCode=arrayAllValues[15];
-
+					
 					Double per=Double.parseDouble(arrayAllValues[16]);
-
+					
 					Double UOM=Double.parseDouble(arrayAllValues[17]);
 					int schSlbRowId=Integer.parseInt(arrayAllValues[18]);
 					int SchTypeId=Integer.parseInt(arrayAllValues[19]);
-					int flgAddOn=Integer.parseInt(arrayAllValues[20]);
-					int isDiscountOnTotalAmount=Integer.parseInt(arrayAllValues[21]);
+					
 					int WhatFinallyApplied=1;
-
-
+					
 					if(benSubBucketType==1 || benSubBucketType==5)//Free Different Product  / Free Same Product
 					{
-
-						if(flgAddOn==0)
-						{
-							hmapPrdctFreeQty.put(""+freeProductId,""+benifitAssignedVal.intValue());
-
-						}
-						else
-						{
-							if(hmapPrdctFreeQty!=null && hmapPrdctFreeQty.containsKey(""+freeProductId))
-							{
-								int exactVal=0;
-								if(hmapPrdctFreeQtyFinal.containsKey(""+freeProductId+"^"+schemeId))
-								{
-
-								}
-								else {
-									hmapPrdctFreeQtyFinal.put(""+freeProductId+"^"+schemeId,""+benifitAssignedVal);
-									exactVal=Integer.parseInt(hmapPrdctFreeQty.get(""+freeProductId));
-								}
-
-								int totalVal=benifitAssignedVal.intValue()+exactVal;
-								hmapPrdctFreeQty.put(""+freeProductId,""+totalVal);
-
-							}
-						}
+						
+						hmapPrdctFreeQty.put(""+freeProductId,""+benifitAssignedVal.intValue());
 						//hmapPrdctFreeQty.put(String.valueOf(freeProductId),((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+freeProductId)).getText().toString());
 						WhatFinallyApplied=1;
 					}
-
+					
 					if(benSubBucketType==2 || benSubBucketType==6)//Discount in Percentage with other product  / Discount in Percentage with same product
 					{
-						if(flgAddOn==0)
-						{
-							hmapProductDiscountPercentageGive.put(""+freeProductId,""+benifitAssignedVal.intValue());
-						}
-						else
-						{
-							if(hmapProductDiscountPercentageGive!=null && hmapProductDiscountPercentageGive.containsKey(""+freeProductId))
-							{
-								Double val=Double.parseDouble(hmapProductDiscountPercentageGive.get(""+freeProductId));
-								int exactVal=0;
-								if(hmapProductDiscountPercentageGiveFinal.containsKey(""+freeProductId+"^"+schemeId))
-								{
-
-								}
-								else {
-									hmapProductDiscountPercentageGiveFinal.put(""+freeProductId+"^"+schemeId,""+benifitAssignedVal);
-									exactVal=val.intValue();
-								}
-
-
-								int totalVal=benifitAssignedVal.intValue()+exactVal;
-								hmapProductDiscountPercentageGive.put(""+freeProductId,""+totalVal);
-							}
-						}
-
+						
+						hmapProductDiscountPercentageGive.put(""+freeProductId,""+benifitAssignedVal.intValue());
 						//hmapPrdctFreeQty.put(String.valueOf(freeProductId),((TextView)ll_prdct_detal.findViewWithTag("tvFreeQty_"+freeProductId)).getText().toString());
 						WhatFinallyApplied=1;
 					}
-					//((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+AllProductInSchSlab[mm])).setText("0.00");
-
+						//((TextView)ll_prdct_detal.findViewWithTag("tvDiscountVal_"+AllProductInSchSlab[mm])).setText("0.00");
+					
 					if(benSubBucketType==10)
 					{
 						WhatFinallyApplied=1;
 						//benifitAssignedVal=benifitSubBucketValue;
-
-						if(flgAddOn==0)
-						{
-							hmapProductVolumePer.put(""+freeProductId, ""+per);
-						}
-						else
-						{
-							if(hmapProductVolumePer!=null && hmapProductVolumePer.containsKey(""+freeProductId))
-							{
-								Double exactVal=0.0;
-								if(hmapProductVolumePerFinal.containsKey(""+freeProductId+"^"+schemeId))
-								{
-
-								}
-								else {
-									hmapProductVolumePerFinal.put(""+freeProductId+"^"+schemeId,""+per);
-									exactVal=Double.parseDouble(hmapProductVolumePer.get(""+freeProductId));
-								}
-								//Double exactVal=Double.parseDouble(hmapProductVolumePer.get(""+freeProductId));
-								Double totalVal=per+exactVal;
-								hmapProductVolumePer.put(""+freeProductId,""+totalVal);
-							}
-						}
+						hmapProductVolumePer.put(""+freeProductId, ""+per);
 					}
-
+					
 					//BenSubBucketType
-					//1. Free Other Product
+					//1. Free Other Product 
 					//2. Discount in Percentage with other product
 					//3. Discount in Amount with other product
 					//4. Coupons
@@ -9812,29 +9982,18 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					//8. Percentage On Invoice
 					//9.  Amount On Invoice
 					//10. Volume Based Per KG
-
+					
 					dbengine.fnsavetblStoreProductAppliedSchemesBenifitsRecords(storeID,Integer.parseInt(savProductIdOnClicked), schemeId, schemeSlabId,schemeSlabBcktId, schemeSlabSubBcktVal,schemeSubBucktValType,
 							schemeSlabSubBucktType,  benifitRowId,  benSubBucketType,
-							freeProductId,  benifitSubBucketValue,  benifitMaxValue,  benifitAssignedVal,  benifitAssignedValueType,  benifitDiscountApplied,  benifitCoupnCode,per,UOM,WhatFinallyApplied,schSlbRowId,SchTypeId,strGlobalOrderID,flgAddOn,isDiscountOnTotalAmount);
-					if(flgAddOn==1)
-					{
-						System.out.println("Nitis AddOnSaving = "+storeID+":"+savProductIdOnClicked+":"+ schemeId+":"+ schemeSlabId+":"+schemeSlabBcktId+":"+ schemeSlabSubBcktVal+":"+schemeSubBucktValType+":"+
-								schemeSlabSubBucktType+":"+  benifitRowId+":"+  benSubBucketType+":"+
-								freeProductId+":"+  benifitSubBucketValue+":"+  benifitMaxValue+":"+  benifitAssignedVal+":"+  benifitAssignedValueType+":"+  benifitDiscountApplied+":"+  benifitCoupnCode+":"+per+":"+UOM+":"+WhatFinallyApplied+":"+schSlbRowId+":"+SchTypeId+":"+strGlobalOrderID);
-						dbengine.fnsavetblStoreProductAddOnSchemeApplied(storeID,Integer.parseInt(savProductIdOnClicked), schemeId, schemeSlabId,schemeSlabBcktId, schemeSlabSubBcktVal,schemeSubBucktValType,
-								schemeSlabSubBucktType,  benifitRowId,  benSubBucketType,
-								freeProductId,  benifitSubBucketValue,  benifitMaxValue,  benifitAssignedVal,  benifitAssignedValueType,  benifitDiscountApplied,  benifitCoupnCode,per,UOM,WhatFinallyApplied,schSlbRowId,SchTypeId,strGlobalOrderID,flgAddOn,isDiscountOnTotalAmount);
-
-
-					}
+							freeProductId,  benifitSubBucketValue,  benifitMaxValue,  benifitAssignedVal,  benifitAssignedValueType,  benifitDiscountApplied,  benifitCoupnCode,per,UOM,WhatFinallyApplied,schSlbRowId,SchTypeId,strGlobalOrderID,strGlobalInvoiceNumber);
 				}
 
-
-
+					
+				
 			}
-
+			
 			//orderBookingTotalCalc();
-
+			
 			if(alertOpens)
 			{
 				 if(flagClkdButton==1)
@@ -9843,27 +10002,27 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					 progressTitle=OrderReview.this.getResources().getString(R.string.genTermPleaseWaitNew);
 		         new SaveData().execute("1~3");
 			     }
-
+			     
 			     else if(flagClkdButton==4)
 			     {
 			    	 flagClkdButton=0;
 			    	  progressTitle=OrderReview.this.getResources().getString(R.string.WhileWeSave);
-					   new SaveData().execute("1~2");
+					   new SaveData().execute("1~2"); 
 			     }
-
+				 
 			     else if(flagClkdButton==2)
 			     {
 			    	 flagClkdButton=0;
 			    	   progressTitle=OrderReview.this.getResources().getString(R.string.WhileWeSaveExit);
 					   new SaveData().execute("2");
 			     }
-
+				 
 			     else if(flagClkdButton==3)
 			     {
 			    	 flagClkdButton=0;
 			    	 fnSaveFilledDataToDatabase(3);
 			     }
-
+				 
 			     else if(flagClkdButton==5)
 			     {
 			    	 flagClkdButton=0;
@@ -9871,8 +10030,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 					 new SaveData().execute("1");
 			     }
-
-
+				 
+				
 			}
 		}
 		
@@ -9928,35 +10087,40 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		  protected Void doInBackground(Void... params)
 		  {
 		   hmapProductRelatedSchemesList=dbengine.fnProductRelatedSchemesList();
-			  hmapProductAddOnSchemesList=dbengine.fnProductADDOnScheme();
-		   CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID);
-			 CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID);
-			   if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
-	           {
-				   strGlobalOrderID=dbengine.fngetOrderIDAganistStore(storeID); 
-	           }
-			   else
-			   {
-				   strGlobalOrderID= genOutOrderID();
-			   }
+
+
+
+			 // chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+			 /* if(chkflgInvoiceAlreadyGenerated==1)
+			  {
+				  strGlobalInvoiceNumber=dbengine.fnGetExistingInvoiceNumber(storeID);
+			  }
+			  else
+			  {
+				  strGlobalInvoiceNumber=dbengine.fnGettblInvoiceCaption(storeID);
+			  }*/
+			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
+			  CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,strGlobalInvoiceNumber);
+			  if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
+			  {
+				 // strGlobalOrderID=dbengine.fngetOrderIDAganistStore(storeID);
+			  }
+			  else
+			  {
+				  strGlobalOrderID= genOutOrderID();
+			  }
 		   getCategoryDetail();
 		   
 		   getProductData();
 		   
 		   getSchemeSlabDetails();
-			  dbengine.open();
-			  hmapFetchPDASavedData=dbengine.fetchActualVisitData(storeID);
-			  dbengine.close();
-			  hmapProductMinMax=dbengine.getProductMinMax();
-			  hmapSchmDscrptnAndBenfit=dbengine.getSchmDscrptnAndBenfit();
-			   outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
 		   hmapMinDlvrQty=dbengine.getMinDlvryQntty(storeID);
 		   hmapMinDlvrQtyQPBT=dbengine.getMinDlvryQnttyQPBT(storeID);
 		   hmapMinDlvrQtyQPTaxAmount=dbengine.getMinDlvryQnttyQPTaxAmount(storeID);
 		   hmapMinDlvrQtyQPAT=dbengine.getMinDlvryQnttyQPAT(storeID);
 			  distID=dbengine.getDisId(storeID);
-			  hmapDistPrdctStockCount=dbengine.getDistStockCount(distID);
-			  hmapPrdctIdOutofStock=dbengine.getProductStock(strGlobalOrderID,distID);
+			/*  hmapDistPrdctStockCount=dbengine.getDistStockCount(distID);
+			  hmapPrdctIdOutofStock=dbengine.getProductStock(strGlobalInvoiceNumber,distID);*/
 		   return null;
 		  }
 		   @Override
@@ -10164,19 +10328,19 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		  }
 		   @Override
 		         protected void onPostExecute(Void args) {
-		   
-			   if(mProgressDialog.isShowing()==true)
-	           {
-		     mProgressDialog.dismiss();
-	           }
+		   if(mProgressDialog!=null) {
+			   if (mProgressDialog.isShowing() == true) {
+				   mProgressDialog.dismiss();
+			   }
+		   }
 			   long syncTIMESTAMP = System.currentTimeMillis();
 				Date dateobj = new Date(syncTIMESTAMP);
 				SimpleDateFormat df = new SimpleDateFormat(
-						"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+						"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 				String startTS = df.format(dateobj);
-				dbengine.open();
+				//dbengine.open();
 				dbengine.UpdateStoreEndVisit(storeID,startTS);
-				dbengine.close();
+				//dbengine.close();
 		     if(isReturnClkd==3)
 		     {
 		    	   Intent fireBackDetPg=new Intent(OrderReview.this,ReturnActivity.class);
@@ -10188,7 +10352,6 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		           fireBackDetPg.putExtra("pickerDate", pickerDate);
 		           fireBackDetPg.putExtra("OrderPDAID", strGlobalOrderID);
 		           fireBackDetPg.putExtra("flgPageToRedirect", "2");
-		           fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 		          // fireBackDetPg.putExtra("rID", routeID);
 		         
 		           startActivity(fireBackDetPg);
@@ -10198,19 +10361,18 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		     else if(isReturnClkd==2)
 		     {
 		    	 //Intent fireBackDetPg=new Intent(ProductOrderSearch.this,POSMaterialActivity.class);
-		    	Intent fireBackDetPg=new Intent(OrderReview.this,ProductOrderFilterSearch.class);
+		    	Intent fireBackDetPg=new Intent(OrderReview.this,ProductOrderEntry.class);
 			    fireBackDetPg.putExtra("storeID", storeID);
 			    fireBackDetPg.putExtra("SN", SN);
 			    fireBackDetPg.putExtra("bck", 1);
 			    fireBackDetPg.putExtra("imei", imei);
 			    fireBackDetPg.putExtra("userdate", date);
 			    fireBackDetPg.putExtra("pickerDate", pickerDate);
-				 fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 			    //fireBackDetPg.putExtra("rID", routeID);
 			    startActivity(fireBackDetPg);
 			    finish();
 		     }
-		     else if(isReturnClkd==5)
+			 else if(isReturnClkd==5)
 			 {
 				 Intent AmtCollectIntent = new Intent(OrderReview.this, CollectionActivityNew.class);
 				 AmtCollectIntent.putExtra("storeID", storeID);
@@ -10219,7 +10381,12 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				 AmtCollectIntent.putExtra("pickerDate", pickerDate);
 				 AmtCollectIntent.putExtra("SN", SN);
 				 AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
-				 AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
+				 if(hmapPrdctIdOutofStock!=null && hmapPrdctIdOutofStock.size()>0)
+				 {
+					 AmtCollectIntent.putExtra("hmapDistPrdctStockCount", hmapDistPrdctStockCount);
+					 AmtCollectIntent.putExtra("hmapPrdctIdOutofStock", hmapPrdctIdOutofStock);
+				 }
+				// AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
 				 startActivity(AmtCollectIntent);
 				 finish();
 			 }
@@ -10232,11 +10399,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				 AmtCollectIntent.putExtra("pickerDate", pickerDate);
 				 AmtCollectIntent.putExtra("SN", SN);
 				 AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
-				 AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
+				// AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
 				 startActivity(AmtCollectIntent);
 				 finish();
 			 }
-		  
 		   }
 
 		
@@ -10532,11 +10698,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 									}
 			        		   }
 							
-							dbengine.open();
+							//dbengine.open();
 							 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(lastKnownLocLatitude), String.valueOf(lastKnownLocLongitude), "" + accuracy,locationProvider);
 								
 							
-							dbengine.close();
+							//dbengine.close();
 							
 							 if(butClickForGPS==1)
 	                         {	
@@ -10656,7 +10822,242 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, appLocationService);
 			
 		}
+		public class CoundownClass2 extends CountDownTimer{
 
+			public CoundownClass2(long startTime, long interval) {
+				super(startTime, interval);
+				// TODO Auto-generated constructor stub
+			}
+
+			@Override
+			public void onTick(long millisUntilFinished) {
+			
+			}
+
+			@Override
+			public void onFinish() {
+
+				isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+				String GpsLat="0";
+				String GpsLong="0";
+				String GpsAccuracy="0";
+				String GpsAddress="0";
+				if(isGPSEnabled)
+				{
+
+					Location nwLocation=appLocationService.getLocation(locationManager,LocationManager.GPS_PROVIDER,location);
+					if(nwLocation!=null){
+						double lattitude=nwLocation.getLatitude();
+						double longitude=nwLocation.getLongitude();
+						double accuracy= nwLocation.getAccuracy();
+						GpsLat=""+lattitude;
+						GpsLong=""+longitude;
+						GpsAccuracy=""+accuracy;
+
+						GPSLocationLatitude=""+lattitude;
+						GPSLocationLongitude=""+longitude;
+						GPSLocationProvider="GPS";
+						GPSLocationAccuracy=""+accuracy;
+						System.out.println("LOCATION(GPS)  LATTITUDE: " +lattitude + "LONGITUDE:" + longitude+ "accuracy:" + accuracy);
+						//text2.setText(" LOCATION(GPS) \n LATTITUDE: " +lattitude + "\nLONGITUDE:" + longitude+ "\naccuracy:" + accuracy);
+						//Toast.makeText(getApplicationContext(), " LOCATION(NW) \n LATTITUDE: " +lattitude + "\nLONGITUDE:" + longitude+ "\naccuracy:" + accuracy, Toast.LENGTH_LONG).show();
+					}
+				}
+
+				Location gpsLocation=appLocationService.getLocation(locationManager,LocationManager.NETWORK_PROVIDER,location);
+				String NetwLat="0";
+				String NetwLong="0";
+				String NetwAccuracy="0";
+				String NetwAddress="0";
+				if(gpsLocation!=null){
+					double lattitude1=gpsLocation.getLatitude();
+					double longitude1=gpsLocation.getLongitude();
+					double accuracy1= gpsLocation.getAccuracy();
+					NetwLat=""+lattitude1;
+					NetwLong=""+longitude1;
+					NetwAccuracy=""+accuracy1;
+
+					NetworkLocationLatitude=""+lattitude1;
+					NetworkLocationLongitude=""+longitude1;
+					NetworkLocationProvider="Network";
+					NetworkLocationAccuracy=""+accuracy1;
+					System.out.println("LOCATION(N/W)  LATTITUDE: " +lattitude1 + "LONGITUDE:" + longitude1+ "accuracy:" + accuracy1);
+					// Toast.makeText(this, " LOCATION(NW) \n LATTITUDE: " +lattitude + "\nLONGITUDE:" + longitude, Toast.LENGTH_LONG).show();
+					//text1.setText(" LOCATION(N/W) \n LATTITUDE: " +lattitude1 + "\nLONGITUDE:" + longitude1+ "\naccuracy:" + accuracy1);
+
+				}
+					 /* TextView accurcy=(TextView) findViewById(R.id.Acuracy);
+					  accurcy.setText("GPS:"+GPSLocationAccuracy+"\n"+"NETWORK"+NetworkLocationAccuracy+"\n"+"FUSED"+fusedData);*/
+
+				System.out.println("LOCATION Fused"+fusedData);
+				String FusedLat="0";
+				String FusedLong="0";
+				String FusedAccuracy="0";
+				String FusedAddress="0";
+
+				if(!FusedLocationProvider.equals(""))
+				{
+					fnAccurateProvider="Fused";
+					fnLati=FusedLocationLatitude;
+					fnLongi=FusedLocationLongitude;
+					fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
+
+					FusedLat=FusedLocationLatitude;
+					FusedLong=FusedLocationLongitude;
+					FusedAccuracy=FusedLocationAccuracy;
+				}
+
+
+
+
+				appLocationService.KillServiceLoc(appLocationService,locationManager);
+				try {
+					if(mGoogleApiClient!=null && mGoogleApiClient.isConnected())
+					{
+						stopLocationUpdates();
+						mGoogleApiClient.disconnect();
+					}
+				}
+				catch (Exception e){
+
+				}
+
+
+
+
+				fnAccurateProvider="";
+				fnLati="0";
+				fnLongi="0";
+				fnAccuracy=0.0;
+
+				if(!FusedLocationProvider.equals(""))
+				{
+					fnAccurateProvider="Fused";
+					fnLati=FusedLocationLatitude;
+					fnLongi=FusedLocationLongitude;
+					fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
+				}
+
+				if(!fnAccurateProvider.equals(""))
+				{
+					if(!GPSLocationProvider.equals(""))
+					{
+						if(Double.parseDouble(GPSLocationAccuracy)<=fnAccuracy)
+						{
+							fnAccurateProvider="Gps";
+							fnLati=GPSLocationLatitude;
+							fnLongi=GPSLocationLongitude;
+							fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
+						}
+					}
+				}
+				else
+				{
+					if(!GPSLocationProvider.equals(""))
+					{
+						fnAccurateProvider="Gps";
+						fnLati=GPSLocationLatitude;
+						fnLongi=GPSLocationLongitude;
+						fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
+					}
+				}
+
+				if(!fnAccurateProvider.equals(""))
+				{
+					if(!NetworkLocationProvider.equals(""))
+					{
+						if(Double.parseDouble(NetworkLocationAccuracy)<=fnAccuracy)
+						{
+							fnAccurateProvider="Network";
+							fnLati=NetworkLocationLatitude;
+							fnLongi=NetworkLocationLongitude;
+							fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
+						}
+					}
+				}
+				else
+				{
+					if(!NetworkLocationProvider.equals(""))
+					{
+						fnAccurateProvider="Network";
+						fnLati=NetworkLocationLatitude;
+						fnLongi=NetworkLocationLongitude;
+						fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
+					}
+				}
+				// fnAccurateProvider="";
+				if(fnAccurateProvider.equals(""))
+				{
+					if(pDialog2STANDBY.isShowing())
+					{
+						pDialog2STANDBY.dismiss();
+					}
+					//alert ... try again nothing found // return back
+
+					// Toast.makeText(getApplicationContext(), "Please try again, No Fused,GPS or Network found.", Toast.LENGTH_LONG).show();
+
+					showAlertForEveryOne(OrderReview.this.getResources().getString(R.string.AlertTryAgain));
+				}
+				else
+				{
+
+
+					if(pDialog2STANDBY.isShowing())
+					{
+						pDialog2STANDBY.dismiss();
+					}
+					if(!GpsLat.equals("0") )
+					{
+						fnCreateLastKnownGPSLoction(GpsLat,GpsLong,GpsAccuracy);
+					}
+
+					if(!checkLastFinalLoctionIsRepeated(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy)))
+					{
+
+						fnCreateLastKnownFinalLocation(String.valueOf(fnLati), String.valueOf(fnLongi), String.valueOf(fnAccuracy));
+						UpdateLocationAndProductAllData();
+					}
+					else
+					{countSubmitClicked++;
+						if(countSubmitClicked==1)
+						{
+							AlertDialog.Builder alertDialog = new AlertDialog.Builder(OrderReview.this);
+
+							// Setting Dialog Title
+							alertDialog.setTitle(getText(R.string.genTermNoDataConnection));
+							alertDialog.setIcon(R.drawable.error_info_ico);
+							alertDialog.setCancelable(false);
+							// Setting Dialog Message
+							alertDialog.setMessage(OrderReview.this.getResources().getString(R.string.AlertSameLoc));
+
+							// On pressing Settings button
+							alertDialog.setPositiveButton(OrderReview.this.getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int which) {
+									countSubmitClicked++;
+									Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+									startActivity(intent);
+								}
+							});
+
+							// Showing Alert Message
+							alertDialog.show();
+
+
+
+						}
+						else
+						{
+							UpdateLocationAndProductAllData();
+						}
+
+
+					}
+
+				}
+
+			}
+			
+		}
 		 protected void stopLocationUpdates() {
 		        LocationServices.FusedLocationApi.removeLocationUpdates(
 		                mGoogleApiClient, this);
@@ -10730,11 +11131,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 								 String FusedAccuracy="0";
 								 String FusedAddress="0";
 								 checkHighAccuracyLocationMode(OrderReview.this);
-								 dbengine.open();
-								 dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
+								 //dbengine.open();
+								// dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
 
 
-								 dbengine.close();
+								 //dbengine.close();
 
 								 if(butClickForGPS==1)
 								 {
@@ -10814,7 +11215,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 									 if(!alertOpens)
 									 {
 										 progressTitle=OrderReview.this.getResources().getString(R.string.WhileReview);
-										 ;
+
 										 new SaveData().execute("6");
 									 }
 
@@ -10900,10 +11301,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					}
 					else
 					{
-						if(isLastPrdct)
-						{
-							accAsignVal=BenSubBucketValue;
-						}
+						accAsignVal=BenSubBucketValue;
 					}
 				}
 				//Product Lines
@@ -10916,10 +11314,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					}
 					else
 					{
-						if(isLastPrdct)
-						{
-							accAsignVal=BenSubBucketValue;
-						}
+						accAsignVal=BenSubBucketValue;
 					}
 				}
 				 //Product Value
@@ -10946,11 +11341,8 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					}
 					else
 					{
-
-						if(isLastPrdct)
-						{
-							accAsignVal=BenSubBucketValue;
-						}
+						
+						accAsignVal=BenSubBucketValue;
 					}
 					
 				}
@@ -10974,10 +11366,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 					}
 					else
 					{
-						if(isLastPrdct)
-						{
-							accAsignVal=BenSubBucketValue;
-						}
+						accAsignVal=BenSubBucketValue;
 					}
 				}
 				 return accAsignVal;
@@ -10998,7 +11387,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 			String txtFileNamenew="FinalGPSLastLocation.txt";
 			File file = new File(jsonTxtFolder,txtFileNamenew);
-			String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+			String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
 			// If file does not exists, then create it
 			if (file.exists()) {
@@ -11078,7 +11467,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 			String txtFileNamenew="FinalGPSLastLocation.txt";
 			File file = new File(jsonTxtFolder,txtFileNamenew);
-			String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+			String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
 
 			// If file does not exists, then create it
@@ -11143,7 +11532,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 			String txtFileNamenew="GPSLastLocation.txt";
 			File file = new File(jsonTxtFolder,txtFileNamenew);
-			String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
+			String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
 
 
 			// If file does not exists, then create it
@@ -11185,11 +11574,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	public void UpdateLocationAndProductAllData()
 	{
 		checkHighAccuracyLocationMode(OrderReview.this);
-		dbengine.open();
-		dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
+		//dbengine.open();
+		//dbengine.UpdateStoreActualLatLongi(storeID,String.valueOf(fnLati), String.valueOf(fnLongi), "" + fnAccuracy,fnAccurateProvider,flgLocationServicesOnOffOrderReview,flgGPSOnOffOrderReview,flgNetworkOnOffOrderReview,flgFusedOnOffOrderReview,flgInternetOnOffWhileLocationTrackingOrderReview,flgRestartOrderReview,flgStoreOrderOrderReview);
 
 
-		dbengine.close();
+		//dbengine.close();
 
 		if(butClickForGPS==1)
 		{
@@ -11368,11 +11757,12 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 	{
 		AlertDialog.Builder alertDialogSubmitConfirm = new AlertDialog.Builder(OrderReview.this);
 		alertDialogSubmitConfirm.setTitle(OrderReview.this.getResources().getString(R.string.StockOverbooked));
+		//int avilabQty=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit);//+Integer.parseInt(hmapPrdctOdrQty.get(productOIDClkd));
 		int avilabQty=hmapDistPrdctStockCount.get(ProductIdOnClickedEdit)+Integer.parseInt(hmapPrdctOdrQty.get(productOIDClkd));
 		alertDialogSubmitConfirm.setMessage("Available Qty : "+avilabQty+"\n"+"Order Qty : "+hmapPrdctOdrQty.get(productOIDClkd)+"\n"+hmapPrdctIdPrdctName.get(ProductIdOnClickedEdit)+" "+getText(R.string.order_exceeds_stock));
 		alertDialogSubmitConfirm.setCancelable(false);
 
-		alertDialogSubmitConfirm.setNeutralButton(OrderReview.this.getResources().getString(R.string.Continue), new DialogInterface.OnClickListener() {
+		/*alertDialogSubmitConfirm.setNeutralButton(OrderReview.this.getResources().getString(R.string.Continue), new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which)
 			{
 				if(flagClkdButton!=-1)
@@ -11394,15 +11784,18 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 			}
 		});
-
+*/
 		alertDialogSubmitConfirm.setNegativeButton(OrderReview.this.getResources().getString(R.string.ChangeQty), new DialogInterface.OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				// TODO Auto-generated method
-
+				/*edOrderCurrentLast.setText("");
+				hmapPrdctOdrQty.put(productOIDClkd,"0");*/
+				edOrderCurrentLast.setText("");
 				edOrderCurrent.clearFocus();
 				edOrderCurrentLast.requestFocus();
+
 				dialog.dismiss();
 			}
 		});
@@ -11419,8 +11812,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 	public void alertForRetailerCreditLimit(final int btnClkd)
 	{
-		nextStepAfterRetailerCreditBal(btnClkd);
-		/*AlertDialog.Builder alertDialogSubmitConfirm = new AlertDialog.Builder(OrderReview.this);
+		AlertDialog.Builder alertDialogSubmitConfirm = new AlertDialog.Builder(OrderReview.this);
 		alertDialogSubmitConfirm.setTitle(getText(R.string.genTermNoDataConnection));
 		alertDialogSubmitConfirm.setMessage(getText(R.string.credit_retailer_balance));
 		alertDialogSubmitConfirm.setCancelable(false);
@@ -11455,18 +11847,18 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 		AlertDialog alert = alertDialogSubmitConfirm.create();
 
 		alert.show();
-*/
+
 
 	}
 
 	public void nextStepAfterRetailerCreditBal(int btnClkd)
 	{
-		for(Entry<String,String> entry:hmapPrdctIdOutofStock.entrySet())
-		{
-			System.out.println("hmapPrdctIdOutofStock OrderReview= "+entry.getKey()+" : "+entry.getValue());
-			dbengine.insertDistributorPDAOrderId(distID,strGlobalOrderID,entry.getKey(),entry.getValue(),btnClkd);
-		}
-		dbengine.updateOriginalStock(hmapDistPrdctStockCount,distID);
+		/*if(chkflgInvoiceAlreadyGenerated==0) {
+			chkflgInvoiceAlreadyGenerated=1;
+			dbengine.updatetblInvoiceCaption(storeID);
+
+		}*/
+
 
 		if(btnClkd==0) // save
 		{
@@ -11479,7 +11871,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			String fileName=imei+"_"+storeID;
 
 			//StringBuffer content=new StringBuffer(imei+"_"+storeID+"_"+"Save Button Click on Product List"+StartClickTimeFinal);
-			File file = new File("/sdcard/"+CommonInfo.TextFileFolder+"/"+fileName);
+			File file = new File("/sdcard/"+ CommonInfo.TextFileFolder+"/"+fileName);
 
 			if (!file.exists())
 			{
@@ -11495,7 +11887,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 
 
-			CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Save Button Click on Product List"+StartClickTimeFinal;
+			CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Save Button Click on Product List"+StartClickTimeFinal;
 
 
 			FileWriter fw;
@@ -11506,9 +11898,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -11523,11 +11915,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 			butClickForGPS=1;
 			flagClkdButton=5;
-			// dbengine.open();
+			// //dbengine.open();
 				  /* if ((dbengine.PrevLocChk(storeID.trim())) )
 					{*/
 
-			// dbengine.close();
+			// //dbengine.close();
 
 			if(ed_LastEditextFocusd!=null)
 			{
@@ -11556,7 +11948,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			String fileName=imei+"_"+storeID;
 
 			//StringBuffer content=new StringBuffer(imei+"_"+storeID+"_"+"SaveExit Button Click on Product List"+StartClickTimeFinal);
-			File file = new File("/sdcard/"+CommonInfo.TextFileFolder+"/"+fileName);
+			File file = new File("/sdcard/"+ CommonInfo.TextFileFolder+"/"+fileName);
 
 			if (!file.exists())
 			{
@@ -11572,7 +11964,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			}
 
 
-			CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"SaveExit Button Click on Product List"+StartClickTimeFinal;
+			CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"SaveExit Button Click on Product List"+StartClickTimeFinal;
 
 
 			FileWriter fw;
@@ -11583,9 +11975,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
+				//dbengine.close();
 
 
 			}
@@ -11598,11 +11990,11 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 			butClickForGPS=2;
 			flagClkdButton=2;
-			dbengine.open();
-			dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
-			if ((dbengine.PrevLocChk(storeID.trim())) )
+			//dbengine.open();
+			//dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
+			if ((dbengine.PrevLocChk(storeID.trim(),"abc")) )
 			{
-				dbengine.close();
+				//dbengine.close();
 				if(ed_LastEditextFocusd!=null)
 				{
 						  /*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
@@ -11654,9 +12046,74 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			else
 			{
 
-				LocationRetreivingGlobal llaaa=new LocationRetreivingGlobal();
-				llaaa.locationRetrievingAndDistanceCalculating(OrderReview.this,false,50);
+					   /*//dbengine.close();
+						// TODO Auto-generated method stub
+						boolean isGPSok = false;
+						isGPSok = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
+						 if(!isGPSok)
+				          {
+							showSettingsAlert();
+							isGPSok = false;
+							 return;
+						  }
+
+
+				       isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+				       isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+					   location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+					   pm = (PowerManager) getSystemService(POWER_SERVICE);
+					   wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+				                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+				                | PowerManager.ON_AFTER_RELEASE, "INFO");
+				        wl.acquire();
+
+				       pDialog2STANDBY=ProgressDialog.show(ProductList.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
+					   pDialog2STANDBY.setIndeterminate(true);
+
+						pDialog2STANDBY.setCancelable(false);
+						pDialog2STANDBY.show();
+
+						checkSTANDBYAysncTask chkSTANDBY = new checkSTANDBYAysncTask(
+								new standBYtask().execute()); // Thread keeping 1 minute time
+												// watch
+
+						(new Thread(chkSTANDBY)).start();
+
+
+					*/
+				appLocationService=new AppLocationService();
+
+						/* pm = (PowerManager) getSystemService(POWER_SERVICE);
+						   wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+					                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+					                | PowerManager.ON_AFTER_RELEASE, "INFO");
+					        wl.acquire();*/
+
+
+				pDialog2STANDBY=ProgressDialog.show(OrderReview.this,getText(R.string.genTermPleaseWaitNew) ,getText(R.string.genTermRetrivingLocation), true);
+				pDialog2STANDBY.setIndeterminate(true);
+
+				pDialog2STANDBY.setCancelable(false);
+				pDialog2STANDBY.show();
+
+				if(isGooglePlayServicesAvailable()) {
+					createLocationRequest();
+
+					mGoogleApiClient = new GoogleApiClient.Builder(OrderReview.this)
+							.addApi(LocationServices.API)
+							.addConnectionCallbacks(OrderReview.this)
+							.addOnConnectionFailedListener(OrderReview.this)
+							.build();
+					mGoogleApiClient.connect();
+				}
+				//startService(new Intent(DynamicActivity.this, AppLocationService.class));
+				startService(new Intent(OrderReview.this, AppLocationService.class));
+				Location nwLocation=appLocationService.getLocation(locationManager,LocationManager.GPS_PROVIDER,location);
+				Location gpsLocation=appLocationService.getLocation(locationManager,LocationManager.NETWORK_PROVIDER,location);
+				countDownTimer2 = new CoundownClass2(startTime, interval);
+				countDownTimer2.start();
 
 
 			}
@@ -11665,18 +12122,22 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 
 		else if(btnClkd==2) // btn submit clkd
 		{
+			for(Entry<String,String> entry:hmapPrdctIdOutofStock.entrySet())
+			{
+				System.out.println("hmapPrdctIdOutofStock OrderReview= "+entry.getKey()+" : "+entry.getValue());
+				//dbengine.insertDistributorPDAOrderId(distID,strGlobalInvoiceNumber,entry.getKey(),entry.getValue(),btnClkd);
+				dbengine.insertDistributorPDAOrderId(distID,strFinalAllotedInvoiceIds,entry.getKey(),entry.getValue(),btnClkd);
+			}
+			dbengine.updateOriginalStock(hmapDistPrdctStockCount,distID);
 			long StartClickTime = System.currentTimeMillis();
 			Date dateobj1 = new Date(StartClickTime);
 			SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 			String StartClickTimeFinal = df1.format(dateobj1);
 
-
 			String fileName=imei+"_"+storeID;
-
 			//StringBuffer content=new StringBuffer(imei+"_"+storeID+"_"+"Submit Button Click on Product List"+StartClickTimeFinal);
 			//File file = new File("/sdcard/MeijiIndirectTextFile/"+fileName);
-			File file = new File("/sdcard/"+CommonInfo.TextFileFolder+"/"+fileName);
-
+			File file = new File("/sdcard/"+ CommonInfo.TextFileFolder+"/"+fileName);
 			if (!file.exists())
 			{
 				try
@@ -11690,9 +12151,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				}
 			}
 
-
-			CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Submit Button Click on Product List"+StartClickTimeFinal;
-
+			CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Submit Button Click on Product List"+StartClickTimeFinal;
 
 			FileWriter fw;
 			try
@@ -11702,11 +12161,9 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				bw.write(CommonInfo.fileContent);
 				bw.close();
 
-				dbengine.open();
+				//dbengine.open();
 				dbengine.savetblMessageTextFileContainer(fileName,0);
-				dbengine.close();
-
-
+				//dbengine.close();
 			}
 			catch (IOException e1)
 			{
@@ -11714,12 +12171,10 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				e1.printStackTrace();
 			}
 
-
-
 			flagClkdButton=3;
-			dbengine.open();
-			dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
-			dbengine.close();
+			//dbengine.open();
+			//dbengine.updateflgFromWhereSubmitStatusAgainstStore(storeID, 2);
+			//dbengine.close();
 			if(ed_LastEditextFocusd!=null)
 			{
 					   /*if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
@@ -11727,10 +12182,7 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 				getOrderData(ProductIdOnClickedEdit);
 					   /*}*/
 			}
-
-
 			orderBookingTotalCalc();
-
 			if(!alertOpens)
 			{
 				boolean isGPSEnabled2 = false;
@@ -11865,9 +12317,14 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			if(!alertOpens)
 			{
 				progressTitle=OrderReview.this.getResources().getString(R.string.WhileWeSave);
+
 				new SaveData().execute("1~2");
+
+
+
 			}
 		}
+
 		else if(btnClkd==5)// Collection Amount
 		{
 			progressTitle=OrderReview.this.getResources().getString(R.string.WhileSave);
@@ -11878,517 +12335,88 @@ GoogleApiClient.OnConnectionFailedListener,InterfaceClass{
 			progressTitle=OrderReview.this.getResources().getString(R.string.WhileSave);
 			new SaveData().execute("1~6");
 		}
-	}
 
-
-
-	public void fnCheckExtraSchemeAfterValueChange(String SchIdsCompleteListOnProductID,String ProductIdOnClicked)
-	{
-		//	arredtboc_OderQuantityFinalSchemesToApply=new ArrayList<String>();
-		//Example :-1075_1_0_1!1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
-		String valForVolumetQTYToMultiply="0";
-		//productFullFilledSlabGlobal=new ArrayList<String>();
-		String[] arrSchIdsListOnProductID=SchIdsCompleteListOnProductID.split("#");
-		for(int pSchIdsAppliCount=0;pSchIdsAppliCount<arrSchIdsListOnProductID.length;pSchIdsAppliCount++)
+		/*else if(btnClkd==6) // btn Collection  clkd
 		{
-			//35_1_0_2 where 35=shcemId, 1= SchAppRule, 2= schemeTypeId
-			String schOverviewDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[0];   //Example :-1075_1_0_1
-			String schOverviewOtherDetails=arrSchIdsListOnProductID[pSchIdsAppliCount].split("!")[1]; //Example :-1026$1^1|1^23^1^10^0@1025$1^1|1^22^1^20^0@1022$1^1|1^19^5^5^0@1020$1^1|1^17^3^4^0@1019$1^1|1^16^1^12^0@1018$1^1|1^15^1^10^0@1017$1^1|1^14^1^12^0
-			int schId=Integer.parseInt(schOverviewDetails.split("_")[0]);                           //Example :-1075
-			int schAppRule=Integer.parseInt(schOverviewDetails.split("_")[1]);                                                                                        //Example :-1
-			int schApplicationId=Integer.parseInt(schOverviewDetails.split("_")[2]);                                                              //Example :-0
-			int SchTypeId=Integer.parseInt(schOverviewDetails.split("_")[3]);                                                                                           //Example :-1 // 1=Check Combined Skus, 2=Bundle,3=Simple with Check on Individual SKU
-			String[] arrschSlbIDsOnSchIdBasis=schOverviewOtherDetails.split("@");   //Split for multiple slabs Example :-1026$1^1|1^23^1^10^0, 1025$1^1|1^22^1^20^0
-			boolean bucketCndtnSchemeFullFill=false;
-			int exitWhenSlabToExit=0;
+			long StartClickTime = System.currentTimeMillis();
+			Date dateobj1 = new Date(StartClickTime);
+			SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+			String StartClickTimeFinal = df1.format(dateobj1);
 
-			if(hmapSchemeIdStoreID.containsKey(""+schId))
+
+			String fileName=imei+"_"+storeID;
+
+			//StringBuffer content=new StringBuffer(imei+"_"+storeID+"_"+"Save Button Click on Product List"+StartClickTimeFinal);
+			File file = new File("/sdcard/"+CommonInfo.TextFileFolder+"/"+fileName);
+
+			if (!file.exists())
 			{
-				boolean bucketCndtnFullFillisReally=false;
-				for(int pSchSlbCount=0;pSchSlbCount<arrschSlbIDsOnSchIdBasis.length;pSchSlbCount++)
+				try
 				{
-					//Exmaple Slab:- 1026$1^1|1^23^1^10^0
-					int schSlabId=Integer.parseInt((arrschSlbIDsOnSchIdBasis[pSchSlbCount]).split(Pattern.quote("$"))[0]); //Exmaple Slab ID:- 1026
-					String schSlabOtherDetails=arrschSlbIDsOnSchIdBasis[pSchSlbCount].split(Pattern.quote("$"))[1]; //Exmaple Slab OtherDetails:- 1^1|1^23^1^10^0
-					String[] arrSchSlabBuckWiseDetails=schSlabOtherDetails.split(Pattern.quote("~")); //Example Split For Multiple Buckets (OR Condition)
-					for(int pSchSlbBuckCnt=0;pSchSlbBuckCnt<arrSchSlabBuckWiseDetails.length;pSchSlbBuckCnt++)
-					{
-						String schSlbBuckDetails=arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[0]; // Eaxmple:-1^1
-						String schSlbBuckOtherDetails=arrSchSlabBuckWiseDetails[pSchSlbBuckCnt].split(Pattern.quote("|"))[1];  // Eaxmple:-1^23^1^10^0
-						int schSlbBuckId=Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[0]);  //Exmaple Slab Bucket ID:- 1
-						int schSlbBuckCnt=Integer.parseInt(schSlbBuckDetails.split(Pattern.quote("^"))[1]);            //Example Number of Buckets under this Slab, Count:-1
-
-						String[] arrSubBucketDetails=schSlbBuckOtherDetails.split(Pattern.quote("*"));  //Example Split For Multiple Sub Buckets(AND Condition)
-						String[] arrMaintainDetailsOfBucketConditionsAgainstBuckId=new String[schSlbBuckCnt];  //Example Length of Buckes in Slab and which condition is true in case of OR
-						// variables for calculating total sub bucket
-						ArrayList<String> productFullFilledSlab=new ArrayList<String>();
-						ArrayList<String> schSlabRowIdFullFilledSlab=new ArrayList<String>();
-						ArrayList<String> productFullFilledSlabForInvoice=new ArrayList<String>();
-						int totalProductQnty=0;
-						double totalProductVol=0.0;
-
-						double totalProductVal=0.0;
-						int totalProductLine=0;
-						double totalInvoice=0.0;
-
-						//product invoice
-						for(Entry<String, String> entryProduct:hmapPrdctOdrQty.entrySet())
-						{
-							if(hmapPrdctOdrQty.containsKey(entryProduct.getKey()))
-							{
-								if(Integer.parseInt(hmapPrdctOdrQty.get(entryProduct.getKey()))>(0))
-								{
-									int curntProdQty = Integer.parseInt(entryProduct.getValue()) ;
-									String curntProdVolumeRate = hmapPrdctVolRatTax.get(entryProduct.getKey());
-									Double curntProdRate=Double.parseDouble(curntProdVolumeRate.split(Pattern.quote("^"))[1]);
-
-									Double currentProductOverAllPriceQtywise=curntProdRate * curntProdQty;
-									totalInvoice=totalInvoice+currentProductOverAllPriceQtywise;
-									productFullFilledSlabForInvoice.add(entryProduct.getKey());
-								}
-							}
-
-						}
-						// end product invoice
-						//sub bucket starts here
-						LinkedHashMap<String, String> hmapSubBucketDetailsData=new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalQntty=new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalValue=new LinkedHashMap<String, String>();
-						LinkedHashMap<String, String> hmapSubBucketTotalVolume=new LinkedHashMap<String, String>();
-
-						for(int cntSubBucket=0;cntSubBucket<arrSubBucketDetails.length;cntSubBucket++)
-						{
-							// Eaxmple:-1^23^1^10^0
-							int schSlbSubBuckID=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[0]); //Slab Sub BucketID Eaxmple:-1  subBucketId
-							int schSlbSubRowID=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[1]);  //Slab Sub Bucket RowID Eaxmple:-23  rowid
-							int schSlabSubBucketType=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[2]);  ///Slab Sub Bucket Type Eaxmple:-1
-
-							Double schSlabSubBucketValue=Double.parseDouble(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[3]);  ///Slab Sub Bucket Value Eaxmple:-10
-							int schSubBucketValType=Integer.parseInt(arrSubBucketDetails[cntSubBucket].split(Pattern.quote("^"))[4]); ///Slab Sub Bucket Value Type Eaxmple:-0
-
-
-							int totalOderQtyProductsAgainstRowId=0;
-							Double totalVolProductsAgainstRowId=0.0;
-							Double totalValProductsAgainstRowId=0.0;
-
-
-
-
-
-
-
-							//String[] productFullFilledSlab=new String[arrProductIDMappedInSchSlbSubBukRowId.length];
-							int positionOfProductHavingQntty=0;
-							ArrayList<String> arrProductIDMappedInSchSlbSubBukRowId=new ArrayList<String>();
-
-							//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Starts Here To Check the Products
-
-							if(SchTypeId==1 || SchTypeId==2)
-							{
-
-								arrProductIDMappedInSchSlbSubBukRowId=dbengine.fectProductIDMappedInSchSlbSubBukRowIdTemp(schSlbSubRowID);
-
-
-							}
-							if(SchTypeId==3)
-							{
-								arrProductIDMappedInSchSlbSubBukRowId.add(ProductIdOnClicked);
-							}
-
-							//IF SchTypeID==1 OR SchTypeID==2 OR SchTypeID==3  Code Ends Here To Check the Products
-							//SlabSubBucketValType
-							//I           =Invoice Value                  Order Value After Tax
-							//G         =Gross Value                     Order Value Before Tax
-							//N         =Net Value                                         Order Value After Tax
-
-
-							if(arrProductIDMappedInSchSlbSubBukRowId.size()>0)
-							{
-
-
-								for(String productMappedWithScheme:arrProductIDMappedInSchSlbSubBukRowId)
-								{
-
-									schSlabRowIdFullFilledSlab.add(productMappedWithScheme+"^"+schSlbSubRowID);
-									productFullFilledSlab.add(productMappedWithScheme+"^"+schId);// productLine
-
-									String hmapSubBucketDetailsData_Value=	schId+"^"+schSlabId+"^"+schSlbBuckId+"^"+schSlabSubBucketValue+"^"+schSubBucketValType+"^"+schSlabSubBucketType+"^"+ProductIdOnClicked +"^"+valForVolumetQTYToMultiply+"^"+schSlbSubRowID+"^"+SchTypeId;
-									hmapSubBucketDetailsData.put(productMappedWithScheme+"^"+schSlbSubRowID,hmapSubBucketDetailsData_Value );
-									if(hmapPrdctOdrQty.containsKey(productMappedWithScheme))
-									{
-										if(Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme))>(0))
-										{
-											//1. Product Quantity
-
-
-											int oderQtyOnProd=Integer.parseInt(hmapPrdctOdrQty.get(productMappedWithScheme));
-
-											totalProductQnty=totalProductQnty+oderQtyOnProd;
-											totalOderQtyProductsAgainstRowId=totalOderQtyProductsAgainstRowId+oderQtyOnProd;
-											hmapSubBucketTotalQntty.put(""+schSlbSubRowID,""+totalOderQtyProductsAgainstRowId);
-											// product volume
-											Double prodVolume= Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[0]);
-											Double oderVolumeOfCurrentMapedProduct=prodVolume * oderQtyOnProd;
-											totalProductVol=totalProductVol + oderVolumeOfCurrentMapedProduct;
-											totalVolProductsAgainstRowId=totalVolProductsAgainstRowId+oderVolumeOfCurrentMapedProduct;
-											hmapSubBucketTotalVolume.put(""+schSlbSubRowID,""+totalVolProductsAgainstRowId);
-											//product value
-
-											Double prodRate= Double.parseDouble(hmapPrdctVolRatTax.get(productMappedWithScheme).split(Pattern.quote("^"))[1]);
-											Double oderRateOfCurrentMapedProduct=prodRate * oderQtyOnProd;
-											//oderRateOnProduct=oderRateOnProduct + oderRateOfCurrentMapedProduct;
-											totalProductVal=totalProductVal+oderRateOfCurrentMapedProduct;
-											totalValProductsAgainstRowId=totalValProductsAgainstRowId+oderRateOfCurrentMapedProduct;
-											hmapSubBucketTotalValue.put(""+schSlbSubRowID,""+totalProductVal);
-
-
-										}
-
-
-
-									}
-
-
-								}// for loops ends here productMappedWithScheme:arrProductIDMappedInSchSlbSubBukRowId
-
-
-							}// ends if(arrProductIDMappedInSchSlbSubBukRowId.size()>0)
-
-
-
-						} //sub bucket ends here
-
-						//schSlabSubBucketType
-						//1. Product Quantity
-						//5. Product Volume
-						//2. Invoice Value
-						//3. Product Lines
-						//4. Product Value
-						boolean bucketCndtnFullFill=true;
-						String stringValHmap="";
-						String stringValHmapInvoice="";
-						ArrayList<String> listStrValHmapForSchm2=new ArrayList<String>();
-						if(productFullFilledSlabForInvoice!=null && productFullFilledSlabForInvoice.size()>0)
-						{
-							for(String productIdFullFilledSlabInvoiceWithQty:productFullFilledSlabForInvoice)
-							{
-								if(hmapSubBucketDetailsData.containsKey(productIdFullFilledSlabInvoiceWithQty))
-								{
-									stringValHmapInvoice=hmapSubBucketDetailsData.get(productIdFullFilledSlabInvoiceWithQty);
-									String schSlabSubBucketType=stringValHmapInvoice.split(Pattern.quote("^"))[5];
-									Double schSlabSubBucketVal=Double.valueOf(stringValHmapInvoice.split(Pattern.quote("^"))[3]);
-									if(schSlabSubBucketType.equals("2"))
-									{
-										if(totalInvoice>=schSlabSubBucketVal)
-										{
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabInvoiceWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-											break;
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											stringValHmapInvoice="";
-											break;
-										}
-
-									}
-									else
-									{
-										stringValHmapInvoice="";
-									}
-								}
-
-							}
-						}
-
-						if(schSlabRowIdFullFilledSlab!=null && schSlabRowIdFullFilledSlab.size()>0)
-						{
-							for(String productIdRowIDFullFilledSlabWithQty:schSlabRowIdFullFilledSlab)
-							{
-								String productIdFullFilledSlabWithQty=productIdRowIDFullFilledSlabWithQty.split(Pattern.quote("^"))[0];
-								String RowIDFullFilledSlabWithQty=productIdRowIDFullFilledSlabWithQty.split(Pattern.quote("^"))[1];
-								stringValHmap=hmapSubBucketDetailsData.get(productIdRowIDFullFilledSlabWithQty);
-								String schSlabSubBucketType=stringValHmap.split(Pattern.quote("^"))[5];
-								Double schSlabSubBucketVal=Double.valueOf(stringValHmap.split(Pattern.quote("^"))[3]);
-								if(SchTypeId==1 || SchTypeId==3 )
-								{
-
-
-									if(schSlabSubBucketType.equals("1"))
-									{
-										if(totalProductQnty>=schSlabSubBucketVal)
-										{
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-
-										}
-										else
-										{
-
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											stringValHmap="";
-											break;
-										}
-
-									}
-									//Product Line
-									if(schSlabSubBucketType.equals("3"))
-									{
-										if(productFullFilledSlab.size()>=schSlabSubBucketVal)
-										{
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											stringValHmap="";
-											break;
-										}
-									}
-									//product Value
-									if(schSlabSubBucketType.equals("4"))
-									{
-										if(totalProductVal>=schSlabSubBucketVal)
-										{
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											stringValHmap="";
-											break;
-										}
-
-									}
-									//product volume
-									if(schSlabSubBucketType.equals("5"))
-									{
-										if(totalProductVol>=(schSlabSubBucketVal*1000))
-										{
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											stringValHmap="";
-											break;
-										}
-									}
-
-								}
-								else // scheme typeid=2
-								{
-
-									if(schSlabSubBucketType.equals("1"))
-									{
-										if(hmapSubBucketTotalQntty.containsKey(RowIDFullFilledSlabWithQty))
-										{
-											int quantity=Integer.parseInt(hmapSubBucketTotalQntty.get(RowIDFullFilledSlabWithQty));
-											if(quantity>=schSlabSubBucketVal)
-											{
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-												listStrValHmapForSchm2.add(stringValHmap);
-											}
-											else
-											{
-												dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-												bucketCndtnFullFill=false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										}
-
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-										/*if(hmapPrdctOdrQty.containsKey(productIdFullFilledSlabWithQty))
-										{
-											if(Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty))>=schSlabSubBucketVal)
-											{
-												listStrValHmapForSchm2.add(stringValHmap);
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-
-											}
-											else
-											{
-												dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-												bucketCndtnFullFill=false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										}
-
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-*/
-									}
-
-									if(schSlabSubBucketType.equals("3"))
-									{
-
-										if(productFullFilledSlab.size()>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-									}
-									if(schSlabSubBucketType.equals("4"))
-									{
-										Double singleProdRate= Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[1]);
-										Double singlePrdctOderRate=singleProdRate * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-										if(hmapSubBucketTotalValue.containsKey(RowIDFullFilledSlabWithQty))
-										{
-											Double prdctVal=Double.parseDouble(hmapSubBucketTotalValue.get(RowIDFullFilledSlabWithQty));
-											if(prdctVal>=schSlabSubBucketVal)
-											{
-												listStrValHmapForSchm2.add(stringValHmap);
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-											}
-										/*if(singlePrdctOderRate>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}*/
-											else
-											{
-												dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-												bucketCndtnFullFill=false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-
-
-									}
-									if(schSlabSubBucketType.equals("5"))
-									{
-										Double singleProdVol= Double.parseDouble(hmapPrdctVolRatTax.get(productIdFullFilledSlabWithQty).split(Pattern.quote("^"))[0]);
-										Double singlePrdctOderVol=singleProdVol * Integer.parseInt(hmapPrdctOdrQty.get(productIdFullFilledSlabWithQty));
-										if(hmapSubBucketTotalVolume.containsKey(RowIDFullFilledSlabWithQty))
-										{
-											Double prdctVol=Double.parseDouble(hmapSubBucketTotalVolume.get(RowIDFullFilledSlabWithQty));
-											if(prdctVol>=(schSlabSubBucketVal*1000))
-											{
-												dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-												listStrValHmapForSchm2.add(stringValHmap);
-											}
-										/*if(singlePrdctOderVol>=schSlabSubBucketVal)
-										{
-											listStrValHmapForSchm2.add(stringValHmap);
-											dbengine.insertProductMappedWithSchemApplied(storeID, productIdFullFilledSlabWithQty,""+schSlabId,""+schId,strGlobalOrderID);
-										}*/
-											else
-											{
-												dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-												bucketCndtnFullFill=false;
-												listStrValHmapForSchm2.clear();
-												break;
-											}
-										}
-										else
-										{
-											dbengine.deleteAlertValueSlab(storeID,""+schSlabId,strGlobalOrderID);
-											bucketCndtnFullFill=false;
-											listStrValHmapForSchm2.clear();
-											break;
-										}
-
-									}
-
-
-								}
-
-
-							}
-
-
-						}//	if(productFullFilledSlab!=null && productFullFilledSlab.size()>0) ends here
-
-
-						if(bucketCndtnFullFill)
-						{
-							bucketCndtnFullFillisReally=true;
-							if(SchTypeId==1 || SchTypeId==3)
-							{
-								if(!TextUtils.isEmpty(stringValHmap.trim()))
-								{
-									for(String allproductFullFilledSlab:productFullFilledSlab)
-									{
-										productFullFilledSlabGlobal.add(allproductFullFilledSlab);
-									}
-									//productFullFilledSlabGlobal.addAll(productFullFilledSlab);
-
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmap+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol+"^1");
-								}
-								else if(!TextUtils.isEmpty(stringValHmapInvoice.trim()))
-								{
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol+"^1");
-								}
-							}
-							else
-							{
-								if(listStrValHmapForSchm2!=null && listStrValHmapForSchm2.size()>0)
-								{
-									for(String allproductFullFilledSlab:productFullFilledSlab)
-									{
-										productFullFilledSlabGlobal.add(allproductFullFilledSlab);
-									}
-									//productFullFilledSlabGlobal.addAll(productFullFilledSlab);
-
-									for(String strVal:listStrValHmapForSchm2)
-									{
-
-										arredtboc_OderQuantityFinalSchemesToApply.add(strVal+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol+"^1");
-									}
-								}
-								if(!TextUtils.isEmpty(stringValHmapInvoice.trim()))
-								{
-									arredtboc_OderQuantityFinalSchemesToApply.add(stringValHmapInvoice+"^"+totalProductQnty+"^"+totalInvoice+"^"+totalProductLine+"^"+totalProductVal+"^"+totalProductVol+"^1");
-								}
-
-							}
-							break;
-						}//if(bucketCndtnFullFill) ends here
-
-					}// bucket ends here
-
-					if(bucketCndtnFullFillisReally)
-					{
-
-						break;
-					}
+					file.createNewFile();
+				}
+				catch (IOException e1)
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
 
-		}
+
+			CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Save Button Click on Product List"+StartClickTimeFinal;
+
+
+			FileWriter fw;
+			try
+			{
+				fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(CommonInfo.fileContent);
+				bw.close();
+
+				//dbengine.open();
+				dbengine.savetblMessageTextFileContainer(fileName,0);
+				//dbengine.close();
+
+
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+
+
+
+			butClickForGPS=1;
+			flagClkdButton=5;
+			// //dbengine.open();
+				  *//* if ((dbengine.PrevLocChk(storeID.trim())) )
+					{*//*
+
+			// //dbengine.close();
+
+			if(ed_LastEditextFocusd!=null)
+			{
+							*//* if(!(ed_LastEditextFocusd.getText().toString()).equals(viewCurrentBoxValue))
+							   {*//*
+				getOrderData(ProductIdOnClickedEdit);
+							   *//*}*//*
+
+			}
+
+			orderBookingTotalCalc();
+			progressTitle=OrderReview.this.getResources().getString(R.string.WhileSave);
+
+			new SaveData().execute("1");
+
+		}*/
+
+
 
 	}
+
+
 
 }

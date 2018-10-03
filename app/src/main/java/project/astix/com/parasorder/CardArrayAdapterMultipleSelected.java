@@ -28,7 +28,7 @@ public class CardArrayAdapterMultipleSelected extends BaseAdapter {
 	LinkedHashMap<String, String> hmapCheckedValId_Text=new LinkedHashMap<String, String>();
 	private List<String> listOutletId;
 	EditText txtTextSearch;
-String tagVal;
+	String tagVal;
 	private ArrayList<String> listStoreOrigin;
 	private ArrayList<String> listStoreIDOrigin;
 	private ArrayList<String> listSelectedStore=new ArrayList<String>();

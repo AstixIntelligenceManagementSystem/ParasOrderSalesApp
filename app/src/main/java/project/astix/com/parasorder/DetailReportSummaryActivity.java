@@ -47,7 +47,7 @@ public class DetailReportSummaryActivity extends BaseActivity
 
 	public String back="0";
 
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 	public TableLayout tl2;
 	public int bck = 0;
 
@@ -67,9 +67,9 @@ public class DetailReportSummaryActivity extends BaseActivity
 	{
 		// TODO Auto-generated method stub
 		super.onResume();
-		dbengine.open();
-		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.open();
+		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+		//dbengine.close();
 
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -78,7 +78,7 @@ public class DetailReportSummaryActivity extends BaseActivity
 			MsgServerID= Integer.parseInt(token.nextToken().trim());
 			Noti_text= token.nextToken().trim();
 
-			dbengine.close();
+			//dbengine.close();
 			if(Noti_text.equals("") || Noti_text.equals("Null"))
 			{
 
@@ -96,12 +96,12 @@ public class DetailReportSummaryActivity extends BaseActivity
 								long syncTIMESTAMP = System.currentTimeMillis();
 								Date dateobj = new Date(syncTIMESTAMP);
 								SimpleDateFormat df = new SimpleDateFormat(
-										"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+										"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
-								dbengine.open();
+								//dbengine.open();
 
-								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+								//dbengine.close();
 								dialog.dismiss();
 
 							}
@@ -154,7 +154,7 @@ public class DetailReportSummaryActivity extends BaseActivity
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 
 		Date date1=new Date();
@@ -274,9 +274,9 @@ public class DetailReportSummaryActivity extends BaseActivity
 		{
 			super.onPreExecute();
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateAllSummaryDayDataTable();
-			dbengine.close();
+			//dbengine.close();
 
 
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -320,12 +320,12 @@ public class DetailReportSummaryActivity extends BaseActivity
 			{
 				pDialogGetStores.dismiss();
 			}
-			dbengine.open();
+			//dbengine.open();
 
 			getDataFromDatabase();
 
 
-			dbengine.close();
+			//dbengine.close();
 
 
 

@@ -1,5 +1,18 @@
 package project.astix.com.parasorder;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.os.Bundle;
+import android.telephony.TelephonyManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.astix.Common.CommonInfo;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,27 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-
-import android.os.Bundle;
-import android.telephony.TelephonyManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.app.Activity;
-import android.app.Fragment;
-
-import com.astix.Common.CommonInfo;
-
 public class StoreWiseFragmentTwoTab<Context> extends Fragment 
 {
 	
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine; 
+	PRJDatabase dbengine;
 	private Activity mContext;
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -52,7 +51,7 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
        rootView = inflater.inflate(R.layout.store_summary, container, false);
         
         mContext = getActivity();
-        dbengine = new DBAdapterKenya(mContext);
+        dbengine = new PRJDatabase(mContext);
         
         TelephonyManager tManager = (TelephonyManager) mContext.getSystemService(mContext.TELEPHONY_SERVICE);
 		imei = tManager.getDeviceId();
@@ -64,7 +63,7 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		Date date1=new Date();
@@ -73,10 +72,10 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
 		//fDate="29-10-2015";
 		
 		//'868087024619932','29-10-2015'  
-		
-		dbengine.open();
-      int check=dbengine.fnCountToDisplayDailySummaryDetailsStoreWiseLines(1);
-      dbengine.close();
+		int flgReportFromTmpOrPermanent=0;
+		//dbengine.open();
+      int check=dbengine.fnCountToDisplayDailySummaryDetailsStoreWiseLines(1,flgReportFromTmpOrPermanent);
+      //dbengine.close();
 		System.out.println("lucky value check :"+check);
 		
 		if(check==0)
@@ -86,9 +85,9 @@ public class StoreWiseFragmentTwoTab<Context> extends Fragment
 		}
 		else
 		{
-			//dbengine.open();
-			hmapAll_details=dbengine.fnGetDailySummaryDetailsStoreWise(1);
-			//dbengine.close();
+			////dbengine.open();
+			hmapAll_details=dbengine.fnGetDailySummaryDetailsStoreWise(1,flgReportFromTmpOrPermanent);
+			////dbengine.close();
             intializeFields();
 		}
 		

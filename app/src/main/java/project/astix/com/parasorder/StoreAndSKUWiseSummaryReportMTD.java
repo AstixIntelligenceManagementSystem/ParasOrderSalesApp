@@ -1,12 +1,8 @@
 package project.astix.com.parasorder;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -17,11 +13,14 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
 
 import com.astix.Common.CommonInfo;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 {
@@ -29,7 +28,7 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine= new DBAdapterKenya(this); 
+	PRJDatabase dbengine= new PRJDatabase(this);
 
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -81,7 +80,7 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		
@@ -143,9 +142,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreAndSKUWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -189,9 +188,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}
@@ -199,7 +198,8 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 	
 	private void intializeFields() 
 	{
-		
+		TextView tvValBeforeTax=(TextView) findViewById(R.id.tvValBeforeTax);
+		tvValBeforeTax.setVisibility(View.GONE);
 		if(AllDataContainer.length>0)
 		{
 		
@@ -238,7 +238,7 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 		total_LinesPerBill.setText(a3);
 		TextView total_StockValue=(TextView)rootView.findViewById(R.id.total_StockValue);
 		total_StockValue.setText(a4);*/
-		TextView total_discountValue=(TextView)findViewById(R.id.total_discountValue);
+		TextView total_discountValue=(TextView)findViewById(R.id.tvDisCount);
 		Double disc_val=Double.parseDouble(a8);
 		disc_val= Double.parseDouble(new DecimalFormat("##.##").format(disc_val));
 		total_discountValue.setText(""+disc_val.intValue());
@@ -248,7 +248,7 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 		Double ValBeforeTax=Double.parseDouble(a9);
 		ValBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax));
 		total_ValBeforeTax.setText(""+ValBeforeTax.intValue());
-		
+			total_ValBeforeTax.setVisibility(View.GONE);
 		TextView total_ValTax=(TextView)findViewById(R.id.total_ValTax);
 		Double ValTax=Double.parseDouble(a10);
 		ValTax=Double.parseDouble(new DecimalFormat("##.##").format(ValTax));
@@ -313,20 +313,24 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 				
 				
 				txt_store_sku.setText(s3);
-				/*dbengine.open();
+				/*//dbengine.open();
 				String StoreName=dbengine.FetchStoreName(s13.trim());
-				dbengine.close();
+				//dbengine.close();
 				txt_store_sku.setText(StoreName);*/
 				
 				Double disc_val1=Double.parseDouble(s8);
 				disc_val1= Double.parseDouble(new DecimalFormat("##.##").format(disc_val1));
 				txt_store_sku_discnt_val.setText(""+disc_val1.intValue());
+
 				
 				
 				Double ValBeforeTax1=Double.parseDouble(s9);
 				ValBeforeTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax1));
 				txt_store_sku_gross_val.setText(""+ValBeforeTax1.intValue());
-				
+				 txt_store_sku_gross_val.setVisibility(View.GONE);
+				/* if(txt_store_sku_gross_val.getVisibility()==View.GONE) {
+					 txt_store_sku_gross_val.setVisibility(View.VISIBLE);
+				 }*/
 				
 				Double ValTax1=Double.parseDouble(s10);
 		 		ValTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValTax1));
@@ -349,7 +353,9 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 				
 				 txt_store_sku.setVisibility(View.GONE);
 				 txt_store_sku_discnt_val.setVisibility(View.GONE);
-				 txt_store_sku_gross_val.setVisibility(View.GONE);
+				/* if(txt_store_sku_gross_val.getVisibility()==View.GONE) {
+					 txt_store_sku_gross_val.setVisibility(View.VISIBLE);
+				 }*/
 				 txt_store_sku_tac_val.setVisibility(View.GONE);
 				 txt_store_sku_net_val.setVisibility(View.GONE);
 					
@@ -410,7 +416,7 @@ public class StoreAndSKUWiseSummaryReportMTD extends BaseActivity
 				Double ValBeforeTax1=Double.parseDouble(s9);
 				ValBeforeTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax1));
 				txt_gross_val.setText(""+ValBeforeTax1.intValue());
-				
+
 				
 				TextView txt_tac_val=(TextView) view.findViewById(R.id.txt_tac_val);
 				Double ValTax1=Double.parseDouble(s10);

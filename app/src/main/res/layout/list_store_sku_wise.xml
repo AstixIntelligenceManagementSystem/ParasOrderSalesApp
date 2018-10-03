@@ -24,7 +24,7 @@
         android:id="@+id/txt_prdct"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="5"
         android:text="Product"
         android:gravity="left|center_vertical"
         android:textSize="9sp"
@@ -52,7 +52,8 @@
      <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+         android:visibility="gone"/>
       <TextView 
             android:id="@+id/txt_rate"
         android:layout_width="0dp"
@@ -61,6 +62,7 @@
          android:paddingTop="1dp"
         android:paddingBottom="1dp"
         android:text="Rate"
+          android:visibility="gone"
         android:gravity="right|center_vertical"
         android:textSize="9sp"
          android:paddingRight="2dp"
@@ -68,7 +70,8 @@
       <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+          android:visibility="gone"/>
        <TextView 
              android:id="@+id/txt_stock"
         android:layout_width="0dp"
@@ -76,6 +79,7 @@
         android:layout_weight="1"
         android:gravity="right|center_vertical"
         android:text="Stock"
+           android:visibility="gone"
         android:textSize="9sp"
          android:paddingTop="1dp"
         android:paddingBottom="1dp"
@@ -137,13 +141,15 @@
              <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+                 android:visibility="gone"/>
        <TextView 
              android:id="@+id/txt_gross_val"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Gross"
+           android:visibility="gone"
         android:gravity="right|center_vertical"
          android:textSize="9sp"
           android:paddingTop="1dp"

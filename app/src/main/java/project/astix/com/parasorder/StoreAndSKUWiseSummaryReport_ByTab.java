@@ -2,13 +2,12 @@ package project.astix.com.parasorder;
 
 import android.app.ActionBar;
 import android.app.Fragment;
-import android.os.Bundle;
-import android.view.Window;
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.TableLayout;
 
 
@@ -23,7 +22,7 @@ public class StoreAndSKUWiseSummaryReport_ByTab extends BaseActivity
 	
 	
 
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 	public TableLayout tl2; 
 	public int bck = 0;
 	public String Noti_text="Null";
@@ -98,18 +97,18 @@ public class StoreAndSKUWiseSummaryReport_ByTab extends BaseActivity
         
         // Setting tab listeners.
         OneTab.setTabListener(new TabListener(fragmentOneTab));
-        TwoTab.setTabListener(new TabListener(fragmentTwoTab));
+      //  TwoTab.setTabListener(new TabListener(fragmentTwoTab));
         ThreeTab.setTabListener(new TabListener(fragmentThreeTab));
        
         // Adding tabs to the ActionBar.
         actionBar.addTab(OneTab);
-        actionBar.addTab(TwoTab);
+        //actionBar.addTab(TwoTab);
         actionBar.addTab(ThreeTab);
         
        
         
         
-        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#015db4")));
+        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#213F7D")));
 
         // set background for action bar tab
         actionBar.setStackedBackgroundDrawable(new ColorDrawable(Color.parseColor("#ffffff")));   

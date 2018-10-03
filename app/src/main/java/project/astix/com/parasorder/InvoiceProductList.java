@@ -1,19 +1,10 @@
 package project.astix.com.parasorder;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -21,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -30,9 +22,13 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
 
-public class InvoiceProductList  extends Activity implements OnItemSelectedListener
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
+
+public class InvoiceProductList  extends BaseActivity implements OnItemSelectedListener
 {
 
 	public String imei;
@@ -83,7 +79,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 		public String selected_Competitor_id="0";
 		public CheckBox chkIos;
 		
-	 DBAdapterKenya dbengine = new DBAdapterKenya(this); 
+	 PRJDatabase dbengine = new PRJDatabase(this);
 	 
 	 public String[] pName;
 		
@@ -128,9 +124,9 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 			try
 			{
 
-			dbengine.open();
-			String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-			dbengine.close();
+			//dbengine.open();
+			String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+			//dbengine.close();
 			System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 			if(!Noti_textWithMsgServerID.equals("Null"))
 			{
@@ -184,17 +180,17 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
 					    	
-								dbengine.open();
-								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.open();
+								dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+								//dbengine.close();
 								
 								try
 								{
-									dbengine.open();
-								    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
+									//dbengine.open();
+								    int checkleftNoti=dbengine.countNumberOFNotificationtblPDANotificationMaster();
 								    if(checkleftNoti>0)
 								    {
-									    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
+									    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
 											System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 											if(!Noti_textWithMsgServerID.equals("Null"))
 											{
@@ -203,7 +199,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 												MsgServerID= Integer.parseInt(token.nextToken().trim());
 												Noti_text= token.nextToken().trim();
 												
-												dbengine.close();
+												//dbengine.close();
 												if(Noti_text.equals("") || Noti_text.equals("Null"))
 												{
 													
@@ -227,7 +223,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 								}
 					            finally
 					            {
-					            	dbengine.close();
+					            	//dbengine.close();
 								   
 					            }
 				            
@@ -291,12 +287,12 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 		System.out.println("Dangi new  testing SelectStoreTag on Invoice ProductList :"+SelectStoreTag);
 		
 		 tl2 = (TableLayout) findViewById(R.id.dynprodtable);
-		 dbengine.open();
+		 //dbengine.open();
 		String Distname=dbengine.FetchDistNameBasedDistID(TagDistID);
 		Storename=dbengine.FetchStoreNameBasedStoreID(TagStoreID,TagDate);
 		CATID=dbengine.FetchCategoryID(); 
 		CATDesc=dbengine.FetchCategoryDesc();
-		dbengine.close();
+		//dbengine.close();
 			
 			DistriName.setText(Distname);
 			StrName.setText(Storename);
@@ -307,7 +303,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 			if(CATID.length>0)
 			{
 				System.out.println("Sameer 2");
-				dbengine.open();
+				//dbengine.open();
 				PID = dbengine.FetchPidInvoice(TagStoreID,TagDate,TagOrderID);
 				System.out.println("Singh Testing PID one:");
 				System.out.println("Singh Testing PID :"+PID.length);
@@ -339,7 +335,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 				//Oqty=dbengine.FetchOrderQtyInvoice(StoreID);
 				
 				CATIDFomProduct=dbengine.FetchCategoryIDfromInvoiceProduct(); 
-				dbengine.close();
+				//dbengine.close();
 				
 				
 				ProductID = new String[PID.length];
@@ -383,9 +379,9 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 						final EditText et4 = (EditText)row.findViewById(R.id.tvDiscountVal);
 						
 						tv1.setTag(current);
-						dbengine.open();
+						//dbengine.open();
 						String PName=dbengine.FetchPNameInvoice(ProductID[current]);
-						dbengine.close();
+						//dbengine.close();
 						tv1.setText(PName);
 						tv1.setTextSize(12);
 						et1.setTag(current);
@@ -432,7 +428,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 				// TODO Auto-generated method stub
 				
 				int picsCHK = 0;//dbengine.getExistingPicNos(fStoreID);
-				//dbengine.close();
+				////dbengine.close();
 				
 				if(picsCHK <= 0 && isOnline()){
 					
@@ -471,10 +467,10 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 									
 									
 				                      dbengine.UpdateProductCancelStoreFlag(TagOrderID.trim(),1);
-				                      dbengine.open();
+				                      //dbengine.open();
 				                      dbengine.saveInvoiceButtonStoreTransac("NA",TagDate,TagStoreID,"0","0",0.0, 0,
 				                              0, 0,TagOrderID,"","9",1,0.0,TagRouteID,"0");
-				                      dbengine.close();
+				                      //dbengine.close();
 									Intent fireBackDetPg = new Intent(InvoiceProductList.this, InvoiceStoreSelection.class);
 								
 								
@@ -594,35 +590,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 		
 	}
 	
-	public boolean isOnline() {
-		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo netInfo = cm.getActiveNetworkInfo();
-		if (netInfo != null && netInfo.isConnected()) {
-			//if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-			return true;
-		}
-		return false;
-	}
-	public void showNoConnAlert() 
-	 {
-			AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(InvoiceProductList.this);
-			alertDialogNoConn.setTitle(R.string.genTermNoDataConnection);
-			alertDialogNoConn.setMessage(R.string.genTermNoDataConnectionFullMsg);
-			//alertDialogNoConn.setMessage(getText(R.string.connAlertErrMsg));
-			alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) 
-						{
-                      dialog.dismiss();
-                      
-                      //finish();
-						}
-					});
-			alertDialogNoConn.setIcon(R.drawable.error_ico);
-			AlertDialog alert = alertDialogNoConn.create();
-			alert.show();
-			// alertDialogLowbatt.show();
-		}
+
 	public void showSubmitConfirm() {
 		AlertDialog.Builder alertDialogSubmitConfirm = new AlertDialog.Builder(InvoiceProductList.this);
 		alertDialogSubmitConfirm.setTitle(R.string.genTermInformation);
@@ -655,11 +623,11 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 				       
 					//	dialog.dismiss();
 						
-						dbengine.open();
+						//dbengine.open();
 						// change by sunil
 						dbengine.deleteOldInvoiceButtonStoreTransac(StoreID);
 						//dbengine.deleteOldStoreInvoice(fStoreID);
-						dbengine.close();
+						//dbengine.close();
 						//for(int countRow = 0; countRow <= tl2.getChildCount()-1; countRow++){
 						for (int countRow = 0; countRow <= (ProductID.length - 1); countRow++)
 						{
@@ -715,7 +683,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 								dVal[countRow] = 0.0;
 							}
 							
-							dbengine.open();
+							//dbengine.open();
 							// change by sunil
 							//String OrderID=dbengine.FetchOrderIDInvoice(ProductID[countRow]);
 							//String OrderID=dbengine.FetchOrderIDInvoiceStoremstr(StoreID);
@@ -727,7 +695,7 @@ public class InvoiceProductList  extends Activity implements OnItemSelectedListe
 									TagStoreID,ProductID[countRow],pName[countRow],rte[countRow], oQty[countRow],
 									DelQty[countRow], fQty[countRow],TagOrderID,CurrentRowCategoryId,"9",0,dVal[countRow],TagRouteID,additionalDiscountValue);
 							//dbengine.saveStoreTransac(imei, pickerDate, StoreID, ProductID[countRow], stk[countRow], oQty[countRow], oVal[countRow], fQty[countRow], dVal[countRow], AppliedSchemeID, AppliedSlab, AppliedAbsVal, newSampleQty, pName[countRow], rte[countRow],CurrentRowCategoryId);//, DisplayName
-							dbengine.close();
+							//dbengine.close();
 						}
 						
 						

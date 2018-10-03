@@ -1,13 +1,9 @@
 package project.astix.com.parasorder;
 
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -18,11 +14,14 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
 
 import com.astix.Common.CommonInfo;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 public class StoreWiseSummaryReportMTD extends BaseActivity
 {
@@ -30,7 +29,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine=new DBAdapterKenya(this); 
+	PRJDatabase dbengine=new PRJDatabase(this);
 
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -81,7 +80,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		
@@ -140,9 +139,9 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -186,9 +185,9 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}
@@ -277,7 +276,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 	         String s15 = tokens1.nextToken().toString().trim();*/
 	         
 	         LayoutInflater inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				final View view=inflater.inflate(R.layout.list_store_wise,null);
+				final View view=inflater.inflate(R.layout.list_store_wise_mt,null);
 				if(i%2==0)
 				{
 					view.setBackgroundResource(R.drawable.card_background_summary);
@@ -315,6 +314,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 				
 				
 				TextView txt_gross_val=(TextView) view.findViewById(R.id.txt_gross_val);
+			    txt_gross_val.setVisibility(View.VISIBLE);
 				Double ValBeforeTax1=Double.parseDouble(s6);
 				ValBeforeTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax1));
 				txt_gross_val.setText(""+ValBeforeTax1.intValue());

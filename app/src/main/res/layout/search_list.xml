@@ -41,22 +41,22 @@
          android:focusable="true"
          android:focusableInTouchMode="true"
         android:drawableRight="@drawable/ic_search"/>
-    
-    <ListView 
-        android:id="@+id/list_store"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipToPadding="false"
-        android:layout_below="@+id/ed_search"
-        android:scrollbarStyle="outsideOverlay"
-        android:listSelector="@android:color/transparent"
-		android:cacheColorHint="@android:color/transparent"
-		android:divider="@null"
-		
-		android:layout_marginTop="5dp"
-		android:dividerHeight="2dp" >
-        
-    </ListView>
+
+        <ListView
+            android:id="@+id/list_store"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/ed_search"
+            android:layout_marginTop="5dp"
+            android:cacheColorHint="@android:color/transparent"
+            android:clipToPadding="false"
+            android:divider="@null"
+            android:dividerHeight="2dp"
+
+            android:listSelector="@android:color/transparent"
+            android:scrollbarStyle="outsideOverlay">
+
+        </ListView>
     </LinearLayout>
   <LinearLayout 
       android:id="@+id/ll_button"

@@ -1,26 +1,49 @@
 package project.astix.com.parasorder;
 
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Html;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-        import android.content.Intent;
-        import android.os.Bundle;
-        import android.text.Html;
-        import android.text.TextUtils;
-        import android.view.View;
-        import android.view.View.OnClickListener;
-        import android.widget.ImageView;
-        import android.widget.TextView;
-
-        import com.astix.Common.CommonInfo;
+import com.astix.Common.CommonInfo;
 
 
-public class SalesValueTarget extends BaseActivity {
+public class SalesValueTarget extends Activity {
 
     TextView txt_stv;
     ImageView imgVw_next,imgVw_back;
     String imei,pickerDate,userDate;
 
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        // TODO Auto-generated method stub
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_HOME)
+        {
+            // finish();
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_MENU)
+        {
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_SEARCH)
+        {
+            return true;
+        }
 
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

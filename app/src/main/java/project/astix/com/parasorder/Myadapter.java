@@ -4,7 +4,6 @@ package project.astix.com.parasorder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
@@ -20,7 +19,7 @@ class Myadapter extends FragmentPagerAdapter
 	}
 
 	@Override
-	public Fragment getItem(int i) 
+	public Fragment getItem(int i)
 	{
 		Fragment fragment=null;
 		if(i==0)
@@ -81,7 +80,7 @@ class Myadapter extends FragmentPagerAdapter
 	        super.destroyItem(container, position, object);
 	    }
 
-	    public Fragment getRegisteredFragment(int position) 
+	    public Fragment getRegisteredFragment(int position)
 	    {
 	        return registeredFragments.get(position);
 	    }

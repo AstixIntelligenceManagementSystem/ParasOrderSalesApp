@@ -1,5 +1,18 @@
 package project.astix.com.parasorder;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.os.Bundle;
+import android.telephony.TelephonyManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.astix.Common.CommonInfo;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,27 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-
-import android.os.Bundle;
-import android.telephony.TelephonyManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.app.Activity;
-import android.app.Fragment;
-
-import com.astix.Common.CommonInfo;
-
 public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment 
 {
 	
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine; 
+	PRJDatabase dbengine;
 	private Activity mContext;
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -52,7 +51,7 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
        rootView = inflater.inflate(R.layout.store_and_sku_wise, container, false);
         
         mContext = getActivity();
-        dbengine = new DBAdapterKenya(mContext);
+        dbengine = new PRJDatabase(mContext);
         
         TelephonyManager tManager = (TelephonyManager) mContext.getSystemService(mContext.TELEPHONY_SERVICE);
 		imei = tManager.getDeviceId();
@@ -65,7 +64,7 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		
@@ -75,7 +74,8 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
 		//fDate="29-10-2015";
 		
 		//  dbengine.open();
-	      int check=dbengine.fnCountToDisplayDailySummaryDetailsStoreSKUWise(5);
+		int flgReportFromTmpOrPermanent=1;
+	      int check=dbengine.fnCountToDisplayDailySummaryDetailsStoreSKUWise(5,flgReportFromTmpOrPermanent);
 	     // dbengine.close();
 			System.out.println("lucky value check :"+check);
 			
@@ -87,7 +87,7 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
 			else
 			{
 				//dbengine.open();
-				hmapAll_details=dbengine.fnGetDailySummaryDetailsStoreSKUWiseLevel(5);
+				hmapAll_details=dbengine.fnGetDailySummaryDetailsStoreSKUWiseLevel(5,flgReportFromTmpOrPermanent);
 				//dbengine.close();
 	            intializeFields();
 			}
@@ -143,7 +143,7 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
 		
 		
 		TextView total_discountValue=(TextView)rootView.findViewById(R.id.total_discountValue);
-		Double disc_val=Double.parseDouble(a7);
+		Double disc_val=Double.parseDouble(a6);
 		disc_val= Double.parseDouble(new DecimalFormat("##.##").format(disc_val));
 		total_discountValue.setText(""+disc_val.intValue());
 		
@@ -154,7 +154,7 @@ public class StoreAndSKUWiseFragmentThreeTab<Context> extends Fragment
 		
 		
 		TextView total_ValBeforeTax=(TextView)rootView.findViewById(R.id.total_ValBeforeTax);
-		Double ValBeforeTax=Double.parseDouble(a8);
+		Double ValBeforeTax=Double.parseDouble(a7);
 		ValBeforeTax=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax));
 		total_ValBeforeTax.setText(""+ValBeforeTax.intValue());
 		

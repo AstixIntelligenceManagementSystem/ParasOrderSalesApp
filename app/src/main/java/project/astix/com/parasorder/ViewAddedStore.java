@@ -1,9 +1,6 @@
 package project.astix.com.parasorder;
 
 
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -18,10 +15,13 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 public class ViewAddedStore extends Activity {
 
 	LinkedHashMap<String, String> lnkdHmapAddedStore=new LinkedHashMap<String, String>();
-	DBAdapterKenya dbHelper;
+	PRJDatabase dbHelper;
 	LinearLayout ll_addedOutlet;
 	View viewAddedStore;
 public String userDate;
@@ -59,7 +59,7 @@ public String userDate;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_view_added_store);
 		
-		dbHelper=new DBAdapterKenya(ViewAddedStore.this);
+		dbHelper=new PRJDatabase(ViewAddedStore.this);
 		Intent getStorei = getIntent();
 		if(getStorei !=null)
 		{

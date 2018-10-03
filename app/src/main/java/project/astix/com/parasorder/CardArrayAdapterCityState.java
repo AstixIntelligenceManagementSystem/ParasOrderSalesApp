@@ -35,7 +35,7 @@ public class CardArrayAdapterCityState extends BaseAdapter{
 	Dialog listDialog;
 	int flgCityState;
 	TextView textView;
-	public CardArrayAdapterCityState(Context context, int flgCityState,List<String> listStore, Dialog listDialog, String previousSlctdCtgry)
+	public CardArrayAdapterCityState(Context context, int flgCityState, List<String> listStore, Dialog listDialog, String previousSlctdCtgry)
 	{
 		this.context=context;
 		this.previousSlctdCtgry=previousSlctdCtgry;

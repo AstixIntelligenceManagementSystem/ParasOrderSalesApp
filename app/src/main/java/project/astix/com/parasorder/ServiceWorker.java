@@ -1,8 +1,29 @@
 package project.astix.com.parasorder;
 
 
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.SharedPreferences;
+import android.os.Environment;
+
+import com.astix.Common.CommonInfo;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
@@ -18,68 +39,52 @@ import java.util.Locale;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.json.JSONArray;
-import org.ksoap2.SoapEnvelope;
-import org.ksoap2.serialization.SoapObject;
-import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-
-
-
-
-
-
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.os.Environment;
-
-import com.astix.Common.CommonInfo;
-
 
 public class ServiceWorker 
 {
+	SharedPreferences sharedPref;
 	
+	public static int flagExecutedServiceSuccesfully=0;
 	public int chkTblStoreListContainsRow=1;
-	private Context context;
 	
     //Live Path WebServiceAndroidParagSFATesting
 	//public String UrlForWebService="http://115.124.126.184/WebServiceAndroidParagSFA/Service.asmx";
 	
 	//Testing Path
 	//public String UrlForWebService="http://115.124.126.184/WebServiceAndroidParagSFATesting/Service.asmx";
-	
-	public static int flagExecutedServiceSuccesfully=0;
 	public String UrlForWebService= CommonInfo.WebServicePath.trim();
-	
- 
-	
-	
-	Locale locale  = new Locale("en", "UK");
-	String pattern = "###.##";
-	DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getNumberInstance(locale);
-	//private ServiceWorker _activity;
-	private ContextWrapper cw;
-	String movie_name;
-	String director;
 	//int counts;
 	public String currSysDate;
 	public String SysDate;
-	
 	public int newStat = 0;
 	public int timeout=0;
+	Locale locale  = new Locale("en", "UK");
+	String pattern = "###.##";
+	DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getNumberInstance(locale);
+	String movie_name;
+	String director;
+	String exceptionCode;
+	private Context context;
+	//private ServiceWorker _activity;
+	private ContextWrapper cw;
 	
-	
-	public ServiceWorker getallStores(Context ctx, String dateVAL, String uuid, String rID,String RouteType) {
+	public ServiceWorker getallStores(Context ctx, String dateVAL, String uuid, String rID,String RouteType,int flgToDeletehmapOrNot) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+        PRJDatabase dbengine = new PRJDatabase(context);
 
-		dbengine.open();
+		//dbengine.open();
+
+		HashMap<String, String> hmapStoreIdSstat=new HashMap<String, String>();
+		HashMap<String, String> hmapStoreIdVisitStatus=new HashMap<String, String>();
+		hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
+		//hmapStoreIdVisitStatus=dbengine.checkForStoreIdVisitStatus();
+
+		if(flgToDeletehmapOrNot==1)
+		{
+			hmapStoreIdVisitStatus.clear();
+			hmapStoreIdSstat.clear();
+		}
 		dbengine.Delete_tblStore_for_refreshDataButNotNewStore();
 		dbengine.fndeleteStoreAddressMapDetailsMstr();
 		
@@ -153,283 +158,203 @@ public class ServiceWorker
 	            InputSource is = new InputSource();
 	            is.setCharacterStream(new StringReader(name));
 	            Document doc = db.parse(is);
-			//System.out.println("shivam4");
+			System.out.println("shivam4");
 	          
-	        //   dbengine.open();
-	            
+	        //   //dbengine.open();
+			/*dbengine.Delete_tblInvoiceCaption();
+			dbengine.savetblInvoiceCaption("vanInv",11);*/
+				//throw new RuntimeException();
+
+
+
+
 	            NodeList tblUOMMstrNode = doc.getElementsByTagName("tblStoreListMaster");
 	            for (int i = 0; i < tblUOMMstrNode.getLength(); i++)
-	            {
-	          
-	            	String StoreID="0";
+				{
+					//String StoreID,String  StoreName ,String OwnerName ,String StoreContactNo ,String StoreAddress ,
+					// String StoreType,Double StoreLatitude ,Double StoreLongitude ,String  LastVisitDate,
+					// String  LastTransactionDate,int Sstat,int StoreRouteID ,int RouteNodeType,int StoreCatNodeId ,
+					// String PaymentStage ,int flgHasQuote ,int flgAllowQuotation,String flgGSTCapture,
+					// String flgGSTCompliance,String GSTNumber ,int flgGSTRecordFromServer ,String StoreCity ,
+					// String StorePinCode ,String StoreState,String OutStanding ,String OverDue ,String DBR ,int flgRuleTaxVal
+
+					String StoreID="0";
 					String StoreName="NA";
+					String OwnerName="NA";
+					String StoreContactNo="0000000000";
+					String StoreAddress="NA";
+					int StoreType=0;
+					String StoreCatType="NA";
 					Double StoreLatitude=0.0;
 					Double StoreLongitude=0.0;
-					String StoreType="0";
-					String LastTransactionDate="NA";
 					String LastVisitDate="NA";
+					String LastTransactionDate="NA";
 					int Sstat=0;
-					int IsClose=0;
-					int IsNextDat=0;
 					int StoreRouteID=0;
+					int RouteNodeType=0;
 					int StoreCatNodeId=0;
 					String PaymentStage="0";
 					int flgHasQuote=0;
 					int flgAllowQuotation=0;
-					int flgSubmitFromQuotation=0;
-					
-					 String flgGSTCapture="1";
-				     String flgGSTCompliance="0";
-				     String GSTNumber="0";
-					  String DBR="0";
-				     int flgOrderType=-1;
-				     int flgGSTRecordFromServer=0;
-
+					String flgGSTCapture="1";
+					String flgGSTCompliance="0";
+					String GSTNumber="0";
+					int flgGSTRecordFromServer=0;
+					String StoreCity="NA" ;
+					String StorePinCode ="NA" ;
+					String StoreState="NA" ;
+					String OutStanding ="0" ;
+					String OverDue="0" ;
+					String DBR="0";
+					int flgRuleTaxVal=0;
+					int flgTransType=0;
+					int IsClose=0;
 					String StoreIDPDAFromServer="NA";
-					String RouteNodeType="0";
-					String ForDate=dateVAL;
-	            	
-                       
-	                Element element = (Element) tblUOMMstrNode.item(i);
-		
-	                if(!element.getElementsByTagName("StoreID").equals(null))
-	                 {
-					
-	                 NodeList StoreIDNode = element.getElementsByTagName("StoreID");
-	                 Element     line = (Element) StoreIDNode.item(0);
-					
-		                if(StoreIDNode.getLength()>0)
-		                {
-							
-		                	StoreID=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-					if(!element.getElementsByTagName("StoreIDPDA").equals(null))
+					String SalesPersonName="NA";
+					String SalesPersonContactNo="NA";
+					int IsComposite=0;
+					int StoreStateID=0;
+					int StoreCityID=0;
+					//not used
+					//int IsNextDat=0;
+					//int flgSubmitFromQuotation=0;
+
+					Element element = (Element) tblUOMMstrNode.item(i);
+					if(!element.getElementsByTagName("StoreID").equals(null))
 					{
-
-						NodeList StoreIDPDANode = element.getElementsByTagName("StoreIDPDA");
-						Element     line = (Element) StoreIDPDANode.item(0);
-
-						if(StoreIDPDANode.getLength()>0)
+						NodeList StoreIDNode = element.getElementsByTagName("StoreID");
+						Element     line = (Element) StoreIDNode.item(0);
+						if(StoreIDNode.getLength()>0)
 						{
-
-							StoreIDPDAFromServer=xmlParser.getCharacterDataFromElement(line);
+							StoreID=XMLParser.getCharacterDataFromElement(line);
 						}
 					}
-	                
-	                if(!element.getElementsByTagName("StoreName").equals(null))
-	                 {
-					
-	                 NodeList StoreNameNode = element.getElementsByTagName("StoreName");
-	                 Element     line = (Element) StoreNameNode.item(0);
-					
-		                if(StoreNameNode.getLength()>0)
-		                {
-							
-		                	StoreName=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	       
-	               
-	                if(!element.getElementsByTagName("StoreLatitude").equals(null))
-	                 {
-					
-	                 NodeList StoreLatitudeNode = element.getElementsByTagName("StoreLatitude");
-	                 Element     line = (Element) StoreLatitudeNode.item(0);
-					
-		                if(StoreLatitudeNode.getLength()>0)
-		                {
-							
-		                	StoreLatitude=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	       
-	                if(!element.getElementsByTagName("StoreLongitude").equals(null))
-	                 {
-					
-	                 NodeList StoreLongitudeNode = element.getElementsByTagName("StoreLongitude");
-	                 Element     line = (Element) StoreLongitudeNode.item(0);
-					
-		                if(StoreLongitudeNode.getLength()>0)
-		                {
-							
-		                	StoreLongitude=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-                     
-	                if(!element.getElementsByTagName("StoreType").equals(null))
-	                 {
-					
-	                 NodeList StoreTypeNode = element.getElementsByTagName("StoreType");
-	                 Element     line = (Element) StoreTypeNode.item(0);
-					
-		                if(StoreTypeNode.getLength()>0)
-		                {
-							
-		                	StoreType=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("LastTransactionDate").equals(null))
-	                 {
-					
-	                 NodeList LastTransactionDateNode = element.getElementsByTagName("LastTransactionDate");
-	                 Element     line = (Element) LastTransactionDateNode.item(0);
-					
-		                if(LastTransactionDateNode.getLength()>0)
-		                {
-							
-		                	LastTransactionDate=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("LastVisitDate").equals(null))
-	                 {
-					
-	                 NodeList LastVisitDateNode = element.getElementsByTagName("LastVisitDate");
-	                 Element     line = (Element) LastVisitDateNode.item(0);
-					
-		                if(LastVisitDateNode.getLength()>0)
-		                {
-							
-		                	LastVisitDate=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("IsClose").equals(null))
-	                 {
-					
-	                 NodeList IsCloseNode = element.getElementsByTagName("IsClose");
-	                 Element     line = (Element) IsCloseNode.item(0);
-					
-		                if(IsCloseNode.getLength()>0)
-		                {
-							
-		                	IsClose=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	                
-	                if(!element.getElementsByTagName("IsNextDat").equals(null))
-	                 {
-					
-	                 NodeList IsNextDatNode = element.getElementsByTagName("IsNextDat");
-	                 Element     line = (Element) IsNextDatNode.item(0);
-					
-		                if(IsNextDatNode.getLength()>0)
-		                {
-							
-		                	IsNextDat=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("RouteID").equals(null))
-	                 {
-					
-	                 NodeList RouteIDNode = element.getElementsByTagName("RouteID");
-	                 Element     line = (Element) RouteIDNode.item(0);
-					
-		                if(RouteIDNode.getLength()>0)
-		                {
-							
-		                	StoreRouteID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("StoreCatNodeId").equals(null))
-	                 {
-					
-	                 NodeList StoreCatNodeIdNode = element.getElementsByTagName("StoreCatNodeId");
-	                 Element     line = (Element) StoreCatNodeIdNode.item(0);
-					
-		                if(StoreCatNodeIdNode.getLength()>0)
-		                {
-							
-		                	StoreCatNodeId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	                
-	                if(!element.getElementsByTagName("PaymentStage").equals(null))
-	                 {
-					
-	                 NodeList PaymentStageNode = element.getElementsByTagName("PaymentStage");
-	                 Element     line = (Element) PaymentStageNode.item(0);
-					
-		                if(PaymentStageNode.getLength()>0)
-		                {
-							
-		                	PaymentStage=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
 
-					if(StoreSelection.hmapStoreIdSstat!=null)
+					if(!element.getElementsByTagName("StoreName").equals(null))
 					{
-						//StoreIDPDAFromServer
-
-						if(StoreSelection.hmapStoreIdSstat.containsKey(StoreIDPDAFromServer))
+						NodeList StoreNameNode = element.getElementsByTagName("StoreName");
+						Element     line = (Element) StoreNameNode.item(0);
+						if(StoreNameNode.getLength()>0)
 						{
-							StoreID=StoreIDPDAFromServer;
-						}
-						if(StoreSelection.hmapStoreIdSstat.containsKey(StoreID))
-						{
-							Sstat=Integer.parseInt(StoreSelection.hmapStoreIdSstat.get(StoreID));
-							ForDate=StoreSelection.hmapStoreIdForDate.get(StoreID);
-							flgOrderType=Integer.parseInt(StoreSelection.hmapStoreIdflgOrderType.get(StoreID));
-						}
-						else
-						{
-							if(!element.getElementsByTagName("Sstat").equals(null))
-							{
-
-								NodeList SstatNode = element.getElementsByTagName("Sstat");
-								Element     line = (Element) SstatNode.item(0);
-
-								if(SstatNode.getLength()>0)
-								{
-
-									Sstat=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-								}
-							}
+							StoreName=XMLParser.getCharacterDataFromElement(line);
 						}
 					}
-	                
-	                /*if(StoreSelection.hmapStoreIdSstat!=null)
-					{
-						if(StoreSelection.hmapStoreIdSstat.containsKey(StoreID))
-						{
-							Sstat=Integer.parseInt(StoreSelection.hmapStoreIdSstat.get(StoreID));
-						}
-						else
-						{if(!element.getElementsByTagName("Sstat").equals(null))
-	                    {
-						       
-		                    NodeList SstatNode = element.getElementsByTagName("Sstat");
-		                    Element     line = (Element) SstatNode.item(0);
-		       
-		                    if(SstatNode.getLength()>0)
-		                    {
-		         
-		                     Sstat=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                    }
-		                 }}	
-					}*/
-					/*if(StoreSelection.hmapStoreIdSstat!=null)
-					{
-						//StoreIDPDAFromServer
 
-						if(StoreSelection.hmapStoreIdSstat.containsKey(StoreIDPDAFromServer)) {
+					if(!element.getElementsByTagName("OwnerName").equals(null))
+					{
+						NodeList OwnerNameNode = element.getElementsByTagName("OwnerName");
+						Element     line = (Element) OwnerNameNode.item(0);
+						if(OwnerNameNode.getLength()>0)
+						{
+							OwnerName=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("StoreContactNo").equals(null))
+					{
+						NodeList StoreContactNoNode = element.getElementsByTagName("StoreContactNo");
+						Element     line = (Element) StoreContactNoNode.item(0);
+						if(StoreContactNoNode.getLength()>0)
+						{
+							StoreContactNo =XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("StoreAddress").equals(null))
+					{
+						NodeList StoreAddressNode = element.getElementsByTagName("StoreAddress");
+						Element     line = (Element) StoreAddressNode.item(0);
+						if(StoreAddressNode.getLength()>0)
+						{
+							StoreAddress =XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					//StoreType changed to StoreCatType
+					if(!element.getElementsByTagName("StoreCatType").equals(null))
+					{
+						NodeList StoreCatTypeNode = element.getElementsByTagName("StoreCatType");
+						Element     line = (Element) StoreCatTypeNode.item(0);
+						if(StoreCatTypeNode.getLength()>0)
+						{
+							StoreCatType=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+                    if(!element.getElementsByTagName("StoreType").equals(null))
+                    {
+                        NodeList StoreTypeNode = element.getElementsByTagName("StoreType");
+                        Element     line = (Element) StoreTypeNode.item(0);
+                        if(StoreTypeNode.getLength()>0)
+                        {
+                            StoreType=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+                        }
+                    }
+
+					if(!element.getElementsByTagName("StoreLatitude").equals(null))
+					{
+						NodeList StoreLatitudeNode = element.getElementsByTagName("StoreLatitude");
+						Element     line = (Element) StoreLatitudeNode.item(0);
+						if(StoreLatitudeNode.getLength()>0)
+						{
+							StoreLatitude=Double.parseDouble(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("StoreLongitude").equals(null))
+					{
+						NodeList StoreLongitudeNode = element.getElementsByTagName("StoreLongitude");
+						Element     line = (Element) StoreLongitudeNode.item(0);
+						if(StoreLongitudeNode.getLength()>0)
+						{
+							StoreLongitude=Double.parseDouble(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("LastVisitDate").equals(null))
+					{
+						NodeList LastVisitDateNode = element.getElementsByTagName("LastVisitDate");
+						Element     line = (Element) LastVisitDateNode.item(0);
+						if(LastVisitDateNode.getLength()>0)
+						{
+							LastVisitDate=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("LastTransactionDate").equals(null))
+					{
+						NodeList LastTransactionDateNode = element.getElementsByTagName("LastTransactionDate");
+						Element     line = (Element) LastTransactionDateNode.item(0);
+						if(LastTransactionDateNode.getLength()>0)
+						{
+							LastTransactionDate=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+  						if(!element.getElementsByTagName("StoreIDPDA").equals(null))
+					   {
+
+						  NodeList StoreIDPDANode = element.getElementsByTagName("StoreIDPDA");
+						  Element     line = (Element) StoreIDPDANode.item(0);
+
+						  if(StoreIDPDANode.getLength()>0)
+						  {
+
+							 StoreIDPDAFromServer=xmlParser.getCharacterDataFromElement(line);
+						  }
+					   }
+					if(hmapStoreIdSstat!=null)
+					{
+						if(hmapStoreIdSstat.containsKey(StoreIDPDAFromServer)) {
 							StoreID=StoreIDPDAFromServer;
 						}
-						if(StoreSelection.hmapStoreIdSstat.containsKey(StoreID))
+						if(hmapStoreIdSstat.containsKey(StoreID))
 						{
-							//new
-							if(StoreSelection.hmapStoreIdSstat.get(StoreID).equals("3"))
-							{
-								StoreSelection.hmapStoreIdSstat.put(StoreID,"4");
-							}
-							Sstat=Integer.parseInt(StoreSelection.hmapStoreIdSstat.get(StoreID));
+							Sstat=Integer.parseInt(hmapStoreIdSstat.get(StoreID));
+                      /*if(Sstat==3)
+                      {
+                        hmapStoreIdSstat.put(StoreID,"5");
+                        Sstat=Integer.parseInt(hmapStoreIdSstat.get(StoreID));
+                      }*/
 						}
 						else
 						{
@@ -437,158 +362,343 @@ public class ServiceWorker
 							{
 								NodeList SstatNode = element.getElementsByTagName("Sstat");
 								Element     line = (Element) SstatNode.item(0);
-
 								if(SstatNode.getLength()>0)
 								{
-
-									Sstat=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+									Sstat=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+								}
+								if(Sstat==4)
+								{
+									Sstat=0;
+									hmapStoreIdSstat.put(StoreID,""+Sstat);
 								}
 							}
 						}
-					}*/
-	                if(!element.getElementsByTagName("flgHasQuote").equals(null))
-	                 {
-					
-	                 NodeList flgHasQuoteNode = element.getElementsByTagName("flgHasQuote");
-	                 Element     line = (Element) flgHasQuoteNode.item(0);
-					
-		                if(flgHasQuoteNode.getLength()>0)
-		                {
-							
-		                	flgHasQuote=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-					
-					//flgQuote
-	                
-	                if(!element.getElementsByTagName("flgAllowQuotation").equals(null))
-	                 {
-					
-	                 NodeList flgAllowQuotationNode = element.getElementsByTagName("flgAllowQuotation");
-	                 Element     line = (Element) flgAllowQuotationNode.item(0);
-					
-		                if(flgAllowQuotationNode.getLength()>0)
-		                {
-							
-		                	flgAllowQuotation=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                
-	                
-	                if(!element.getElementsByTagName("flgSubmitFromQuotation").equals(null))
-	                 {
-					
-	                 NodeList flgSubmitFromQuotationNode = element.getElementsByTagName("flgSubmitFromQuotation");
-	                 Element     line = (Element) flgSubmitFromQuotationNode.item(0);
-					
-		                if(flgSubmitFromQuotationNode.getLength()>0)
-		                {
-							
-		                	flgSubmitFromQuotation=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-		                }
-	            	 }
-	                if(!element.getElementsByTagName("flgGSTCapture").equals(null))
-	                 {
-					
-	                 NodeList flgGSTCaptureNode = element.getElementsByTagName("flgGSTCapture");
-	                 Element     line = (Element) flgGSTCaptureNode.item(0);
-					
-		                if(flgGSTCaptureNode.getLength()>0)
-		                {
-							
-		                	flgGSTCapture=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("flgGSTCompliance").equals(null))
-	                 {
-					
-	                 NodeList flgGSTComplianceNode = element.getElementsByTagName("flgGSTCompliance");
-	                 Element     line = (Element) flgGSTComplianceNode.item(0);
-					
-		                if(flgGSTComplianceNode.getLength()>0)
-		                {
-							
-		                	flgGSTCompliance=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
-	                
-	                if(!element.getElementsByTagName("GSTNumber").equals(null))
-	                 {
-					
-	                 NodeList GSTNumberNode = element.getElementsByTagName("GSTNumber");
-	                 Element     line = (Element) GSTNumberNode.item(0);
-					
-		                if(GSTNumberNode.getLength()>0)
-		                {
-							
-		                	GSTNumber=xmlParser.getCharacterDataFromElement(line);
-		                }
-	            	 }
+					}
 
-					if(!element.getElementsByTagName("DBR").equals(null))
+               if(!element.getElementsByTagName("IsClose").equals(null))
+               {
+                  NodeList IsCloseNode = element.getElementsByTagName("IsClose");
+                  Element     line = (Element) IsCloseNode.item(0);
+
+                  if(IsCloseNode.getLength()>0)
+                  {
+
+                     IsClose=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+                  }
+               }
+          /*     if(!element.getElementsByTagName("IsNextDat").equals(null))
+               {
+
+                  NodeList IsNextDatNode = element.getElementsByTagName("IsNextDat");
+                  Element     line = (Element) IsNextDatNode.item(0);
+
+                  if(IsNextDatNode.getLength()>0)
+                  {
+
+                     IsNextDat=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+                  }
+               }*/
+
+					if(!element.getElementsByTagName("RouteID").equals(null))
 					{
-
-						NodeList DBRNode = element.getElementsByTagName("DBR");
-						Element     line = (Element) DBRNode.item(0);
-
-						if(DBRNode.getLength()>0)
+						NodeList RouteIDNode = element.getElementsByTagName("RouteID");
+						Element     line = (Element) RouteIDNode.item(0);
+						if(RouteIDNode.getLength()>0)
 						{
-
-							DBR=xmlParser.getCharacterDataFromElement(line);
+							StoreRouteID=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
 						}
 					}
 
 					if(!element.getElementsByTagName("RouteNodeType").equals(null))
 					{
-
 						NodeList RouteNodeTypeNode = element.getElementsByTagName("RouteNodeType");
 						Element     line = (Element) RouteNodeTypeNode.item(0);
-
 						if(RouteNodeTypeNode.getLength()>0)
 						{
-
-							RouteNodeType=xmlParser.getCharacterDataFromElement(line);
+							RouteNodeType=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
 						}
 					}
 
+					if(!element.getElementsByTagName("StoreCatNodeId").equals(null))
+					{
+						NodeList StoreCatNodeIdNode = element.getElementsByTagName("StoreCatNodeId");
+						Element     line = (Element) StoreCatNodeIdNode.item(0);
+						if(StoreCatNodeIdNode.getLength()>0)
+						{
+							StoreCatNodeId=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("PaymentStage").equals(null))
+					{
+						NodeList PaymentStageNode = element.getElementsByTagName("PaymentStage");
+						Element     line = (Element) PaymentStageNode.item(0);
+						if(PaymentStageNode.getLength()>0)
+						{
+							PaymentStage=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("flgHasQuote").equals(null))
+					{
+						NodeList flgHasQuoteNode = element.getElementsByTagName("flgHasQuote");
+						Element     line = (Element) flgHasQuoteNode.item(0);
+						if(flgHasQuoteNode.getLength()>0)
+						{
+							flgHasQuote=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("flgAllowQuotation").equals(null))
+					{
+						NodeList flgAllowQuotationNode = element.getElementsByTagName("flgAllowQuotation");
+						Element     line = (Element) flgAllowQuotationNode.item(0);
+						if(flgAllowQuotationNode.getLength()>0)
+						{
+							flgAllowQuotation=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+               /*if(!element.getElementsByTagName("flgSubmitFromQuotation").equals(null))
+               {
+                  NodeList flgSubmitFromQuotationNode = element.getElementsByTagName("flgSubmitFromQuotation");
+                  Element     line = (Element) flgSubmitFromQuotationNode.item(0);
+
+                  if(flgSubmitFromQuotationNode.getLength()>0)
+                  {
+
+                     flgSubmitFromQuotation=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+                  }
+               }*/
+
+					if(!element.getElementsByTagName("flgGSTCapture").equals(null))
+					{
+						NodeList flgGSTCaptureNode = element.getElementsByTagName("flgGSTCapture");
+						Element     line = (Element) flgGSTCaptureNode.item(0);
+						if(flgGSTCaptureNode.getLength()>0)
+						{
+							flgGSTCapture=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("flgGSTCompliance").equals(null))
+					{
+						NodeList flgGSTComplianceNode = element.getElementsByTagName("flgGSTCompliance");
+						Element     line = (Element) flgGSTComplianceNode.item(0);
+						if(flgGSTComplianceNode.getLength()>0)
+						{
+							flgGSTCompliance=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("TaxNumber").equals(null))
+					{
+						NodeList GSTNumberNode = element.getElementsByTagName("TaxNumber");
+						Element     line = (Element) GSTNumberNode.item(0);
+						if(GSTNumberNode.getLength()>0)
+						{
+							GSTNumber=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("StoreCity").equals(null))
+					{
+						NodeList StoreCityNode = element.getElementsByTagName("StoreCity");
+						Element     line = (Element) StoreCityNode.item(0);
+						if(StoreCityNode.getLength()>0)
+						{
+							StoreCity=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("StorePinCode").equals(null))
+					{
+						NodeList StorePinCodeNode = element.getElementsByTagName("StorePinCode");
+						Element     line = (Element) StorePinCodeNode.item(0);
+						if(StorePinCodeNode.getLength()>0)
+						{
+							StorePinCode=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("StoreState").equals(null))
+					{
+						NodeList StoreStateNode = element.getElementsByTagName("StoreState");
+						Element     line = (Element) StoreStateNode.item(0);
+						if(StoreStateNode.getLength()>0)
+						{
+							StoreState=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("OutStanding").equals(null))
+					{
+						NodeList OutStandingNode = element.getElementsByTagName("OutStanding");
+						Element     line = (Element) OutStandingNode.item(0);
+						if(OutStandingNode.getLength()>0)
+						{
+							OutStanding=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("OverDue").equals(null))
+					{
+						NodeList OverDueNode = element.getElementsByTagName("OverDue");
+						Element     line = (Element) OverDueNode.item(0);
+						if(OverDueNode.getLength()>0)
+						{
+							OverDue=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("DBR").equals(null))
+					{
+						NodeList DBRNode = element.getElementsByTagName("DBR");
+						Element     line = (Element) DBRNode.item(0);
+						if(DBRNode.getLength()>0)
+						{
+							DBR=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("flgRuleTaxVal").equals(null))
+					{
+						NodeList flgRuleTaxValNode = element.getElementsByTagName("flgRuleTaxVal");
+						Element     line = (Element) flgRuleTaxValNode.item(0);
+						if(flgRuleTaxValNode.getLength()>0)
+						{
+							flgRuleTaxVal=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("flgTransType").equals(null))
+					{
+						NodeList flgTransTypeNode = element.getElementsByTagName("flgTransType");
+						Element     line = (Element) flgTransTypeNode.item(0);
+						if(flgTransTypeNode.getLength()>0)
+						{
+							flgTransType=Integer.parseInt(XMLParser.getCharacterDataFromElement(line));
+						}
+					}
+
+					if(!element.getElementsByTagName("SalesPersonName").equals(null))
+					{
+						NodeList SalesPersonNameNode = element.getElementsByTagName("SalesPersonName");
+						Element     line = (Element) SalesPersonNameNode.item(0);
+						if(SalesPersonNameNode.getLength()>0)
+						{
+							SalesPersonName=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					if(!element.getElementsByTagName("SalesPersonContact").equals(null))
+					{
+						NodeList SalesPersonContactNoNode = element.getElementsByTagName("SalesPersonContact");
+						Element     line = (Element) SalesPersonContactNoNode.item(0);
+						if(SalesPersonContactNoNode.getLength()>0)
+						{
+							SalesPersonContactNo=XMLParser.getCharacterDataFromElement(line);
+						}
+					}
+
+					//hmapStoreIdVisitStatus
+         /*    if(hmapStoreIdVisitStatus!=null)
+               {
+                  if(hmapStoreIdVisitStatus.containsKey(StoreID))
+                  {
+                     VisitTypeStatus=hmapStoreIdVisitStatus.get(StoreID);
+                  }
+                  else
+                  {if(!element.getElementsByTagName("VisitTypeStatus").equals(null))
+                  {
+
+                     NodeList VisitTypeStatusNode = element.getElementsByTagName("VisitTypeStatus");
+                     Element     line = (Element) VisitTypeStatusNode.item(0);
+
+                     if(VisitTypeStatusNode.getLength()>0)
+                     {
+
+                        VisitTypeStatus=xmlParser.getCharacterDataFromElement(line);
+                     }
+                  }}
+               }*/
+//
+
+
+
+					//String VanIntialInvoiceCaption="0";
+					//int VanIntialInvoiceIds=0;
 
 
 					if(flgGSTCompliance.equals("1"))
-		                 {
-		                	 flgGSTRecordFromServer=1;
-		                 }
-		                 if(flgGSTCapture.equals(null))
-		                 {
-		                	 flgGSTCapture="1";
-		                 }
-		                 if(flgGSTCompliance.equals(null))
-		                 {
-		                	 flgGSTCompliance="NA";
-		                 }
-		                 if(GSTNumber.equals(null))
-		                 {
-		                	 GSTNumber="0";
-		                 }
-					
-	                
-	                //flgSubmitFromQuotation
-	                //flgAllowQuotation
-					int AutoIdStore=0;
-					AutoIdStore= i +1;
-					String StoreAddress="";
-
-					if(!StoreIDPDAFromServer.equals(StoreID))
 					{
-						dbengine.saveSOAPdataStoreList(StoreID,StoreName,StoreType,StoreLatitude,StoreLongitude,LastVisitDate,LastTransactionDate,dateVAL.toString().trim(), AutoIdStore, Sstat,IsClose,IsNextDat,StoreRouteID,StoreCatNodeId,StoreAddress,PaymentStage,flgHasQuote,flgAllowQuotation,flgSubmitFromQuotation,flgGSTCapture,flgGSTCompliance,GSTNumber,flgGSTRecordFromServer,DBR,RouteNodeType,"NA","NA","NA","NA","NA","NA",flgOrderType);
+						flgGSTRecordFromServer=1;
+					}
+					if(flgGSTCapture.equals(null))
+					{
+						flgGSTCapture="1";
+					}
+					if(flgGSTCompliance.equals(null))
+					{
+						flgGSTCompliance="NA";
+					}
+					if(GSTNumber.equals(null))
+					{
+						GSTNumber="0";
+					}
+					if(!element.getElementsByTagName("IsComposite").equals(null))
+					{
+						NodeList IsCompositeNode = element.getElementsByTagName("IsComposite");
+						Element     line = (Element) IsCompositeNode.item(0);
 
+						if(IsCompositeNode.getLength()>0)
+						{
+
+							IsComposite=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
+					if(!element.getElementsByTagName("StoreStateID").equals(null))
+					{
+						NodeList StoreStateIDNode = element.getElementsByTagName("StoreStateID");
+						Element     line = (Element) StoreStateIDNode.item(0);
+
+						if(StoreStateIDNode.getLength()>0)
+						{
+
+							StoreStateID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
 					}
 
-				
-	            }
-	            
-	            
-	            NodeList tblStoreListWithPaymentAddressMR = doc.getElementsByTagName("tblStoreListWithPaymentAddressMR");
+					if(!element.getElementsByTagName("StoreCityID").equals(null))
+					{
+						NodeList StoreCityIDNode = element.getElementsByTagName("StoreCityID");
+						Element     line = (Element) StoreCityIDNode.item(0);
+
+						if(StoreCityIDNode.getLength()>0)
+						{
+
+							StoreCityID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
+					//flgSubmitFromQuotation
+					//flgAllowQuotation
+					int AutoIdStore=0;
+					AutoIdStore= i +1;
+
+				/*if(!StoreIDPDAFromServer.equals(StoreID))
+					{
+
+					dbengine.saveSOAPdataStoreList(StoreID,StoreName,OwnerName,StoreContactNo,StoreAddress,StoreCatType,
+							StoreLatitude,StoreLongitude,LastVisitDate,LastTransactionDate, Sstat,StoreRouteID,
+							RouteNodeType, StoreCatNodeId,PaymentStage , flgHasQuote , flgAllowQuotation, flgGSTCapture,
+							flgGSTCompliance, GSTNumber , flgGSTRecordFromServer , StoreCity , StorePinCode , StoreState,
+							OutStanding , OverDue , DBR , flgRuleTaxVal,flgTransType,StoreType,IsClose,SalesPersonName,SalesPersonContactNo,IsComposite,StoreStateID,StoreCityID);
+					}*/
+				}
+
+
+
+			NodeList tblStoreListWithPaymentAddressMR = doc.getElementsByTagName("tblStoreListWithPaymentAddressMR");
 	            for (int i = 0; i < tblStoreListWithPaymentAddressMR.getLength(); i++)
 	            {
 	          
@@ -672,7 +782,7 @@ public class ServiceWorker
 	                int AutoIdStore=0;
 					AutoIdStore= i +1;
 					
-					dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID); 	
+					//dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID);
 	            }
 	                       
 
@@ -786,35 +896,111 @@ public class ServiceWorker
 	                int AutoIdStore=0;
 					AutoIdStore= i +1;
 					
-					dbengine.insertMinDelQty(prdId, StoreID, QPBT, QPTaxAmt, MinDlvryQty, UOMID,QPAT); 	
+				//	dbengine.insertMinDelQty(prdId, StoreID, QPBT, QPTaxAmt, MinDlvryQty, UOMID,QPAT);
 	            }
-	            
-	            
+
+			NodeList tblDeliveryNoteNumber = doc.getElementsByTagName("tblDeliveryNoteNumber");
+			for (int i = 0; i < tblDeliveryNoteNumber.getLength(); i++)
+			{
+				int LastDeliveryNoteNumber=0;
+				Element element = (Element) tblDeliveryNoteNumber.item(i);
+				if(!element.getElementsByTagName("LastDeliveryNoteNumber").equals(null))
+				{
+					NodeList LastDeliveryNoteNumberNode = element.getElementsByTagName("LastDeliveryNoteNumber");
+					Element     line = (Element) LastDeliveryNoteNumberNode.item(0);
+					if(LastDeliveryNoteNumberNode.getLength()>0)
+					{
+						LastDeliveryNoteNumber=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				int valExistingDeliveryNoteNumber=0;
+				//valExistingDeliveryNoteNumber=dbengine.fnGettblDeliveryNoteNumber();
+				if(valExistingDeliveryNoteNumber<LastDeliveryNoteNumber) {
+					/*dbengine.Delete_tblDeliveryNoteNumber();
+					dbengine.savetblDeliveryNoteNumber(LastDeliveryNoteNumber);*/
+				}
+			}
 	            setmovie.director = "1";
 				// System.out.println("ServiceWorkerNitish getallStores Completed ");
 				flagExecutedServiceSuccesfully=1;
+			hmapStoreIdSstat=null;
+			hmapStoreIdVisitStatus=null;
+		int dwq=1/0;
+			int dwq11=0/2;
 				return setmovie;
 			
 			
 		} catch (Exception e) {
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();		
+			//dbengine.close();;
 			return setmovie;
 		}
 
 	}
-	
+	public void downLoadingSelfieImage(String SelfieNameURL,String SelfieName){
+		String URL_String=  SelfieNameURL;
+		String Video_Name=  SelfieName;
+
+		try {
+
+			URL url = new URL(URL_String);
+			URLConnection connection = url.openConnection();
+			HttpURLConnection urlConnection = (HttpURLConnection) connection;
+			urlConnection.setRequestMethod("GET");
+			urlConnection.setDoInput(true);
+			urlConnection.connect();
+			String PATH = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolderServer + "/";
+
+			File file2 = new File(PATH + Video_Name);
+			if (file2.exists()) {
+				file2.delete();
+			}
+
+			File file1 = new File(PATH);
+			if (!file1.exists()) {
+				file1.mkdirs();
+			}
+
+
+			File file = new File(file1, Video_Name);
+
+			int size = connection.getContentLength();
+
+
+			FileOutputStream fileOutput = new FileOutputStream(file);
+
+			InputStream inputStream = urlConnection.getInputStream();
+
+			byte[] buffer = new byte[size];
+			int bufferLength = 0;
+			long total = 0;
+			int current = 0;
+			while ((bufferLength = inputStream.read(buffer)) != -1) {
+				total += bufferLength;
+
+				fileOutput.write(buffer, 0, bufferLength);
+			}
+
+			fileOutput.close();
+
+		}
+		catch (Exception e){
+
+		}
+
+	}
 	
 	public ServiceWorker getAvailableAndUpdatedVersionOfAppNew(Context ctx,String uuid,String CurDate,int DatabaseVersion,int ApplicationID) 
 	{
 		
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		 dbengine.open();
-
+		PRJDatabase dbengine = new PRJDatabase(context);
+		 //dbengine.open();
+		
 		decimalFormat.applyPattern(pattern);
 		
 		int chkTblStoreListContainsRow=1;
@@ -897,7 +1083,8 @@ public class ServiceWorker
 	            
 	            for (int i = 0; i < tblSchemeStoreMappingNode.getLength(); i++)
 	            {
-	            	String flgUserAuthenticated="0";
+
+					String flgUserAuthenticated="0";
 					String PersonName="0";
 					String FlgRegistered="0";
 					String flgInventory="1";
@@ -908,24 +1095,26 @@ public class ServiceWorker
 					String flgPersonTodaysAtt="0";
 					int PersonNodeID=0;
 					int PersonNodeType=0;
+					int CoverageNodeId=0;
+					int CoverageNodeType=0;
 					String ContactNo="0";
 					String DOB="0";
 					String SelfieName="0";
 					String SelfieNameURL="0";
 					String SalesAreaName="0";
-	            	
-	                Element element = (Element) tblSchemeStoreMappingNode.item(i);
 
-	                NodeList StoreIDNode = element.getElementsByTagName("flgUserAuthenticated");
-	                Element line = (Element) StoreIDNode.item(0);
-	                flgUserAuthenticated=xmlParser.getCharacterDataFromElement(line);
+					Element element = (Element) tblSchemeStoreMappingNode.item(i);
+
+					NodeList StoreIDNode = element.getElementsByTagName("flgUserAuthenticated");
+					Element line = (Element) StoreIDNode.item(0);
+					flgUserAuthenticated=xmlParser.getCharacterDataFromElement(line);
 
 					NodeList PersonNameNode = element.getElementsByTagName("PersonName");
-					 line = (Element) PersonNameNode.item(0);
+					line = (Element) PersonNameNode.item(0);
 					PersonName=xmlParser.getCharacterDataFromElement(line);
 
 					NodeList FlgRegisteredNode = element.getElementsByTagName("FlgRegistered");
-					 line = (Element) FlgRegisteredNode.item(0);
+					line = (Element) FlgRegisteredNode.item(0);
 					FlgRegistered=xmlParser.getCharacterDataFromElement(line);
 
 
@@ -968,12 +1157,29 @@ public class ServiceWorker
 						PersonNodeID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
 					}
 
+
 					NodeList SONodeTypeNode = element.getElementsByTagName("PersonNodeType");
 					line = (Element) SONodeTypeNode.item(0);
 					if(SONodeTypeNode.getLength()>0)
 					{
 						PersonNodeType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
 					}
+
+					NodeList CoverageNodeIdNode = element.getElementsByTagName("CoverageAreaNodeID");
+					line = (Element) CoverageNodeIdNode.item(0);
+					if(CoverageNodeIdNode.getLength()>0)
+					{
+						CoverageNodeId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+
+
+					NodeList CoverageNodeTypeNode = element.getElementsByTagName("CoverageAreaNodeType");
+					line = (Element) CoverageNodeTypeNode.item(0);
+					if(CoverageNodeTypeNode.getLength()>0)
+					{
+						CoverageNodeType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+
 					if(!element.getElementsByTagName("ContactNo").equals(null))
 					{
 						NodeList ContactNode = element.getElementsByTagName("ContactNo");
@@ -1031,14 +1237,70 @@ public class ServiceWorker
 						}
 
 
+
+
+
+
+
 					}
 
 
-	                dbengine.savetblUserAuthenticationMstr(flgUserAuthenticated,PersonName,FlgRegistered,
+				/*	dbengine.savetblUserAuthenticationMstr(flgUserAuthenticated,PersonName,FlgRegistered,
 							flgAppStatus,DisplayMessage,flgValidApplication,MessageForInvalid,flgPersonTodaysAtt,
-							PersonNodeID,PersonNodeType,ContactNo,DOB,SelfieName,SelfieNameURL,SalesAreaName);
-	                
-	             }
+							PersonNodeID,PersonNodeType,ContactNo,DOB,SelfieName,SelfieNameURL,SalesAreaName,CoverageNodeId,CoverageNodeType);
+*/
+				}
+
+	            	/*String flgUserAuthenticated="0";
+					String PersonName="0";
+					String FlgRegistered="0";
+					String PersonNodeID="0";
+					String PersonNodeType="0";
+					String flgPersonTodaysAtt="0";
+	            	
+	            	
+	                Element element = (Element) tblSchemeStoreMappingNode.item(i);
+
+	                NodeList StoreIDNode = element.getElementsByTagName("flgUserAuthenticated");
+	                Element line = (Element) StoreIDNode.item(0);
+	                flgUserAuthenticated=xmlParser.getCharacterDataFromElement(line);
+
+					NodeList PersonNameNode = element.getElementsByTagName("PersonName");
+					 line = (Element) PersonNameNode.item(0);
+					PersonName=xmlParser.getCharacterDataFromElement(line);
+
+					NodeList FlgRegisteredNode = element.getElementsByTagName("FlgRegistered");
+					 line = (Element) FlgRegisteredNode.item(0);
+					FlgRegistered=xmlParser.getCharacterDataFromElement(line);
+
+					NodeList PersonNodeIDNode = element.getElementsByTagName("PersonNodeID");
+					line = (Element) PersonNodeIDNode.item(0);
+					if(PersonNodeIDNode.getLength()>0)
+					{
+						PersonNodeID=xmlParser.getCharacterDataFromElement(line);
+					}
+
+					NodeList PersonNodeTypeNode = element.getElementsByTagName("PersonNodeType");
+					line = (Element) PersonNodeTypeNode.item(0);
+					if(PersonNodeTypeNode.getLength()>0)
+					{
+						PersonNodeType=xmlParser.getCharacterDataFromElement(line);
+					}
+
+					if(!element.getElementsByTagName("flgPersonTodaysAtt").equals(null))
+					{
+						NodeList flgPersonTodaysAttNode = element.getElementsByTagName("flgPersonTodaysAtt");
+						line = (Element) flgPersonTodaysAttNode.item(0);
+						if(flgPersonTodaysAttNode.getLength()>0)
+						{
+							flgPersonTodaysAtt=xmlParser.getCharacterDataFromElement(line);
+						}
+					}
+
+
+					dbengine.savetblUserAuthenticationMstr(flgUserAuthenticated,PersonName,FlgRegistered,PersonNodeID,PersonNodeType,flgPersonTodaysAtt);
+	                */
+	            // }
 
 	          
 	            NodeList tblSchemeMstrNode = doc.getElementsByTagName("tblAvailableVersion");
@@ -1205,15 +1467,16 @@ public class ServiceWorker
 
 
 			setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
 			
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -1228,14 +1491,14 @@ public class ServiceWorker
 	{
 		this.context = ctx;
 		
-DBAdapterKenya dbengine = new DBAdapterKenya(context);
+PRJDatabase dbengine = new PRJDatabase(context);
 String RouteType="0";
 		try
 		{
-		dbengine.open();
+		//dbengine.open();
 		String RouteID=dbengine.GetActiveRouteID();
 	 RouteType=dbengine.FetchRouteType(rID);
-		dbengine.close();
+		//dbengine.close();;
 		System.out.println("hi"+RouteType);
 		}
 		catch(Exception e)
@@ -1243,7 +1506,7 @@ String RouteType="0";
 			System.out.println("error"+e);
 		}
 		
-		dbengine.open();
+		//dbengine.open();
 		dbengine.deleteAllQuotationTables();
 		
 		final String SOAP_ACTION = "http://tempuri.org/fnGetRouteQuoteData";
@@ -1318,7 +1581,7 @@ String RouteType="0";
 	            Document doc = db.parse(is);
 			System.out.println("shivam4");
 	          
-	        //   dbengine.open();
+	        //   //dbengine.open();
 	            
 	            NodeList tblUOMMstrNode = doc.getElementsByTagName("tblUOMMstr");
 	            for (int i = 0; i < tblUOMMstrNode.getLength(); i++)
@@ -2332,11 +2595,11 @@ String RouteType="0";
 			
 			
 		} catch (Exception e) {
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();		
+			//dbengine.close();;		
 			return setmovie;
 		}
 
@@ -2347,8 +2610,8 @@ String RouteType="0";
 	public ServiceWorker getAllPOSMaterialStructure(Context ctx,String dateVAL, String uuid, String rID) 
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		 dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		 //dbengine.open();
 		decimalFormat.applyPattern(pattern);
 		
 		int chkTblStoreListContainsRow=1;
@@ -2517,19 +2780,19 @@ String RouteType="0";
 		
 
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
           
             flagExecutedServiceSuccesfully=4;
 			return setmovie;
 
 		} catch (Exception e)
 		   {
-			
-			
+
+			   setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -2538,8 +2801,8 @@ String RouteType="0";
 	public ServiceWorker getAllNewSchemeStructure(Context ctx,String dateVAL, String uuid, String rID ,String RouteType)
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		 dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		 //dbengine.open();
 		decimalFormat.applyPattern(pattern);
 		
 		int chkTblStoreListContainsRow=1;
@@ -2832,7 +3095,6 @@ String RouteType="0";
 	            	String per="0.00";
 	            	String UOM="0.00";
 	            	int ProRata=0;
-					int IsDiscountOnTotalAmount=0;
 	            	
 	                Element element = (Element) tblSchemeSlabBenefitsBucketDetailsNode.item(i);
 	                
@@ -2897,16 +3159,14 @@ String RouteType="0";
 	                NodeList perProRata = element.getElementsByTagName("ProRata");
 	                 line = (Element) perProRata.item(0);
 	                 ProRata=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-
-					NodeList IsDiscountOnTotalAmountNode = element.getElementsByTagName("IsDiscountOnTotalAmount");
-					line = (Element) IsDiscountOnTotalAmountNode.item(0);
-					IsDiscountOnTotalAmount=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-
-
+	              
+	            	
+	            
+	                
+	                
 	                 
 	                dbengine.savetblSchemeSlabBenefitsBucketDetails(RowID,SchemeID,SchemeSlabID,BucketID,
-	                		SubBucketID,BenSubBucketType,BenDiscApplied,CouponCode,BenSubBucketValue,per,UOM,ProRata,IsDiscountOnTotalAmount);
+	                		SubBucketID,BenSubBucketType,BenDiscApplied,CouponCode,BenSubBucketValue,per,UOM,ProRata);
 	                
 	                
 	                
@@ -3017,88 +3277,13 @@ String RouteType="0";
 	                dbengine.savetblProductRelatedScheme(ProductID,PrdString);
 	                
 	            }
-
-			NodeList tblProductADDONSchemeNode = doc.getElementsByTagName("tblProductADDOnScheme");
-			for (int i = 0; i < tblProductADDONSchemeNode.getLength(); i++)
-			{
-				String ProductID="NA";
-				String PrdString="NA";
-
-
-
-				Element element = (Element) tblProductADDONSchemeNode.item(i);
-
-				NodeList ProductIDNode = element.getElementsByTagName("ProductID");
-				Element line = (Element) ProductIDNode.item(0);
-				ProductID=xmlParser.getCharacterDataFromElement(line);
-
-
-				NodeList PrdStringNode = element.getElementsByTagName("PrdString");
-				line = (Element) PrdStringNode.item(0);
-				PrdString=xmlParser.getCharacterDataFromElement(line);
-
-
-
-
-
-				dbengine.savetblProductADDONScheme(ProductID,PrdString);
-
-			}
-
-
-			NodeList tblProductAlertNearestSchmApld = doc.getElementsByTagName("tblProductAlertNearestSchmApld");
-			for (int i = 0; i < tblProductAlertNearestSchmApld.getLength(); i++)
-			{
-
-				String RowID="0";
-				String ProductID="0";
-				String SchemeID="0";
-				String SchemeSlabID="0";
-				String SlabSubBucketType="0";
-				String SlabSubBucketMin="0";
-				String SlabSubBucketMax="0";
-
-				Element element = (Element) tblProductAlertNearestSchmApld.item(i);
-
-				NodeList RowIDNode = element.getElementsByTagName("RowID");
-				Element line = (Element) RowIDNode.item(0);
-				RowID=xmlParser.getCharacterDataFromElement(line);
-
-
-				NodeList ProductIDNode = element.getElementsByTagName("ProductID");
-				line = (Element) ProductIDNode.item(0);
-				ProductID=xmlParser.getCharacterDataFromElement(line);
-
-				NodeList SchemeIDNode = element.getElementsByTagName("SchemeID");
-				line = (Element) SchemeIDNode.item(0);
-				SchemeID=xmlParser.getCharacterDataFromElement(line);
-
-				NodeList SchemeSlabIDNode = element.getElementsByTagName("SchemeSlabID");
-				line = (Element) SchemeSlabIDNode.item(0);
-				SchemeSlabID=xmlParser.getCharacterDataFromElement(line);
-
-				NodeList SlabSubBucketTypeNode = element.getElementsByTagName("SlabSubBucketType");
-				line = (Element) SlabSubBucketTypeNode.item(0);
-				SlabSubBucketType=xmlParser.getCharacterDataFromElement(line);
-
-				NodeList SlabSubBucketMinNode = element.getElementsByTagName("SlabSubBucketMin");
-				line = (Element) SlabSubBucketMinNode.item(0);
-				SlabSubBucketMin=xmlParser.getCharacterDataFromElement(line);
-
-				NodeList SlabSubBucketMaxNode = element.getElementsByTagName("SlabSubBucketMax");
-				line = (Element) SlabSubBucketMaxNode.item(0);
-				SlabSubBucketMax=xmlParser.getCharacterDataFromElement(line);
-
-
-
-
-
-				dbengine.insertTblProductAlertNearestSchmApld(RowID,ProductID,SchemeID,SchemeSlabID,SlabSubBucketType,SlabSubBucketMin,SlabSubBucketMax);
-
-			}
+	            
+	            
+	            
+		
 
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
             // System.out.println("ServiceWorkerNitish getAllNewSchemeStructure Inside");
             flagExecutedServiceSuccesfully=4;
 			return setmovie;
@@ -3106,10 +3291,11 @@ String RouteType="0";
 		} catch (Exception e) {
 			
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatus :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -3119,8 +3305,8 @@ String RouteType="0";
 	public ServiceWorker getAvailableAndUpdatedVersionOfApp(Context ctx,String uuid,String CurDate,int DatabaseVersion,int ApplicationID) 
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		decimalFormat.applyPattern(pattern);
 		final String SOAP_ACTION = "http://tempuri.org/GetIMEIVersionDetailStatus";
@@ -3228,7 +3414,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -3237,9 +3423,10 @@ String RouteType="0";
 		} catch (Exception e) {
 			
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatus :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			
 			return setmovie;
 		}
@@ -3250,7 +3437,7 @@ String RouteType="0";
 	{
 
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 
 		decimalFormat.applyPattern(pattern);
 
@@ -3330,17 +3517,11 @@ String RouteType="0";
 
 
 
-			dbengine.open();
+			//dbengine.open();
 
 			dbengine.Delete_tblRouteMasterAndDistributorMstr();
 
 			NodeList tblRouteListMasterNode = doc.getElementsByTagName("tblRouteListMaster");
-			if(tblRouteListMasterNode.getLength()<1)
-			{
-				dbengine.close();
-				setmovie.director = "0";
-				return setmovie;
-			}
 			for (int i = 0; i < tblRouteListMasterNode.getLength(); i++)
 			{
 				String stID = "NA";
@@ -3431,53 +3612,7 @@ String RouteType="0";
 
 			}
 
-			NodeList tblDistributorListMasterNode = doc.getElementsByTagName("tblDistributorListMaster");
-			for (int i = 0; i < tblDistributorListMasterNode.getLength(); i++)
-			{
 
-
-				int DBRNodeID = 0;
-				int DistributorNodeType= 0;
-				String Distributor= "NA";
-
-				Element element = (Element) tblDistributorListMasterNode.item(i);
-
-				Element line;
-
-				if(!element.getElementsByTagName("NodeId").equals(null))
-				{
-					NodeList DBRNodeIDNode = element.getElementsByTagName("NodeId");
-					line = (Element) DBRNodeIDNode.item(0);
-					if(DBRNodeIDNode.getLength()>0)
-					{
-						DBRNodeID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-
-
-				if(!element.getElementsByTagName("NodeType").equals(null))
-				{
-					NodeList DistributorNodeTypeNode = element.getElementsByTagName("NodeType");
-					line = (Element) DistributorNodeTypeNode.item(0);
-					if(DistributorNodeTypeNode.getLength()>0)
-					{
-						DistributorNodeType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-
-				if(!element.getElementsByTagName("Descr").equals(null))
-				{
-					NodeList DistributorNode = element.getElementsByTagName("Descr");
-					line = (Element) DistributorNode.item(0);
-					if(DistributorNode.getLength()>0)
-					{
-						Distributor=(xmlParser.getCharacterDataFromElement(line));
-					}
-				}
-
-
-				dbengine.savetblDistributorListMaster(DBRNodeID,DistributorNodeType,Distributor);
-			}
 
 			NodeList tblSalesPersonTodaysTarget = doc.getElementsByTagName("tblSalesPersonTodaysTarget");
 			CommonInfo.SalesPersonTodaysTargetMsg="";
@@ -3514,13 +3649,14 @@ String RouteType="0";
 				dbengine.savetblIsDBRStockSubmitted(IsDBRStockSubmitted);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 			return setmovie;
 
 		} catch (Exception e) {
 
 			//System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			if(e.toString().contains("SocketTimeoutException") ||e.toString().contains("ConnectException")||e.toString().contains("SocketException"))
 			{
 				setmovie.director = "100";
@@ -3536,7 +3672,7 @@ String RouteType="0";
 			}
 
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -3551,7 +3687,7 @@ String RouteType="0";
 	public ServiceWorker getAvailbNotification(Context ctx, String uuid,String dateVAL) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		
 		final String SOAP_ACTION = "http://tempuri.org/fnGetPDANotificationList";
 		final String METHOD_NAME = "fnGetPDANotificationList";//"GetRoutesWithOnOffRouteFlg";
@@ -3580,7 +3716,7 @@ String RouteType="0";
 		ServiceWorker setmovie = new ServiceWorker();
 		try {
 			
-			dbengine.open();	
+			//dbengine.open();	
 			
 			client = new SoapObject(NAMESPACE, METHOD_NAME);
 			
@@ -3621,7 +3757,7 @@ String RouteType="0";
 			if(chkTblStoreListContainsRow==1)
 			{
 				// System.out.println("Sunil Calling getAvailbNotification 4:");
-				dbengine.Delete_tblNotificationMstr();
+			//	dbengine.Delete_tblNotificationMstr();
 				if( table.getPropertyCount()>0)
 				{
 					int SerialNo=0;
@@ -3674,9 +3810,9 @@ String RouteType="0";
 				
 				SerialNo= i +1;
 				
-				dbengine.inserttblNotificationMstr(SerialNo,uuid,NotificationMessage,MsgSendingTime,0,0,
+				/*dbengine.inserttblNotificationMstr(SerialNo,uuid,NotificationMessage,MsgSendingTime,0,0,
 						"0",0,MsgServerID);
-			
+			*/
 				
 						
 					}
@@ -3684,7 +3820,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			setmovie.director = "1";
 			
@@ -3693,9 +3829,10 @@ String RouteType="0";
 		} catch (Exception e) {
 			
 			// System.out.println("aman getAvailbNotification "+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -3705,7 +3842,7 @@ String RouteType="0";
 	public ServiceWorker callfnSingleCallAllWebService(Context ctx,int ApplicationID,String uuid) 
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		
 		int chkTblStoreListContainsRow=1;
 		StringReader read;
@@ -3725,7 +3862,7 @@ String RouteType="0";
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);		
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
 		sse.dotNet = true;
 		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,0);
 		
@@ -3760,8 +3897,52 @@ String RouteType="0";
 	           
 	            
 	           dbengine.deleteAllSingleCallWebServiceTable();
-	           dbengine.open();
+	           //dbengine.open();
 	          int  gblQuestIDForOutChannel=0;
+
+			NodeList tblGetPDARsnRtrnMstr = doc.getElementsByTagName("tblGetReturnsReasonForPDAMstr");
+			for (int i = 0; i < tblGetPDARsnRtrnMstr.getLength(); i++)
+			{
+
+
+				String stockStatusId="0";
+				String stockStatus="0";
+
+
+
+
+
+
+
+
+				Element element = (Element) tblGetPDARsnRtrnMstr.item(i);
+
+
+
+				if(!element.getElementsByTagName("StockStatusId").equals(null))
+				{
+					NodeList QuestionIDNode = element.getElementsByTagName("StockStatusId");
+					Element      line = (Element) QuestionIDNode.item(0);
+					if(QuestionIDNode.getLength()>0)
+					{
+						stockStatusId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("StockStatus").equals(null))
+				{
+					NodeList OptionIDNode = element.getElementsByTagName("StockStatus");
+					Element      line = (Element) OptionIDNode.item(0);
+					if(OptionIDNode.getLength()>0)
+					{
+						stockStatus=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+			//	dbengine.fnInsertTBLReturnRsn(stockStatusId,stockStatus);
+			}
+
 			NodeList tblQuestIDForOutChannel = doc.getElementsByTagName("tblQuestIDForOutChannel");
 			for (int i = 0; i < tblQuestIDForOutChannel.getLength(); i++)
 			{
@@ -3815,9 +3996,10 @@ String RouteType="0";
 			NodeList tblQuestIDForName = doc.getElementsByTagName("tblQuestIDForName");
 			for (int i = 0; i < tblQuestIDForName.getLength(); i++)
 			{
+				int id=0;
 				int grpQuestId=0;
 				int questId=0;
-				int ID=0;
+				String questDesc="";
 				Element element = (Element) tblQuestIDForName.item(i);
 				if(!element.getElementsByTagName("ID").equals(null))
 				{
@@ -3825,7 +4007,7 @@ String RouteType="0";
 					Element     line = (Element) IDNode.item(0);
 					if(IDNode.getLength()>0)
 					{
-						ID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						id=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
 					}
 				}
 				if(!element.getElementsByTagName("GrpQuestID").equals(null))
@@ -3847,7 +4029,17 @@ String RouteType="0";
 
 					}
 				}
-				dbengine.savetblQuestIDForName(ID,grpQuestId, questId);
+				if(!element.getElementsByTagName("QuestDesc").equals(null))
+				{
+					NodeList QuestDescNode = element.getElementsByTagName("QuestDesc");
+					Element     line = (Element) QuestDescNode.item(0);
+					if(QuestDescNode.getLength()>0)
+					{
+						questDesc=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+				dbengine.savetblQuestIDForName(id,grpQuestId, questId,questDesc);
 			}
 			NodeList tblSPGetDistributorDetailsNode = doc.getElementsByTagName("tblGetPDAQuestMstr");
 			for (int i = 0; i < tblSPGetDistributorDetailsNode.getLength(); i++)
@@ -4037,7 +4229,7 @@ String RouteType="0";
 
 
 
-				dbengine.savetblQuestionMstr(QuestID, QuestCode, QuestDesc, QuestType, AnsControlType, AsnControlInputTypeID, AnsControlInputTypeMaxLength, AnsMustRequiredFlg, QuestBundleFlg, ApplicationTypeID, Sequence,AnsControlInputTypeMinLength,answerHint,flgQuestIDForOutChannel,QuestDescHindi);
+				//dbengine.savetblQuestionMstr(QuestID, QuestCode, QuestDesc, QuestType, AnsControlType, AsnControlInputTypeID, AnsControlInputTypeMaxLength, AnsMustRequiredFlg, QuestBundleFlg, ApplicationTypeID, Sequence,AnsControlInputTypeMinLength,answerHint,flgQuestIDForOutChannel,QuestDescHindi);
 
 			}
 
@@ -4060,9 +4252,6 @@ String RouteType="0";
 				String sequence="0";
 
 				Element element = (Element) tblGetPDAQuestGrpMappingNode.item(i);
-
-
-
 
 				if(!element.getElementsByTagName("GrpQuestID").equals(null))
 				{
@@ -4158,7 +4347,7 @@ String RouteType="0";
 					}
 				}
 
-				dbengine.savetblPDAQuestGrpMappingMstr(GrpQuestID, QuestID, GrpID, GrpNodeID, GrpDesc, SectionNo, GrpCopyID, QuestCopyID,sequence);
+				//dbengine.savetblPDAQuestGrpMappingMstr(GrpQuestID, QuestID, GrpID, GrpNodeID, GrpDesc, SectionNo, GrpCopyID, QuestCopyID,sequence);
 
 			}
 
@@ -4234,7 +4423,7 @@ String RouteType="0";
 
 					}
 				}
-				dbengine.savetblOptionMstr(OptID, QuestID, OptionNo, OptionDescr, Sequence);
+			//	dbengine.savetblOptionMstr(OptID, QuestID, OptionNo, OptionDescr, Sequence);
 				System.out.println("OptID:" + OptID + "QuestID:" + QuestID + "OptionNo:" + OptionNo + "OptionDescr:" + OptionDescr + "Sequence:" + Sequence);
 
 			}
@@ -4313,7 +4502,7 @@ String RouteType="0";
 						DpndntGrpID=xmlParser.getCharacterDataFromElement(line);
 					}
 				}
-				dbengine.savetblQuestionDependentMstr(QuestionID, OptionID, DependentQuestionID,GrpID,DpndntGrpID);
+			//	dbengine.savetblQuestionDependentMstr(QuestionID, OptionID, DependentQuestionID,GrpID,DpndntGrpID);
 
 				//  dbengine.savetblOptionMstr(OptID, QuestID, OptionNo, OptionDescr, Sequence);
 				System.out.println("QuestionID:" + QuestionID + "OptionID:" + OptionID + "DependentQuestionID:" + DependentQuestionID);
@@ -4478,49 +4667,7 @@ String RouteType="0";
 			}
 
 
-			NodeList tblGetPDARsnRtrnMstr = doc.getElementsByTagName("tblGetReturnsReasonForPDAMstr");
-	                         for (int i = 0; i < tblGetPDARsnRtrnMstr.getLength(); i++)
-	                         {
-	                          
-	                          
-	                          String stockStatusId="0";
-	                          String stockStatus="0";
-	                        
-	                          
-	                          
-	                          
-	                          
-	                          
-	                          
-	                          
-	                            Element element = (Element) tblGetPDARsnRtrnMstr.item(i);
-	                           
-	                            
-	                             
-	                             if(!element.getElementsByTagName("StockStatusId").equals(null))
-	                              {
-	                              NodeList QuestionIDNode = element.getElementsByTagName("StockStatusId");
-	                              Element      line = (Element) QuestionIDNode.item(0);
-	                              if(QuestionIDNode.getLength()>0)
-	                              {
-	                               stockStatusId=xmlParser.getCharacterDataFromElement(line);
-	                              }
-	                           }
-	                             
-	                             if(!element.getElementsByTagName("StockStatus").equals(null))
-	                              {
-	                              NodeList OptionIDNode = element.getElementsByTagName("StockStatus");
-	                              Element      line = (Element) OptionIDNode.item(0);
-	                              if(OptionIDNode.getLength()>0)
-	                              {
-	                               stockStatus=xmlParser.getCharacterDataFromElement(line);
-	                              }
-	                           }
-	                             
-	                             
-	                            dbengine.fnInsertTBLReturnRsn(stockStatusId,stockStatus);
-	                         }
-	                         
+
 	                         
 	                         
 	                         NodeList tblOutletChannelBusinessSegmentMaster = doc.getElementsByTagName("tblOutletChannelBusinessSegmentMaster");
@@ -4581,12 +4728,13 @@ String RouteType="0";
 	         	            }
 	            
             setmovie.director = "1";
-            dbengine.close();
+            //dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) 
 		{
-			 dbengine.close();
+			 //dbengine.close();;
+			setmovie.exceptionCode=e.getCause().getMessage();
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -4616,8 +4764,8 @@ String RouteType="0";
 		SoapObject responseBody = null; //Contains XML content of dataset
 
 		//DBHelper dbengine=new DBHelper(ctx);
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -4774,14 +4922,15 @@ String RouteType="0";
 				dbengine.savetblDistributorDayReportColumnsDesc(DistDayReportCoumnName, DistDayReportColumnDisplayName,CustomerNodeID,CustomerNodeType);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
 
 		} catch (Exception e)
 		{
-			dbengine.close();
+			//dbengine.close();;
+			setmovie.exceptionCode=e.getCause().getMessage();
 			System.out.println("Aman Exception occur in fnDistributor :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -4795,7 +4944,7 @@ String RouteType="0";
 	/*public ServiceWorker callfnSingleCallAllWebService(Context ctx,int ApplicationID,String uuid) 
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		
 		int chkTblStoreListContainsRow=1;
 		StringReader read;
@@ -4851,7 +5000,7 @@ String RouteType="0";
 	            
 	          //  <tblSPGetDistributorDetails> <NodeID>1</NodeID> <Descr>SUDARSAN TRADERS</Descr> <Code>101338</Code> <PNodeID>8</PNodeID> </tblSPGetDistributorDetails>
 	           dbengine.deleteAllSingleCallWebServiceTable();
-	           dbengine.open();
+	           //dbengine.open();
 	            
 	            NodeList tblSPGetDistributorDetailsNode = doc.getElementsByTagName("tblGetPDAQuestMstr");
 	            for (int i = 0; i < tblSPGetDistributorDetailsNode.getLength(); i++)
@@ -5292,7 +5441,7 @@ String RouteType="0";
 
 		} catch (Exception e) 
 		{
-			 dbengine.close();
+			 //dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -5310,14 +5459,14 @@ String RouteType="0";
 		String RouteType="0";
 		
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		
 		try
 		{
-		dbengine.open();
+		//dbengine.open();
 		String RouteID=dbengine.GetActiveRouteID();
 		RouteType=dbengine.FetchRouteType(rID);
-		dbengine.close();
+		//dbengine.close();;
 		System.out.println("hi"+RouteType);
 		}
 		catch(Exception e)
@@ -5326,7 +5475,7 @@ String RouteType="0";
 		}
 		
 		
-		dbengine.open();
+		//dbengine.open();
 		
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreListWithPaymentAddressMR";
@@ -5519,14 +5668,14 @@ String RouteType="0";
 					int AutoIdStore=0;
 					AutoIdStore= i +1;
 					
-					dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID); 		
+				//	dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID);
 					
 				
 					
 				}	
 			}
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			
 			setmovie.director = "1";
@@ -5538,10 +5687,11 @@ String RouteType="0";
 		catch (Exception e)
 		{
 		    // System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();		
+			//dbengine.close();;		
 			return setmovie;
 		}
 
@@ -5549,13 +5699,13 @@ String RouteType="0";
 	}
 	
 	
-	
+/*
 	public ServiceWorker getallProduct(Context ctx, String dateVAL, String uuid, String rID, String RouteType)
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 
 		final String SOAP_ACTION = "http://tempuri.org/GetProductListMRNew";//GetProductListMRNewProductFilterTest";
 		final String METHOD_NAME = "GetProductListMRNew";//GetProductListMRNewProductFilterTest
@@ -5594,8 +5744,8 @@ String RouteType="0";
 			client.addProperty("rID", rID.toString());
 			client.addProperty("RouteType", RouteType);
 			
-			/*client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());*/
+			*//*client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());*//*
 			
 			sse.setOutputSoapObject(client);
 			sse.bodyOut = client;
@@ -5604,8 +5754,8 @@ String RouteType="0";
 			String resultString=androidHttpTransport.responseDump;
 			String name=responseBody.getProperty(0).toString();
 			// This step: get file XML
-			/*responseBody = (SoapObject) sse.getResponse();
-			  String name=responseBody.getProperty(0).toString();*/
+			*//*responseBody = (SoapObject) sse.getResponse();
+			  String name=responseBody.getProperty(0).toString();*//*
 		        
 		       // System.out.println("Kajol 3 :"+name);
 		        
@@ -5935,10 +6085,10 @@ String RouteType="0";
 			            	 }
 			                
 			               
-			                if(!element.getElementsByTagName("BusinessSegmentId").equals(null))
+			                if(!element.getElementsByTagName("SegmentId").equals(null))
 			                 {
 							
-			                 NodeList BusinessSegmentIdNode = element.getElementsByTagName("BusinessSegmentId");
+			                 NodeList BusinessSegmentIdNode = element.getElementsByTagName("SegmentId");
 			                 Element     line = (Element) BusinessSegmentIdNode.item(0);
 							
 				                if(BusinessSegmentIdNode.getLength()>0)
@@ -5972,7 +6122,7 @@ String RouteType="0";
 			
 			
 			
-			dbengine.close();		
+			//dbengine.close();;		
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=2;
@@ -5985,390 +6135,770 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
-			return setmovie;
-		}
-
-	}
-	
-	/*public ServiceWorker getallProduct(Context ctx, String dateVAL, String uuid, String rID) 
-	{
-		this.context = ctx;
-		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
-		
-		final String SOAP_ACTION = "http://tempuri.org/GetProductListMRNew";//GetProductListMRNewProductFilterTest";
-		final String METHOD_NAME = "GetProductListMRNew";//GetProductListMRNewProductFilterTest
-		final String NAMESPACE = "http://tempuri.org/";
-		final String URL = UrlForWebService;
-	
-		decimalFormat.applyPattern(pattern);
-		SoapObject table = null; // Contains table of dataset that returned
-									// throug SoapObject
-		SoapObject client = null; // Its the client petition to the web service
-		SoapObject tableRow = null; // Contains row of table
-		SoapObject responseBody = null; // Contains XML content of dataset
-		
-		//SoapObject param
-		HttpTransportSE transport = null; // That call webservice
-		SoapSerializationEnvelope sse = null;
-
-	
-		
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-		sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
-		// Note if class name isn't "movie" ,you must change
-		sse.dotNet = true; // if WebService written .Net is result=true
-		HttpTransportSE androidHttpTransport = new HttpTransportSE(
-				URL,timeout);
-
-
-		ServiceWorker setmovie = new ServiceWorker();
-		try {
-			client = new SoapObject(NAMESPACE, METHOD_NAME);
-			
-			//String dateVAL = "00.00.0000";
-			
-			//////// System.out.println("soap obj date: "+ dateVAL);
-			
-			client.addProperty("IMEINo", uuid.toString());
-			client.addProperty("rID", rID.toString());
-			
-			client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());
-			
-			sse.setOutputSoapObject(client);
-			sse.bodyOut = client;
-			androidHttpTransport.call(SOAP_ACTION, sse);
-
-			// This step: get file XML
-			responseBody = (SoapObject) sse.getResponse();
-			
-			
-			  SoapObject soDiffg = (SoapObject) responseBody.getProperty("diffgram");
-				
-	            if(soDiffg.hasProperty("NewDataSet"))
-	            {
-	            	// remove information XML,only retrieved results that returned
-	    			responseBody = (SoapObject) responseBody.getProperty(1);
-	    			
-	    			// get information XMl of tables that is returned
-	    			table = (SoapObject) responseBody.getProperty(0);
-	            }
-	            else
-	            {
-	            	
-	            }
-			
-			int chkTblProductListContainsRow=0;
-			
-			if(soDiffg.hasProperty("NewDataSet"))
-			{
-				chkTblProductListContainsRow=1;
-				dbengine.Delete_tblProductList_for_refreshData();
-			}
-			
-			if(chkTblProductListContainsRow==1)
-			{
-				if( table.getPropertyCount()>1)
-				{
-					for(int i = 0; i <= table.getPropertyCount() -1 ; i++)
-					{
-		 		
-					   // ////// System.out.println("table - prop count: "+ table.getPropertyCount());
-						tableRow = (SoapObject) table.getProperty(i);
-						//////// System.out.println("i value: "+ i);
-						
-						<xs:element name="CatID" minOccurs="0" type="xs:int"/>
-
-						<xs:element name="ProductMRP" minOccurs="0" type="xs:decimal"/>
-
-						<xs:element name="ProductRLP" minOccurs="0" type="xs:decimal"/>
-
-						<xs:element name="ProductTaxAmount" minOccurs="0" type="xs:int"/>
-
-						<xs:element name="KGLiter" minOccurs="0" type="xs:int"/>
-						
-						String CatID="0";
-						String ProductID="0";
-						String ProductShortName="NA";
-						String DisplayUnit="0";
-						Double CalculateKilo=0.0;
-						Double ProductMRP=0.0;
-						Double ProductRLP=0.0;
-						Double ProductTaxAmount=0.0;
-						String KGLiter="0";
-						Double RetMarginPer=0.0;
-						Double VatTax=0.0;
-						Double StandardRate=0.0;
-						Double StandardRateBeforeTax=0.0;
-						Double StandardTax=0.0;
-						int StoreCatNodeId=0;
-						String SearchField="";
-						int CatOrdr=0;
-						int PrdOrdr=0;
-						
-						if (tableRow.hasProperty("CatID") ) 
-						{
-							if (tableRow.getProperty("CatID").toString().isEmpty() ) 
-							{
-								CatID="0";
-							} 
-							else
-							{
-								CatID = tableRow.getProperty("CatID").toString().trim();
-								
-							}
-						} 
-						if (tableRow.hasProperty("ProductID") ) 
-						{
-							if (tableRow.getProperty("ProductID").toString().isEmpty() ) 
-							{
-								ProductID="0";
-							} 
-							else
-							{
-								ProductID = tableRow.getProperty("ProductID").toString().trim();
-								
-							}
-						} 
-						if (tableRow.hasProperty("ProductShortName") ) 
-						{
-							if (tableRow.getProperty("ProductShortName").toString().isEmpty() ) 
-							{
-								ProductShortName="0";
-							} 
-							else
-							{
-								ProductShortName = tableRow.getProperty("ProductShortName").toString().trim();
-								
-							}
-						} 
-						if (tableRow.hasProperty("DisplayUnit") ) 
-						{
-							if (tableRow.getProperty("DisplayUnit").toString().isEmpty() ) 
-							{
-								DisplayUnit="0";
-							} 
-							else
-							{
-								DisplayUnit = tableRow.getProperty("DisplayUnit").toString().trim();
-								
-							}
-						}
-						if (tableRow.hasProperty("CalculateKilo") ) 
-						{
-							if (tableRow.getProperty("CalculateKilo").toString().isEmpty() ) 
-							{
-								CalculateKilo=0.0;
-							} 
-							else
-							{
-								CalculateKilo = Double.parseDouble(tableRow.getProperty("CalculateKilo").toString().trim());
-										//Double.parseDouble(tableRow.getProperty("CalculateKilo").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("ProductMRP") ) 
-						{
-							if (tableRow.getProperty("ProductMRP").toString().isEmpty() ) 
-							{
-								ProductMRP=0.0;
-							} 
-							else
-							{
-								//ProductMRP = Double.parseDouble(decimalFormat.format(tableRow.getProperty("ProductMRP").toString().trim()));
-								ProductMRP = Double.parseDouble(tableRow.getProperty("ProductMRP").toString().trim());
-								ProductMRP=Double.parseDouble(decimalFormat.format(ProductMRP));
-										//Double.parseDouble(tableRow.getProperty("ProductMRP").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("ProductRLP") ) 
-						{
-							if (tableRow.getProperty("ProductRLP").toString().isEmpty() ) 
-							{
-								ProductRLP=0.0;
-							} 
-							else
-							{
-								ProductRLP =Double.parseDouble(tableRow.getProperty("ProductRLP").toString().trim());
-								ProductRLP=Double.parseDouble(decimalFormat.format(ProductRLP));
-										//Double.parseDouble(tableRow.getProperty("ProductRLP").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("ProductTaxAmount") ) 
-						{
-							if (tableRow.getProperty("ProductTaxAmount").toString().isEmpty() ) 
-							{
-								ProductTaxAmount=0.0;
-							} 
-							else
-							{
-								ProductTaxAmount =Double.parseDouble(tableRow.getProperty("ProductTaxAmount").toString().trim());
-								ProductTaxAmount=Double.parseDouble(decimalFormat.format(ProductTaxAmount));
-										//Double.parseDouble(tableRow.getProperty("ProductTaxAmount").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("KGLiter") ) 
-						{
-							if (tableRow.getProperty("KGLiter").toString().isEmpty() ) 
-							{
-								KGLiter="0";
-							} 
-							else
-							{
-								KGLiter = tableRow.getProperty("KGLiter").toString().trim();
-								
-							}
-						}
-						if (tableRow.hasProperty("RetMarginPer") ) 
-						{
-							if (tableRow.getProperty("RetMarginPer").toString().isEmpty() ) 
-							{
-								RetMarginPer=0.0;
-							} 
-							else
-							{
-								RetMarginPer =Double.parseDouble(tableRow.getProperty("RetMarginPer").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("Tax") ) 
-						{
-							if (tableRow.getProperty("Tax").toString().isEmpty() ) 
-							{
-								VatTax=0.0;
-							} 
-							else
-							{
-								VatTax =Double.parseDouble(tableRow.getProperty("Tax").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("StandardRate") ) 
-						{
-							if (tableRow.getProperty("StandardRate").toString().isEmpty() ) 
-							{
-								StandardRate=0.0;
-							} 
-							else
-							{
-								StandardRate =Double.parseDouble(tableRow.getProperty("StandardRate").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("StandardRateBeforeTax") ) 
-						{
-							if (tableRow.getProperty("StandardRateBeforeTax").toString().isEmpty() ) 
-							{
-								StandardRateBeforeTax=0.0;
-							} 
-							else
-							{
-								StandardRateBeforeTax =Double.parseDouble(tableRow.getProperty("StandardRateBeforeTax").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("StandardTax") ) 
-						{
-							if (tableRow.getProperty("StandardTax").toString().isEmpty() ) 
-							{
-								StandardTax=0.0;
-							} 
-							else
-							{
-								StandardTax =Double.parseDouble(tableRow.getProperty("StandardTax").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("CatOrdr") ) 
-						{
-							if (tableRow.getProperty("CatOrdr").toString().isEmpty() ) 
-							{
-								CatOrdr=0;
-							} 
-							else
-							{
-								CatOrdr =Integer.parseInt(tableRow.getProperty("CatOrdr").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("PrdOrdr") ) 
-						{
-							if (tableRow.getProperty("PrdOrdr").toString().isEmpty() ) 
-							{
-								PrdOrdr=0;
-							} 
-							else
-							{
-								PrdOrdr =Integer.parseInt(tableRow.getProperty("PrdOrdr").toString().trim());
-								
-							}
-						}
-						if (tableRow.hasProperty("StoreCatNodeId") ) 
-						{
-							if (tableRow.getProperty("StoreCatNodeId").toString().isEmpty() ) 
-							{
-								StoreCatNodeId=0;
-							} 
-							else
-							{
-								StoreCatNodeId =Integer.parseInt(tableRow.getProperty("StoreCatNodeId").toString().trim());
-								
-							}
-						}
-						//StoreCatNodeId
-						
-						if (tableRow.hasProperty("SearchField") ) 
-						{
-							if (tableRow.getProperty("SearchField").toString().isEmpty() ) 
-							{
-								SearchField="";
-							} 
-							else
-							{
-								SearchField =tableRow.getProperty("SearchField").toString().trim();
-								
-							}
-						}
-						//SearchField	
-						dbengine.saveSOAPdataProductList(CatID,ProductID,ProductShortName,DisplayUnit,CalculateKilo,ProductMRP, ProductRLP, ProductTaxAmount,KGLiter,RetMarginPer,VatTax,StandardRate,StandardRateBeforeTax,StandardTax,CatOrdr,PrdOrdr,StoreCatNodeId,SearchField);						
-						
-						
-					}
-				}
-				
-			}
-			
-			
-			dbengine.close();		
-			
-			setmovie.director = "1";
-			flagExecutedServiceSuccesfully=2;
-			// System.out.println("ServiceWorkerNitish getallProduct Inside");
-			return setmovie;
-//return counts;
-		} catch (Exception e) {
-			
-			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
-			setmovie.director = e.toString();
-			setmovie.movie_name = e.toString();
-			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
 	}
 	*/
+
+	public ServiceWorker getallProduct(Context ctx, String dateVAL, String uuid, String rID, String RouteType)
+	{
+		this.context = ctx;
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		final String SOAP_ACTION = "http://tempuri.org/GetProductListMRNew";//GetProductListMRNewProductFilterTest";
+		final String METHOD_NAME = "GetProductListMRNew";//GetProductListMRNewProductFilterTest
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		decimalFormat.applyPattern(pattern);
+		SoapObject table = null; // Contains table of dataset that returned
+		// throug SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		//sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "movie" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			//String dateVAL = "00.00.0000";
+
+			//////// System.out.println("soap obj date: "+ dateVAL);
+
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("rID", rID.toString());
+			client.addProperty("RouteType", RouteType);
+
+			/*client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());*/
+
+			sse.setOutputSoapObject(client);
+			sse.bodyOut = client;
+			androidHttpTransport.call(SOAP_ACTION, sse);
+			responseBody = (SoapObject)sse.bodyIn;
+			String resultString=androidHttpTransport.responseDump;
+			String name=responseBody.getProperty(0).toString();
+			// This step: get file XML
+			/*responseBody = (SoapObject) sse.getResponse();
+			  String name=responseBody.getProperty(0).toString();*/
+
+			// System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			dbengine.Delete_tblProductList_for_refreshData();
+			NodeList tblPrdctMstrNode = doc.getElementsByTagName("tblProductListMaster");
+			for (int i = 0; i < tblPrdctMstrNode.getLength(); i++)
+
+			{
+				String CatID="0";
+				String ProductID="0";
+				String ProductShortName="NA";
+				String DisplayUnit="0";
+				Double CalculateKilo=0.0;
+				String KGLiter="0";
+				int StoreCatNodeId=0;
+				String SearchField="";
+
+				int CatOrdr=0;
+				int PrdOrdr=0;
+				int ManufacturerID=0;
+				String rptUnitName="";
+				String perbaseUnit="0";
+				String HSNCode="";
+				Element element = (Element) tblPrdctMstrNode.item(i);
+
+				if(!element.getElementsByTagName("CatID").equals(null))
+				{
+
+					NodeList CatIDNode = element.getElementsByTagName("CatID");
+					Element     line = (Element) CatIDNode.item(0);
+
+					if(CatIDNode.getLength()>0)
+					{
+
+						CatID=xmlParser.getCharacterDataFromElement(line);
+						StoreCatNodeId=Integer.parseInt(CatID);
+					}
+				}
+				if(!element.getElementsByTagName("ProductID").equals(null))
+				{
+
+					NodeList ProductIDNode = element.getElementsByTagName("ProductID");
+					Element     line = (Element) ProductIDNode.item(0);
+
+					if(ProductIDNode.getLength()>0)
+					{
+
+						ProductID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("ProductShortName").equals(null))
+				{
+
+					NodeList ProductShortNameNode = element.getElementsByTagName("ProductShortName");
+					Element     line = (Element) ProductShortNameNode.item(0);
+
+					if(ProductShortNameNode.getLength()>0)
+					{
+
+						ProductShortName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("DisplayUnit").equals(null))
+				{
+
+					NodeList DisplayUnitNode = element.getElementsByTagName("DisplayUnit");
+					Element     line = (Element) DisplayUnitNode.item(0);
+
+					if(DisplayUnitNode.getLength()>0)
+					{
+
+						DisplayUnit=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CalculateKilo").equals(null))
+				{
+
+					NodeList CalculateKiloNode = element.getElementsByTagName("CalculateKilo");
+					Element     line = (Element) CalculateKiloNode.item(0);
+
+					if(CalculateKiloNode.getLength()>0)
+					{
+
+						CalculateKilo=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("KGLiter").equals(null))
+				{
+
+					NodeList KGLiterNode = element.getElementsByTagName("KGLiter");
+					Element     line = (Element) KGLiterNode.item(0);
+
+					if(KGLiterNode.getLength()>0)
+					{
+
+						KGLiter=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+
+				if(!element.getElementsByTagName("CatOrdr").equals(null))
+				{
+
+					NodeList CatOrdrNode = element.getElementsByTagName("CatOrdr");
+					Element     line = (Element) CatOrdrNode.item(0);
+
+					if(CatOrdrNode.getLength()>0)
+					{
+
+						CatOrdr=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("PrdOrdr").equals(null))
+				{
+
+					NodeList PrdOrdrNode = element.getElementsByTagName("PrdOrdr");
+					Element     line = (Element) PrdOrdrNode.item(0);
+
+					if(PrdOrdrNode.getLength()>0)
+					{
+
+						PrdOrdr=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+				if(!element.getElementsByTagName("StoreCatNodeId").equals(null))
+				{
+
+					NodeList StoreCatNodeIdNode = element.getElementsByTagName("StoreCatNodeId");
+					Element     line = (Element) StoreCatNodeIdNode.item(0);
+
+					if(StoreCatNodeIdNode.getLength()>0)
+					{
+
+						StoreCatNodeId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("SearchField").equals(null))
+				{
+
+					NodeList SearchFieldNode = element.getElementsByTagName("SearchField");
+					Element     line = (Element) SearchFieldNode.item(0);
+
+					if(SearchFieldNode.getLength()>0)
+					{
+
+						SearchField=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+
+
+				if(!element.getElementsByTagName("ManufacturerID").equals(null))
+				{
+
+					NodeList ManufacturerIDNode = element.getElementsByTagName("ManufacturerID");
+					Element     line = (Element) ManufacturerIDNode.item(0);
+
+					if(ManufacturerIDNode.getLength()>0)
+					{
+
+						ManufacturerID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("RptUnitName").equals(null))
+				{
+
+					NodeList RptUnitNameNode = element.getElementsByTagName("RptUnitName");
+					Element     line = (Element) RptUnitNameNode.item(0);
+
+					if(RptUnitNameNode.getLength()>0)
+					{
+
+						rptUnitName=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+				if(!element.getElementsByTagName("PerbaseUnit").equals(null))
+				{
+
+					NodeList PerbaseUnitNode = element.getElementsByTagName("PerbaseUnit");
+					Element     line = (Element) PerbaseUnitNode.item(0);
+
+					if(PerbaseUnitNode.getLength()>0)
+					{
+
+						perbaseUnit=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+				if(!element.getElementsByTagName("HSNCode").equals(null))
+				{
+
+					NodeList HSNCodeNode = element.getElementsByTagName("HSNCode");
+					Element     line = (Element) HSNCodeNode.item(0);
+
+					if(HSNCodeNode.getLength()>0)
+					{
+
+						HSNCode=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+
+
+				//SearchField
+			//	dbengine.saveSOAPdataProductList(CatID,ProductID,ProductShortName,DisplayUnit,CalculateKilo,KGLiter,CatOrdr,PrdOrdr,StoreCatNodeId,SearchField,ManufacturerID,rptUnitName,perbaseUnit,HSNCode);
+
+
+			}
+
+
+			NodeList tblProductSegementMap = doc.getElementsByTagName("tblProductSegementMap");
+			for (int i = 0; i < tblProductSegementMap.getLength(); i++)
+			{
+
+				String ProductID="0";
+				int BusinessSegmentId=0;
+				Double ProductMRP=-99.0;
+				Double ProductRLP=0.0;
+				Double ProductTaxAmount=0.0;
+				Double RetMarginPer=0.0;
+				Double VatTax=0.0;
+				Double StandardRate=-99.0;
+				Double StandardRateBeforeTax=0.0;
+				Double StandardTax=0.0;
+				int flgPriceAva=0;
+				int flgWholeSellApplicable=0;
+				double PriceRangeWholeSellApplicable=0.0;
+				double StandardRateWholeSale=0.0;
+				double StandardRateBeforeTaxWholeSell=0.0;
+				double StandardTaxWholeSale=0.0;
+
+
+				Element element = (Element) tblProductSegementMap.item(i);
+
+				if(!element.getElementsByTagName("ProductId").equals(null))
+				{
+
+					NodeList ProductIDNode = element.getElementsByTagName("ProductId");
+					Element     line = (Element) ProductIDNode.item(0);
+
+					if(ProductIDNode.getLength()>0)
+					{
+
+						ProductID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("ProductMRP").equals(null))
+				{
+
+					NodeList ProductMRPNode = element.getElementsByTagName("ProductMRP");
+					Element     line = (Element) ProductMRPNode.item(0);
+
+					if(ProductMRPNode.getLength()>0)
+					{
+
+						ProductMRP=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						ProductMRP=Double.parseDouble(decimalFormat.format(ProductMRP));
+					}
+				}
+
+				if(!element.getElementsByTagName("ProductRLP").equals(null))
+				{
+
+					NodeList ProductRLPNode = element.getElementsByTagName("ProductRLP");
+					Element     line = (Element) ProductRLPNode.item(0);
+
+					if(ProductRLPNode.getLength()>0)
+					{
+
+						ProductRLP=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						ProductRLP=Double.parseDouble(decimalFormat.format(ProductRLP));
+					}
+				}
+
+				if(!element.getElementsByTagName("ProductTaxAmount").equals(null))
+				{
+
+					NodeList ProductTaxAmountNode = element.getElementsByTagName("ProductTaxAmount");
+					Element     line = (Element) ProductTaxAmountNode.item(0);
+
+					if(ProductTaxAmountNode.getLength()>0)
+					{
+
+						ProductTaxAmount=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						ProductTaxAmount=Double.parseDouble(decimalFormat.format(ProductTaxAmount));
+					}
+				}
+
+
+				if(!element.getElementsByTagName("RetMarginPer").equals(null))
+				{
+
+					NodeList RetMarginPerNode = element.getElementsByTagName("RetMarginPer");
+					Element     line = (Element) RetMarginPerNode.item(0);
+
+					if(RetMarginPerNode.getLength()>0)
+					{
+
+						RetMarginPer=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("Tax").equals(null))
+				{
+
+					NodeList TaxNode = element.getElementsByTagName("Tax");
+					Element     line = (Element) TaxNode.item(0);
+
+					if(TaxNode.getLength()>0)
+					{
+
+						VatTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+
+				if(!element.getElementsByTagName("StandardRate").equals(null))
+				{
+
+					NodeList StandardRateNode = element.getElementsByTagName("StandardRate");
+					Element     line = (Element) StandardRateNode.item(0);
+
+					if(StandardRateNode.getLength()>0)
+					{
+
+						StandardRate=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+				if(!element.getElementsByTagName("StandardRateBeforeTax").equals(null))
+				{
+
+					NodeList StandardRateBeforeTaxNode = element.getElementsByTagName("StandardRateBeforeTax");
+					Element     line = (Element) StandardRateBeforeTaxNode.item(0);
+
+					if(StandardRateBeforeTaxNode.getLength()>0)
+					{
+
+						StandardRateBeforeTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+				if(!element.getElementsByTagName("StandardTax").equals(null))
+				{
+
+					NodeList StandardTaxNode = element.getElementsByTagName("StandardTax");
+					Element     line = (Element) StandardTaxNode.item(0);
+
+					if(StandardTaxNode.getLength()>0)
+					{
+
+						StandardTax=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+
+				if(!element.getElementsByTagName("SegmentId").equals(null))
+				{
+
+					NodeList BusinessSegmentIdNode = element.getElementsByTagName("SegmentId");
+					Element     line = (Element) BusinessSegmentIdNode.item(0);
+
+					if(BusinessSegmentIdNode.getLength()>0)
+					{
+
+						BusinessSegmentId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("flgPriceAva").equals(null))
+				{
+
+					NodeList flgPriceAvaNode = element.getElementsByTagName("flgPriceAva");
+					Element     line = (Element) flgPriceAvaNode.item(0);
+
+					if(flgPriceAvaNode.getLength()>0)
+					{
+
+						flgPriceAva=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+				//flgPriceAva
+				if(!element.getElementsByTagName("flgPrdBulkPriceapplicable").equals(null))
+				{
+
+					NodeList flgWholeSellApplicableNode = element.getElementsByTagName("flgPrdBulkPriceapplicable");
+					Element     line = (Element) flgWholeSellApplicableNode.item(0);
+
+					if(flgWholeSellApplicableNode.getLength()>0)
+					{
+
+						flgWholeSellApplicable=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+
+				if(!element.getElementsByTagName("Cutoffvalue").equals(null))
+				{
+
+					NodeList PriceRangeWholeSellApplicableNode = element.getElementsByTagName("Cutoffvalue");
+					Element     line = (Element) PriceRangeWholeSellApplicableNode.item(0);
+
+					if(PriceRangeWholeSellApplicableNode.getLength()>0)
+					{
+
+						PriceRangeWholeSellApplicable=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("StandardRateWholeSale").equals(null))
+				{
+
+					NodeList StandardRateWholeSaleNode = element.getElementsByTagName("StandardRateWholeSale");
+					Element     line = (Element) StandardRateWholeSaleNode.item(0);
+
+					if(StandardRateWholeSaleNode.getLength()>0)
+					{
+
+						StandardRateWholeSale=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("StandardRateBeforeTaxWholeSale").equals(null))
+				{
+
+					NodeList StandardRateBeforeTaxWholeSellNode = element.getElementsByTagName("StandardRateBeforeTaxWholeSale");
+					Element     line = (Element) StandardRateBeforeTaxWholeSellNode.item(0);
+
+					if(StandardRateBeforeTaxWholeSellNode.getLength()>0)
+					{
+
+						StandardRateBeforeTaxWholeSell=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+				if(!element.getElementsByTagName("StandardTaxWholeSale").equals(null))
+				{
+
+					NodeList StandardTaxWholeSaleNode = element.getElementsByTagName("StandardTaxWholeSale");
+					Element     line = (Element) StandardTaxWholeSaleNode.item(0);
+
+					if(StandardTaxWholeSaleNode.getLength()>0)
+					{
+
+						StandardTaxWholeSale=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+			//	dbengine.saveProductSegementMap(ProductID,ProductMRP, ProductRLP, ProductTaxAmount,RetMarginPer,VatTax,StandardRate,StandardRateBeforeTax,StandardTax,BusinessSegmentId,flgPriceAva,flgWholeSellApplicable,PriceRangeWholeSellApplicable,StandardRateWholeSale,StandardRateBeforeTaxWholeSell,StandardTaxWholeSale);
+
+
+			}
+
+			NodeList tblPriceApplyType = doc.getElementsByTagName("tblPriceApplyType");
+			for (int i = 0; i < tblPriceApplyType.getLength(); i++)
+			{
+
+
+				int DiscountLevelType=0;
+				Double cutoffvalue=0.0;
+
+
+
+				Element element = (Element) tblPriceApplyType.item(i);
+
+				if(!element.getElementsByTagName("DiscountLevel").equals(null))
+				{
+
+					NodeList DiscountLevelTypeNode = element.getElementsByTagName("DiscountLevel");
+					Element     line = (Element) DiscountLevelTypeNode.item(0);
+
+					if(DiscountLevelTypeNode.getLength()>0)
+					{
+
+						DiscountLevelType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("cutoffvalue").equals(null))
+				{
+
+					NodeList cutoffvalueNode = element.getElementsByTagName("cutoffvalue");
+					Element     line = (Element) cutoffvalueNode.item(0);
+
+					if(cutoffvalueNode.getLength()>0)
+					{
+
+						cutoffvalue=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						cutoffvalue=Double.parseDouble(decimalFormat.format(cutoffvalue));
+					}
+				}
+
+
+				dbengine.savetblPriceApplyType(DiscountLevelType,cutoffvalue);
+			}
+
+			NodeList tblUOMMaster = doc.getElementsByTagName("tblUOMMaster");
+			for (int i = 0; i < tblUOMMaster.getLength(); i++)
+			{
+
+
+				int BUomId=0;
+				String BUOMName="NA";
+				int flgRetailUnit=0;
+
+
+
+				Element element = (Element) tblUOMMaster.item(i);
+
+				if(!element.getElementsByTagName("BUOMID").equals(null))
+				{
+
+					NodeList BUomIdNode = element.getElementsByTagName("BUOMID");
+					Element     line = (Element) BUomIdNode.item(0);
+
+					if(BUomIdNode.getLength()>0)
+					{
+
+						BUomId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("BUOMName").equals(null))
+				{
+
+					NodeList BUOMNameNode = element.getElementsByTagName("BUOMName");
+					Element     line = (Element) BUOMNameNode.item(0);
+
+					if(BUOMNameNode.getLength()>0)
+					{
+
+						BUOMName=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+				if(!element.getElementsByTagName("flgRetailUnit").equals(null))
+				{
+
+					NodeList flgRetailUnitNode = element.getElementsByTagName("flgRetailUnit");
+					Element     line = (Element) flgRetailUnitNode.item(0);
+
+					if(flgRetailUnitNode.getLength()>0)
+					{
+
+						flgRetailUnit=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+
+				dbengine.insertUOMMstr(BUomId,BUOMName,flgRetailUnit);
+			}
+
+
+
+			NodeList tblUOMMapping = doc.getElementsByTagName("tblUOMMapping");
+			for (int i = 0; i < tblUOMMapping.getLength(); i++)
+			{
+
+				int NodeId=0;
+				int NodeType=0;
+				int BaseUomId=0;
+				int PackUomId=0;
+				Double relConverionUnit=0.0;
+				int flgDefaultUOM=0;
+
+
+
+				Element element = (Element) tblUOMMapping.item(i);
+
+				if(!element.getElementsByTagName("NodeID").equals(null))
+				{
+
+					NodeList NodeIDNode = element.getElementsByTagName("NodeID");
+					Element     line = (Element) NodeIDNode.item(0);
+
+					if(NodeIDNode.getLength()>0)
+					{
+
+						NodeId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				if(!element.getElementsByTagName("NodeType").equals(null))
+				{
+
+					NodeList NodeTypeNode = element.getElementsByTagName("NodeType");
+					Element     line = (Element) NodeTypeNode.item(0);
+
+					if(NodeTypeNode.getLength()>0)
+					{
+
+						NodeType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("BaseUOMID").equals(null))
+				{
+
+					NodeList BaseUOMIDNode = element.getElementsByTagName("BaseUOMID");
+					Element     line = (Element) BaseUOMIDNode.item(0);
+
+					if(BaseUOMIDNode.getLength()>0)
+					{
+
+						BaseUomId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("PackUOMID").equals(null))
+				{
+
+					NodeList PackUOMIDNode = element.getElementsByTagName("PackUOMID");
+					Element     line = (Element) PackUOMIDNode.item(0);
+
+					if(PackUOMIDNode.getLength()>0)
+					{
+
+						PackUomId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+				if(!element.getElementsByTagName("RelConversionUnits").equals(null))
+				{
+
+					NodeList RelConversionUnitsNode = element.getElementsByTagName("RelConversionUnits");
+					Element     line = (Element) RelConversionUnitsNode.item(0);
+
+					if(RelConversionUnitsNode.getLength()>0)
+					{
+
+						relConverionUnit=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				if(!element.getElementsByTagName("flgVanLoading").equals(null))
+				{
+
+					NodeList flgDefaultUOMNode = element.getElementsByTagName("flgVanLoading");
+					Element     line = (Element) flgDefaultUOMNode.item(0);
+
+					if(flgDefaultUOMNode.getLength()>0)
+					{
+
+						flgDefaultUOM=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+
+				dbengine.insertUOMMapping(NodeId,NodeType,BaseUomId,PackUomId,relConverionUnit,flgDefaultUOM);
+			}
+
+			//dbengine.close();;
+
+			setmovie.director = "1";
+			flagExecutedServiceSuccesfully=2;
+			// System.out.println("ServiceWorkerNitish getallProduct Inside");
+			return setmovie;
+//return counts;
+		} catch (Exception e) {
+
+			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
+		}
+
+	}
+
 	public ServiceWorker getProductPriceMR(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetForPDAProductPriceMR";
 		final String METHOD_NAME = "GetForPDAProductPriceMR";
@@ -6498,7 +7028,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -6507,9 +7037,10 @@ String RouteType="0";
 		} catch (Exception e) {
 			
 			// System.out.println("Aman Exception occur in GetForPDAProductPriceMR :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -6517,8 +7048,8 @@ String RouteType="0";
 	public ServiceWorker getallSchemeList(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeList";
 		final String METHOD_NAME = "GetSchemeList";
@@ -6697,7 +7228,7 @@ String RouteType="0";
 			}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -6707,9 +7238,10 @@ String RouteType="0";
 			
 			
 			// System.out.println("Aman Exception occur in GetSchemeList :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -6720,8 +7252,8 @@ String RouteType="0";
 		this.context = ctx;
 		
 		////// System.out.println("jai called method in service worker");
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/fnGetOutLetInfoOnQuadVolumeCategoryBasis";
 		final String METHOD_NAME = "fnGetOutLetInfoOnQuadVolumeCategoryBasis";
@@ -6927,9 +7459,10 @@ String RouteType="0";
 		} catch (Exception e) {
 			
 			// System.out.println("Aman Exception occur in fnGetOutLetInfoOnQuadVolumeCategoryBasis :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -6937,8 +7470,8 @@ String RouteType="0";
 	public ServiceWorker getallSchemeDetails(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeDetails";
 		final String METHOD_NAME = "GetSchemeDetails";
@@ -7044,7 +7577,7 @@ String RouteType="0";
 				}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 		
 			setmovie.director = "1";
 			
@@ -7054,20 +7587,23 @@ String RouteType="0";
 			
 			
 			// System.out.println("Aman Exception occur in GetSchemeDetails :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
 	}
 	
 	
-	public ServiceWorker getCategory(Context ctx, String uuid) 
+	public ServiceWorker getCategory(Context ctx, String uuid)
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+
+		ServiceWorker setmovie = new ServiceWorker();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetCategoryMstr";
 		final String METHOD_NAME = "GetCategoryMstr";
@@ -7092,7 +7628,7 @@ String RouteType="0";
 				URL,timeout);
 
 
-		ServiceWorker setmovie = new ServiceWorker();
+
 		try {
 			client = new SoapObject(NAMESPACE, METHOD_NAME);
 			
@@ -7201,18 +7737,18 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.saveCategory(stID.trim(), deDescr.trim(),CatOrdr);
+				//dbengine.saveCategory(stID.trim(), deDescr.trim(),CatOrdr);
 			
 				
 				
 					}
 			}
 			} //aa
-			//dbengine.close();
+			////dbengine.close();;
 				
 			
-			dbengine.close();		// #4
-			
+			//dbengine.close();;		// #4
+
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=3;
 			// System.out.println("ServiceWorkerNitish getCategory Inside");
@@ -7224,16 +7760,17 @@ String RouteType="0";
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
+
 
 	}
 	public ServiceWorker getalllastTransactionDetails(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetlastTransactionDetails";
 		final String METHOD_NAME = "GetlastTransactionDetails";
@@ -7392,7 +7929,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -7403,9 +7940,10 @@ String RouteType="0";
 			
 			
 			// System.out.println("Aman Exception occur in GetlastTransactionDetails :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -7413,8 +7951,8 @@ String RouteType="0";
 	public ServiceWorker getallschemeStoreTypeMap(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeStoreTypeMap";
 		final String METHOD_NAME = "GetSchemeStoreTypeMap";
@@ -7493,7 +8031,7 @@ String RouteType="0";
 					}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -7504,9 +8042,10 @@ String RouteType="0";
 			
 			
 			// System.out.println("Aman Exception occur in GetSchemeStoreTypeMap :"+e.toString());
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7514,8 +8053,8 @@ String RouteType="0";
 	public ServiceWorker getallschemeProductMap(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeProductMap";
 		final String METHOD_NAME = "GetSchemeProductMap";
@@ -7614,7 +8153,7 @@ String RouteType="0";
 				}
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -7627,11 +8166,11 @@ String RouteType="0";
 			
 			
 		// System.out.println("Aman Exception occur in GetSchemeProductMap :"+e.toString());
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -7639,8 +8178,8 @@ String RouteType="0";
 	public ServiceWorker getallPDALastTranDateForSecondPage(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		final String SOAP_ACTION = "http://tempuri.org/GetPDALastTranDetForSecondPage";
 		final String METHOD_NAME = "GetPDALastTranDetForSecondPage";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -7803,7 +8342,7 @@ String RouteType="0";
 				}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -7815,10 +8354,10 @@ String RouteType="0";
 			
 			
 			// System.out.println("Aman Exception occur in GetPDALastTranDetForSecondPage :"+e.toString());
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 				setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -7827,8 +8366,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetForPDASchemeApplicableList";
 		final String METHOD_NAME = "GetForPDASchemeApplicableList";
@@ -7982,7 +8521,7 @@ String RouteType="0";
 				}	
 			}
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			/*setmovie.director = tableRow.getProperty("Director").toString();
 			setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -7991,14 +8530,14 @@ String RouteType="0";
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
-			
+
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetForPDASchemeApplicableList :"+e.toString());
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8007,8 +8546,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSoreType";
 		final String METHOD_NAME = "GetSoreType";
@@ -8113,19 +8652,19 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetSoreType :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8134,7 +8673,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLocation";
 		final String METHOD_NAME = "GetLocation";
@@ -8244,7 +8783,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8255,7 +8794,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetLocation :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8264,7 +8803,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetArea";
 		final String METHOD_NAME = "GetArea";
@@ -8375,7 +8914,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8386,7 +8925,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetArea :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8398,8 +8937,8 @@ String RouteType="0";
 	public ServiceWorker getallPDALastInvoiceDet(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDALastInvoiceDet";
 		final String METHOD_NAME = "GetPDALastInvoiceDet";
@@ -8516,7 +9055,7 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -8524,13 +9063,13 @@ String RouteType="0";
 //return counts;
 		} catch (Exception e) {
 			
-			dbengine.close();	
-			
+			//dbengine.close();;
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetPDALastInvoiceDet :"+e.toString());
 			//////// System.out.println("aman getallProduct: 13 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8538,8 +9077,8 @@ String RouteType="0";
 	public ServiceWorker getallPDATargetQtyForSecondPage(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDATargetQtyForSecondPage";
 		final String METHOD_NAME = "GetPDATargetQtyForSecondPage";
@@ -8653,20 +9192,20 @@ String RouteType="0";
 			}
 				
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetPDATargetQtyForSecondPage :"+e.toString());
 			//////// System.out.println("aman getallProduct: 14 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -8676,8 +9215,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSyncSummuryDetails";
 		final String METHOD_NAME = "GetSyncSummuryDetails";
@@ -8807,21 +9346,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=22;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			//////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -8829,8 +9368,8 @@ String RouteType="0";
 	public ServiceWorker GetPDAIsSchemeApplicable(Context ctx, String dateVAL, String uuid, String rID,String RouteNodeType) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetPDAIsSchemeApplicable";
 		final String METHOD_NAME = "GetPDAIsSchemeApplicable";
@@ -8938,17 +9477,18 @@ String RouteType="0";
 			}
 			dbengine.SavePDAIsSchemeApplicable(IsSchemeApplicable);
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=21;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetPDAIsSchemeApplicable :"+e.toString());
-			dbengine.close();	
+			dbengine.SavePDAIsSchemeApplicable(0);
+			//dbengine.close();;	
 			//////// System.out.println("aman getallProduct: 17 "+e.toString());
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
@@ -8961,7 +9501,7 @@ String RouteType="0";
 	public ServiceWorker getallPDAtblSyncSummuryForProductDetails(Context ctx, String dateVAL, String uuid, String rID) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSyncSummuryForProductDetailsNew";
 		final String METHOD_NAME = "GetSyncSummuryForProductDetailsNew";
@@ -9028,7 +9568,7 @@ String RouteType="0";
 			//dbengine.reCreateDB();
 			if(chkTblStoreListContainsRow==1)
 			{
-				//dbengine.open();
+				////dbengine.open();
 				/*String ActualCalls="0";
 				String ProductiveCalls="0";
 				String TotSalesValue ="0";
@@ -9090,9 +9630,9 @@ String RouteType="0";
 					*/
 							
 						//dbengine.SavetblSyncSummuryDetails(ActualCalls,ProductiveCalls,TotSalesValue,TotKGSales,TotFreeQtyKGSales,TotSampleKGSales,TotLTSales,TotFreeQtyLTSales,TotSampleLTSales);
-						dbengine.open();		// #4
+						//dbengine.open();		// #4
 						dbengine.SavetblSyncSummuryForProductDetails(SkuName,OrderQty,FreeQty,SampleQty,TotalOrderKgs,TotalFreeKgs,TotalSampleKgs,TotalSales,Lines);
-						dbengine.close();		// #4
+						//dbengine.close();;		// #4
 					}
 			
 					
@@ -9106,7 +9646,7 @@ String RouteType="0";
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetSyncSummuryForProductDetails :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -9119,7 +9659,7 @@ String RouteType="0";
 		this.context = ctx;
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		final String SOAP_ACTION = "http://tempuri.org/GetSyncSummuryForEachStoreWiseDetails";
 		final String METHOD_NAME = "GetSyncSummuryForEachStoreWiseDetails";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -9242,7 +9782,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -9253,7 +9793,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetSyncSummuryForEachStoreWiseDetails :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9263,8 +9803,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeCoupon";
 		final String METHOD_NAME = "GetSchemeCoupon";
@@ -9359,21 +9899,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=24;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetSchemeCoupon :"+e.toString());
 			////// System.out.println("aman getallProduct: 20 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9383,8 +9923,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSchemeCouponSlab";
 		final String METHOD_NAME = "GetSchemeCouponSlab";
@@ -9492,21 +10032,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=25;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetSchemeCouponSlab :"+e.toString());
 			////// System.out.println("aman getallProduct: 21 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -9518,7 +10058,7 @@ String RouteType="0";
 		////// System.out.println("isSurveyActive sunil one start");
 		
 		DBAdapter dbengine = new DBAdapter(context);
-		dbengine.open();
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetSurveyActiveStatus";
 		final String METHOD_NAME = "GetSurveyActiveStatus";
@@ -9608,7 +10148,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
@@ -9619,7 +10159,7 @@ String RouteType="0";
 			// System.out.println("Aman Exception occur in GetSurveyActiveStatus :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -9630,8 +10170,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetDaySummaryNew";
 		final String METHOD_NAME = "GetDaySummaryNew";
@@ -9773,21 +10313,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=26;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetDaySummaryNew :"+e.toString());
 			//////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -9795,8 +10335,8 @@ String RouteType="0";
 	public ServiceWorker callInvoiceButtonStoreMstr(Context ctx, String dateVAL, String uuid, String rID,HashMap<String,String> hmapInvoiceOrderIDandStatusNew) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonStoreMstr";
@@ -10015,42 +10555,42 @@ String RouteType="0";
 					       else
 					       {
 					        dbengine.fnDeletetblInvoiceSubmittedRecords(OrderID);
-					        dbengine.inserttblInvoiceButtonStoreMstr(StoreID,StoreName,RouteID,RouteName,DistID,DistName,InvoiceForDate,flgSubmit,uuid.toString(),OrderID);
+					      //  dbengine.inserttblPendingInvoices(StoreID,StoreName,RouteID,RouteName,DistID,DistName,InvoiceForDate,flgSubmit,uuid.toString(),OrderID);
 					       }
 					      }
 					      else
 					      {
-					       dbengine.inserttblInvoiceButtonStoreMstr(StoreID,StoreName,RouteID,RouteName,DistID,DistName,InvoiceForDate,flgSubmit,uuid.toString(),OrderID);
+					      // dbengine.inserttblPendingInvoices(StoreID,StoreName,RouteID,RouteName,DistID,DistName,InvoiceForDate,flgSubmit,uuid.toString(),OrderID);
 					      }
 					
 					}
 			
 				
 			}
-			
+
 			dbengine.fnDeleteUnWantedSubmitedInvoiceOrders();
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetInvoiceButtonStoreMstr :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 	}
 		public ServiceWorker callInvoiceButtonProductMstr(Context ctx, String dateVAL, String uuid, String rID) {
 			this.context = ctx;
 			
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();	
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();	
 			
 			final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonProductMstr";
 			final String METHOD_NAME = "GetInvoiceButtonProductMstr";
@@ -10100,7 +10640,7 @@ String RouteType="0";
 				table = (SoapObject) responseBody.getProperty(0);
 				
 					
-				dbengine.fnDeletetblInvoiceButtonProductMstr();
+				//dbengine.fnDeletetblInvoiceButtonProductMstr();
 				
 				//dbengine.reCreateDB();
 				////// System.out.println("Debug: " + "dbengine.open");
@@ -10152,27 +10692,27 @@ String RouteType="0";
 							
 							
 							
-							dbengine.inserttblInvoiceButtonProductMstr(ProductId,ProductName);
+						//	dbengine.inserttblInvoiceButtonProductMstr(ProductId,ProductName);
 						}
 				
 					
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
-				
+
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Aman Exception occur in GetInvoiceButtonProductMstr :"+e.toString());
 				////// System.out.println("aman getallProduct: 16 "+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -10184,8 +10724,8 @@ String RouteType="0";
 	public ServiceWorker callInvoiceButtonStoreProductwiseOrder(Context ctx, String dateVAL, String uuid, String rID,HashMap<String,String> hmapInvoiceOrderIDandStatusNew) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetInvoiceButtonStoreProductwiseOrder";
 		final String METHOD_NAME = "GetInvoiceButtonStoreProductwiseOrder";
@@ -10411,12 +10951,12 @@ String RouteType="0";
 					       else
 					       {
 					        
-					        dbengine.inserttblInvoiceButtonStoreProductwiseOrder(StoreID,ProductID,OrderQty,ProductPrice,InvoiceForDate,OrderID,CatID,Freeqty,TotLineDiscVal);
+					       // dbengine.inserttblInvoiceButtonStoreProductwiseOrder(StoreID,ProductID,OrderQty,ProductPrice,InvoiceForDate,OrderID,CatID,Freeqty,TotLineDiscVal);
 					       }
 					      }
 					      else
 					      {
-					    	  dbengine.inserttblInvoiceButtonStoreProductwiseOrder(StoreID,ProductID,OrderQty,ProductPrice,InvoiceForDate,OrderID,CatID,Freeqty,TotLineDiscVal);
+					    	//  dbengine.inserttblInvoiceButtonStoreProductwiseOrder(StoreID,ProductID,OrderQty,ProductPrice,InvoiceForDate,OrderID,CatID,Freeqty,TotLineDiscVal);
 					      }
 						
 						
@@ -10426,20 +10966,20 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetInvoiceButtonStoreProductwiseOrder :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -10448,8 +10988,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLastOrderDetailsOnOldSummary";
 		final String METHOD_NAME = "GetLastOrderDetailsOnOldSummary";
@@ -10634,21 +11174,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=27;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -10659,8 +11199,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLastVisitDetailsOnOldSummary";
 		final String METHOD_NAME = "GetLastVisitDetailsOnOldSummary";
@@ -10816,21 +11356,21 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=28;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -10840,8 +11380,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetLODQtyOnOldSummary";
 		final String METHOD_NAME = "GetLODQtyOnOldSummary";
@@ -10996,28 +11536,28 @@ String RouteType="0";
 						}
 						
 						
-						dbengine.inserttblLODOnLastSalesSummary(StoreID,Date,SKUID,Qty,SKUName);
+				//		dbengine.inserttblLODOnLastSalesSummary(StoreID,Date,SKUID,Qty,SKUName);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=29;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11029,8 +11569,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDate";
 		final String METHOD_NAME = "CallspForPDAGetLastVisitDate";
@@ -11153,28 +11693,28 @@ String RouteType="0";
 					
 						
 						
-						dbengine.inserttblForPDAGetLastVisitDate(StoreID,VisitDate,flgOrder);
+				//		dbengine.inserttblForPDAGetLastVisitDate(StoreID,VisitDate,flgOrder);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=31;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11183,8 +11723,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDate";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDate";
@@ -11313,38 +11853,38 @@ String RouteType="0";
 						
 						
 						
-						dbengine.inserttblForPDAGetLastOrderDate(StoreID,OrderDate,flgExecutionSummary);
+				//		dbengine.inserttblForPDAGetLastOrderDate(StoreID,OrderDate,flgExecutionSummary);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=32;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
 	}
-	public ServiceWorker GetCallspForPDAGetLastVisitDetails(Context ctx, String dateVAL, String uuid, String rID,String RouteNodeType)
+/*	public ServiceWorker GetCallspForPDAGetLastVisitDetails(Context ctx, String dateVAL, String uuid, String rID,String RouteNodeType)
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDetails";
 		final String METHOD_NAME = "CallspForPDAGetLastVisitDetails";
@@ -11388,12 +11928,12 @@ String RouteType="0";
 			client.addProperty("rID", rID.toString());
 			client.addProperty("RouteNodeType", RouteNodeType);
             client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
-		/*	//// System.out.println("Abhinav Raj 121 IMEINo :"+ uuid.toString());
+		*//*	//// System.out.println("Abhinav Raj 121 IMEINo :"+ uuid.toString());
 			//// System.out.println("Abhinav Raj 121 bydate :"+ dateVAL.toString());
-			//// System.out.println("Abhinav Raj 121 rID :"+ rID.toString());*/
+			//// System.out.println("Abhinav Raj 121 rID :"+ rID.toString());*//*
 			
 			
-			/*client.addProperty("IMEINo", uuid.toString());*/
+			*//*client.addProperty("IMEINo", uuid.toString());*//*
 			
 			sse.setOutputSoapObject(client);
 			sse.bodyOut = client;
@@ -11433,7 +11973,6 @@ String RouteType="0";
 				String Stock;
 				String SKUName;
 				String ExecutionQty;
-				String ProductID;
 				
 				
 					for(int i = 0; i <= table.getPropertyCount() -1 ; i++)
@@ -11493,40 +12032,226 @@ String RouteType="0";
 						{
 							ExecutionQty =tableRow.getProperty("ExecutionQty").toString().trim();
 						}
-						if((!tableRow.hasProperty("ProductID")))
-						{
-							ProductID="0";
-						}
-						else
-						{
-							ProductID =tableRow.getProperty("ProductID").toString().trim();
-						}
+					
 						
 						
 						// System.out.println("Check Ajeet Value StoreID :"+StoreID);
 						
-						dbengine.inserttblForPDAGetLastVisitDetails(StoreID,Date,Order,Stock,SKUName,ExecutionQty,ProductID);
+						dbengine.inserttblForPDAGetLastVisitDetails(StoreID,Date,Order,Stock,SKUName,ExecutionQty);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=33;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			flagExecutedServiceSuccesfully=0;
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
+			return setmovie;
+		}
+
+	}*/
+
+	public ServiceWorker GetCallspForPDAGetLastVisitDetails(Context ctx, String dateVAL, String uuid, String rID,String RouteNodeType)
+	{
+		this.context = ctx;
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastVisitDetails";
+		final String METHOD_NAME = "CallspForPDAGetLastVisitDetails";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "movie" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(
+				URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			//String dateVAL = "00.00.0000";
+
+			////// System.out.println("soap obj date: "+ dateVAL);
+
+			////// System.out.println("soap obj IMEINo: "+ uuid);
+
+			////// System.out.println("soap obj rID: "+ rID);
+
+			client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("rID", rID.toString());
+			client.addProperty("RouteNodeType", RouteNodeType);
+			client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
+		/*	//// System.out.println("Abhinav Raj 121 IMEINo :"+ uuid.toString());
+			//// System.out.println("Abhinav Raj 121 bydate :"+ dateVAL.toString());
+			//// System.out.println("Abhinav Raj 121 rID :"+ rID.toString());*/
+
+
+			/*client.addProperty("IMEINo", uuid.toString());*/
+
+			sse.setOutputSoapObject(client);
+			sse.bodyOut = client;
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			// This step: get file XML
+			responseBody = (SoapObject) sse.getResponse();
+
+
+			SoapObject soDiffg = (SoapObject) responseBody.getProperty("diffgram");
+
+			if(soDiffg.hasProperty("NewDataSet"))
+			{
+				// remove information XML,only retrieved results that returned
+				responseBody = (SoapObject) responseBody.getProperty(1);
+
+				// get information XMl of tables that is returned
+				table = (SoapObject) responseBody.getProperty(0);
+			}
+			else
+			{
+
+			}
+
+			int chkLastVisitDetailsContainsRow=0;
+
+			if(soDiffg.hasProperty("NewDataSet"))
+			{
+				chkLastVisitDetailsContainsRow=1;
+			}
+
+			if(chkLastVisitDetailsContainsRow==1)
+			{
+				String StoreID;
+				String Date;
+				String Order;
+				String Stock;
+				String SKUName;
+				String ExecutionQty;
+				String ProductID;
+
+
+				for(int i = 0; i <= table.getPropertyCount() -1 ; i++)
+				{
+
+					////// System.out.println("table - prop count: "+ table.getPropertyCount());
+					tableRow = (SoapObject) table.getProperty(i);
+					////// System.out.println("i value: "+ i);
+
+					if((!tableRow.hasProperty("StoreID")))
+					{
+						StoreID="0";
+					}
+					else
+					{
+						StoreID =tableRow.getProperty("StoreID").toString().trim();
+					}
+					if((!tableRow.hasProperty("Date")))
+					{
+						Date="0";
+					}
+					else
+					{
+						Date=tableRow.getProperty("Date").toString().trim();
+					}
+
+					if((!tableRow.hasProperty("Order")))
+					{
+						Order="0";
+					}
+					else
+					{
+						Order =tableRow.getProperty("Order").toString().trim();
+					}
+					if((!tableRow.hasProperty("Stock")))
+					{
+						Stock="0";
+					}
+					else
+					{
+						Stock =tableRow.getProperty("Stock").toString().trim();
+					}
+					if((!tableRow.hasProperty("SKUName")))
+					{
+						SKUName="0";
+					}
+					else
+					{
+						SKUName=tableRow.getProperty("SKUName").toString().trim();
+					}
+
+					if((!tableRow.hasProperty("ExecutionQty")))
+					{
+						ExecutionQty="0";
+					}
+					else
+					{
+						ExecutionQty =tableRow.getProperty("ExecutionQty").toString().trim();
+					}
+					if((!tableRow.hasProperty("ProductID")))
+					{
+						ProductID="0";
+					}
+					else
+					{
+						ProductID =tableRow.getProperty("ProductID").toString().trim();
+					}
+
+
+					// System.out.println("Check Ajeet Value StoreID :"+StoreID);
+
+				//	dbengine.inserttblForPDAGetLastVisitDetails(StoreID,Date,Order,Stock,SKUName,ExecutionQty,ProductID);
+				}
+
+
+			}
+
+
+			//dbengine.close();;		// #4
+
+			setmovie.director = "1";
+			flagExecutedServiceSuccesfully=33;
+			return setmovie;
+//return counts;
+		} catch (Exception e) {
+
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
+			////// System.out.println("aman getallProduct: 16 "+e.toString());
+			setmovie.director = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			setmovie.movie_name = e.toString();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -11535,8 +12260,8 @@ String RouteType="0";
 	public ServiceWorker GetCallspForPDAGetLastOrderDetails(Context ctx, String dateVAL, String uuid, String rID,String RouteNodeType) {
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDetails";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDetails";
@@ -11686,28 +12411,28 @@ String RouteType="0";
 						
 						
 						
-						dbengine.inserttblForPDAGetLastOrderDetails(StoreID,OrderDate,ProductID,OrderQty,FreeQty,PrdName,ExecutionQty);
+				//		dbengine.inserttblForPDAGetLastOrderDetails(StoreID,OrderDate,ProductID,OrderQty,FreeQty,PrdName,ExecutionQty);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=34;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -11717,8 +12442,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();	
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();	
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetLastOrderDetails_TotalValues";
 		final String METHOD_NAME = "CallspForPDAGetLastOrderDetails_TotalValues";
@@ -11846,28 +12571,28 @@ String RouteType="0";
 						
 						
 						
-						dbengine.inserttblspForPDAGetLastOrderDetails_TotalValues(StoreID,OrderValue,ExecutionValue);
+				//		dbengine.inserttblspForPDAGetLastOrderDetails_TotalValues(StoreID,OrderValue,ExecutionValue);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=35;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();	
+			//dbengine.close();;	
 			return setmovie;
 		}
 
@@ -11877,8 +12602,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/CallspForPDAGetExecutionSummary";
 		final String METHOD_NAME = "CallspForPDAGetExecutionSummary";
@@ -12045,28 +12770,28 @@ String RouteType="0";
 						
 						
 						
-						dbengine.inserttblForPDAGetExecutionSummary(StoreID,OrderDate,ProductID,OrderQty,flgInvStatus,ProductQty,PrdName);
+				//		dbengine.inserttblForPDAGetExecutionSummary(StoreID,OrderDate,ProductID,OrderQty,flgInvStatus,ProductQty,PrdName);
 					}
 			
 				
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=36;
 			return setmovie;
 //return counts;
 		} catch (Exception e) {
-			
-			
+
+			setmovie.exceptionCode=e.getCause().getMessage();
 			//// System.out.println("Aman Exception occur in GetSyncSummuryDetails :"+e.toString());
 			////// System.out.println("aman getallProduct: 16 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12077,8 +12802,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreTypeMaster";
 		final String METHOD_NAME = "GetStoreTypeMaster";
@@ -12207,7 +12932,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=37;
@@ -12215,12 +12940,12 @@ String RouteType="0";
 //return counts;
 		} catch (Exception e) 
 		{
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Arjun getStoreTypeMstr: 2 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12231,8 +12956,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		
 		final String SOAP_ACTION = "http://tempuri.org/GetTradeChannels";
 		final String METHOD_NAME = "GetTradeChannels";
@@ -12366,7 +13091,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=38;
@@ -12374,12 +13099,12 @@ String RouteType="0";
 //return counts;
 		} catch (Exception e) 
 		{
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Arjun getStoreTypeMstr: 2 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12389,8 +13114,8 @@ String RouteType="0";
 	{
 		this.context = ctx;
 		
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		final String SOAP_ACTION = "http://tempuri.org/GetStoreProductClassificationTypeMaster";
 		final String METHOD_NAME = "GetStoreProductClassificationTypeMaster";
 		final String NAMESPACE = "http://tempuri.org/";
@@ -12574,7 +13299,7 @@ String RouteType="0";
 			}
 			
 			
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 			
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=39;
@@ -12582,12 +13307,12 @@ String RouteType="0";
 //return counts;
 		} catch (Exception e) 
 		{
-			
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Arjun getDistributorTypeMstr: 3 "+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
 			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 		}
 
@@ -12599,8 +13324,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetSKUWiseDaySummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();	
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();	
 			
 			//String Sstat = "0";
 			
@@ -12902,7 +13627,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -12912,11 +13637,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in CallspRptGetSKUWiseDaySummary :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -12927,8 +13652,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetStoreWiseDaySummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreWiseDaySummary";
@@ -13142,7 +13867,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13152,11 +13877,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -13166,8 +13891,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetStoreSKUWiseDaySummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();	
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();	
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreSKUWiseDaySummary";
@@ -13454,7 +14179,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13464,11 +14189,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -13479,8 +14204,8 @@ String RouteType="0";
 		public ServiceWorker getCallspPDAGetDaySummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();	
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();	
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspPDAGetDaySummary";
@@ -13617,7 +14342,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13627,11 +14352,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -13643,8 +14368,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetSKUWiseMTDSummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetSKUWiseMTDSummary";
@@ -13945,7 +14670,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -13955,11 +14680,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in CallspRptGetSKUWiseDaySummary :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -13969,8 +14694,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetStoreWiseMTDSummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreWiseMTDSummary";
@@ -14184,7 +14909,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14194,11 +14919,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -14208,8 +14933,8 @@ String RouteType="0";
 		public ServiceWorker getCallspRptGetStoreSKUWiseMTDSummary(Context ctx,String uuid ,String dateVAL) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			//String Sstat = "0";
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspRptGetStoreSKUWiseMTDSummary";
@@ -14499,7 +15224,7 @@ String RouteType="0";
 					}	
 				}
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -14509,11 +15234,11 @@ String RouteType="0";
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();	
+				//dbengine.close();;	
 				return setmovie;
 			}
 
@@ -14524,16 +15249,16 @@ String RouteType="0";
 		public ServiceWorker getNewStoreInfoDynamic(Context ctx,JSONArray ArrJSONTable,JSONArray ArrOutletGeneralInfoTable,String imei,JSONArray ArrOutletPaymentDetails) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
+			PRJDatabase dbengine = new PRJDatabase(context);
 			
 			String RouteType="0";
 			String RouteID="0";
 			try
 			{
-				dbengine.open();
+				//dbengine.open();
 				RouteID=dbengine.GetActiveRouteID();
 				RouteType=dbengine.FetchRouteType(RouteID);
-				dbengine.close();
+				//dbengine.close();;
 				System.out.println("hi"+RouteType);
 			}
 			catch(Exception e)
@@ -14601,8 +15326,8 @@ String RouteType="0";
 				*/
 				
 				
-				 int DatabaseVersion=CommonInfo.DATABASE_VERSIONID;
-		           int ApplicationID=CommonInfo.Application_TypeID;
+				 int DatabaseVersion= CommonInfo.DATABASE_VERSIONID;
+		           int ApplicationID= CommonInfo.Application_TypeID;
 				
 				client.addProperty("NewStoreGeneralJasonData", ArrOutletGeneralInfoTable.toString().trim());
 				client.addProperty("NewStoreJasonData", ArrJSONTable.toString().trim());
@@ -14617,7 +15342,7 @@ String RouteType="0";
 				
 				
 				 
-				 dbengine.open();
+				 //dbengine.open();
 				
 				
 				sse.setOutputSoapObject(client);
@@ -14905,7 +15630,7 @@ String RouteType="0";
 		                int AutoIdStore=0;
 						AutoIdStore= i +1;
 						
-						dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID); 	
+				//		dbengine.saveSOAPdataStoreListAddressMap(StoreID,OutAddTypeID,Address,AddressDet,OutAddID);
 		            }
 		          
 		            NodeList tblStoreSomeProdQuotePriceMstr = doc.getElementsByTagName("tblStoreSomeProdQuotePriceMstr");
@@ -15018,7 +15743,7 @@ String RouteType="0";
 		                int AutoIdStore=0;
 						AutoIdStore= i +1;
 						
-						dbengine.insertMinDelQty(prdId, StoreID, QPBT, QPTaxAmt, MinDlvryQty, UOMID,QPAT); 	
+				//		dbengine.insertMinDelQty(prdId, StoreID, QPBT, QPTaxAmt, MinDlvryQty, UOMID,QPAT);
 		            }
 		           /* NodeList tblNewStoreIDInfoNode = doc.getElementsByTagName("NewStoreIDInfo");
 		            for (int i = 0; i < tblNewStoreIDInfoNode.getLength(); i++)
@@ -15053,17 +15778,17 @@ String RouteType="0";
 		          
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 				return setmovie;
 
 			} 
 			catch (Exception e) 
 			{
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Getting Response by Shivam Exception occur in getNewStoreInfo :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -15077,7 +15802,7 @@ String RouteType="0";
 				String VisitEndTS,String BatteryStatus,String CustomStringForServiceWorker) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
+			PRJDatabase dbengine = new PRJDatabase(context);
 			
 			decimalFormat.applyPattern(pattern);
 			
@@ -15181,7 +15906,7 @@ String RouteType="0";
 				 // System.out.println("Getting Response by Shivam CustomStringForServiceWorker :"+CustomStringForServiceWorker);
 				 */
 				 
-				 dbengine.open();
+				 //dbengine.open();
 				
 				
 				sse.setOutputSoapObject(client);
@@ -15341,17 +16066,17 @@ String RouteType="0";
 		          
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 				return setmovie;
 
 			} 
 			catch (Exception e) 
 			{
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Getting Response by Shivam Exception occur in getNewStoreInfo :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -15360,8 +16085,8 @@ String RouteType="0";
 		public ServiceWorker getServerDateFromServer(Context ctx) {
 			this.context = ctx;
 			
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			
 			
 			final String SOAP_ACTION = "http://tempuri.org/fnGetServerDate";
@@ -15451,18 +16176,18 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				
 				return setmovie;
 	//return counts;
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
@@ -15473,8 +16198,8 @@ String RouteType="0";
 		{
 			this.context = ctx;
 			
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			final String SOAP_ACTION = "http://tempuri.org/CallspToCheckForVisit";
 			final String METHOD_NAME = "CallspToCheckForVisit";
 			final String NAMESPACE = "http://tempuri.org/";
@@ -15581,9 +16306,9 @@ String RouteType="0";
 							//dbengine.savetblStoreProductClassificationTypeListMstr(AutoIdStore,CategoryNodeID,CategoryNodeType,Category,ProductTypeNodeID,ProductTypeNodeType,ProductType,0,0,"NA");
 							
 							dbengine.savetblNoVisitStoreDetails(imei,"NA",ReasonId,ReasonDescr,flgHasVisit,0);
-							/*dbengine.close();
+							/*//dbengine.close();;
 							String[] aa= dbengine.fnGetALLDataInfo();
-							dbengine.open();*/
+							//dbengine.open();*/
 							
 						}
 					}
@@ -15591,7 +16316,7 @@ String RouteType="0";
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				flagExecutedServiceSuccesfully=39;
@@ -15599,23 +16324,23 @@ String RouteType="0";
 	//return counts;
 			} catch (Exception e) 
 			{
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Arjun getDistributorTypeMstr: 3 "+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
 		}
 		
-		public ServiceWorker getCallspToGetReasonMasterForNoVisit(Context ctx, String dateVAL, String uuid)
+	/*	public ServiceWorker getCallspToGetReasonMasterForNoVisit(Context ctx, String dateVAL, String uuid)
 		{
 			this.context = ctx;
 			
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			//dbengine.open();
 			
 			final String SOAP_ACTION = "http://tempuri.org/CallspToGetReasonMasterForNoVisit";
 			final String METHOD_NAME = "CallspToGetReasonMasterForNoVisit";
@@ -15701,10 +16426,6 @@ String RouteType="0";
 							String ReasonId="0";
 							String ReasonDescr="NA";
 							int FlgToShowTextBox=0;
-							int flgSOApplicable=0;
-							int flgDSRApplicable=0;
-							int flgNoVisitOption=0;
-							int SeqNo=0;
 							
 							
 							if (tableRow.hasProperty("ReasonId") ) 
@@ -15741,73 +16462,24 @@ String RouteType="0";
 									String abc = tableRow.getProperty("FlgToShowTextBox").toString().trim();
 									FlgToShowTextBox=Integer.parseInt(abc);
 								}
-							}
-							if (tableRow.hasProperty("flgSOApplicable") )
-							{
-								if (tableRow.getProperty("flgSOApplicable").toString().isEmpty() )
-								{
-									flgSOApplicable=0;
-								}
-								else
-								{
-									flgSOApplicable=Integer.parseInt(tableRow.getProperty("flgSOApplicable").toString().trim());
-								}
-							}
-							if (tableRow.hasProperty("flgDSRApplicable") )
-							{
-								if (tableRow.getProperty("flgDSRApplicable").toString().isEmpty() )
-								{
-									flgDSRApplicable=0;
-								}
-								else
-								{
-									String abc = tableRow.getProperty("flgDSRApplicable").toString().trim();
-									flgDSRApplicable=Integer.parseInt(abc);
-								}
-							}
-							if (tableRow.hasProperty("flgNoVisitOption") )
-							{
-								if (tableRow.getProperty("flgNoVisitOption").toString().isEmpty() )
-								{
-									flgNoVisitOption=0;
-								}
-								else
-								{
-									String abc = tableRow.getProperty("flgNoVisitOption").toString().trim();
-									flgNoVisitOption=Integer.parseInt(abc);
-								}
-							}
-							if (tableRow.hasProperty("SeqNo") )
-							{
-								if (tableRow.getProperty("SeqNo").toString().isEmpty() )
-								{
-									SeqNo=0;
-								}
-								else
-								{
-									String abc = tableRow.getProperty("SeqNo").toString().trim();
-									SeqNo=Integer.parseInt(abc);
-								}
-							}
+							} 
 							
 							
 							
 							AutoIdStore= i +1;
 							
 							
-							//dbengine.savetblNoVisitReasonMaster(AutoIdStore,ReasonId,ReasonDescr,FlgToShowTextBox);
-							dbengine.savetblNoVisitReasonMaster(AutoIdStore,ReasonId,ReasonDescr,FlgToShowTextBox,flgSOApplicable,flgDSRApplicable,flgNoVisitOption,SeqNo);
-
-
-
-
+							dbengine.savetblNoVisitReasonMaster(AutoIdStore,ReasonId,ReasonDescr,FlgToShowTextBox);
+						
+							
+							
 						}
 					}
 					
 				}
 				
 				
-				dbengine.close();		// #4
+				//dbengine.close();;		// #4
 				
 				setmovie.director = "1";
 				flagExecutedServiceSuccesfully=38;
@@ -15815,162 +16487,239 @@ String RouteType="0";
 	//return counts;
 			} catch (Exception e) 
 			{
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Arjun getStoreTypeMstr: 2 "+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				return setmovie;
 			}
 
-		}
-		
-		
-		public ServiceWorker getCallspSaveReasonForNoVisit(Context ctx, String dateVAL, String uuid,String ReasonId,String ReasonText)
-		{
-			this.context = ctx;
-			
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			dbengine.open();
-			
-			final String SOAP_ACTION = "http://tempuri.org/CallspSaveReasonForNoVisit";
-			final String METHOD_NAME = "CallspSaveReasonForNoVisit";
-			final String NAMESPACE = "http://tempuri.org/";
-			final String URL = UrlForWebService;
-		
+		}*/
 
-			
-			SoapObject table = null; // Contains table of dataset that returned
-										// through SoapObject
-			SoapObject client = null; // Its the client petition to the web service
-			SoapObject tableRow = null; // Contains row of table
-			SoapObject responseBody = null; // Contains XML content of dataset
-			
-			//SoapObject param
-			HttpTransportSE transport = null; // That call webservice
-			SoapSerializationEnvelope sse = null;
 
-		
-			
-			sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-			sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
-			// Note if class name isn't "movie" ,you must change
-			sse.dotNet = true; // if WebService written .Net is result=true
-			HttpTransportSE androidHttpTransport = new HttpTransportSE(
-					URL,timeout);
+	public ServiceWorker getCallspToGetReasonMasterForNoVisit(Context ctx, String dateVAL, String uuid)
+	{
+		this.context = ctx;
 
-			ServiceWorker setmovie = new ServiceWorker();
-			try {
-				client = new SoapObject(NAMESPACE, METHOD_NAME);
-				
-				client.addProperty("IMEINo", uuid.toString());
-				client.addProperty("bydate", dateVAL.toString());
-				client.addProperty("ReasonId", ReasonId.toString());
-				client.addProperty("ReasonText", ReasonText.toString());
-				
-				
-				
-				
-				//client.addProperty("CityId", 1);   
-				
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		final String SOAP_ACTION = "http://tempuri.org/CallspToGetReasonMasterForNoVisit";
+		final String METHOD_NAME = "CallspToGetReasonMasterForNoVisit";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+
+
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "movie" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(
+				URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("bydate", dateVAL.toString());
+
+			//client.addProperty("CityId", 1);
+
 			sse.setOutputSoapObject(client);
-				sse.bodyOut = client;
-				androidHttpTransport.call(SOAP_ACTION, sse);
+			sse.bodyOut = client;
+			androidHttpTransport.call(SOAP_ACTION, sse);
 
-				// This step: get file XML
-				responseBody = (SoapObject) sse.getResponse();
-				//// System.out.println("TradeChannel  a8 :"+responseBody);
-				  SoapObject soDiffg = (SoapObject) responseBody.getProperty("diffgram");
-					
-		            if(soDiffg.hasProperty("NewDataSet"))
-		            {
-		            	// remove information XML,only retrieved results that returned
-		    			responseBody = (SoapObject) responseBody.getProperty(1);
-		    			
-		    			// get information XMl of tables that is returned
-		    			table = (SoapObject) responseBody.getProperty(0);
-		            }
-		            else
-		            {
-		            	
-		            }
-				
-				
-				
-						
-				
-				
-				int chkTblTradeChannelContainsRow=0;
-				
-				 if(soDiffg.hasProperty("NewDataSet"))
-		            {
-					 chkTblTradeChannelContainsRow=1;
-					// dbengine.deletetblTradeChannelMstr();
-		            }
-				
-				
-				if(chkTblTradeChannelContainsRow==1)
-				{
-					int AutoIdStore=0;
-					if( table.getPropertyCount()>0)
-					{
-						for(int i = 0; i < table.getPropertyCount()  ; i++)
-						{
-			 		
-						  	tableRow = (SoapObject) table.getProperty(i);
-						  	
-						  	
-							
-						
-							int RowId=0;
-							
-							if (tableRow.hasProperty("RowId") ) 
-							{
-								if (tableRow.getProperty("RowId").toString().isEmpty() ) 
-								{
-									RowId=0;
-								} 
-								else
-								{
-									String abc = tableRow.getProperty("RowId").toString().trim();
-									RowId=Integer.parseInt(abc);
-								}
-							} 
-							
-							
-							LauncherActivity.RowId=RowId;
-							
-						}
-					}
-					
-				}
-				
-				
-				dbengine.close();		// #4
-				
-				setmovie.director = "1";
-				flagExecutedServiceSuccesfully=38;
-				return setmovie;
-	//return counts;
-			} catch (Exception e) 
+			// This step: get file XML
+			responseBody = (SoapObject) sse.getResponse();
+			//// System.out.println("TradeChannel  a8 :"+responseBody);
+			SoapObject soDiffg = (SoapObject) responseBody.getProperty("diffgram");
+
+			if(soDiffg.hasProperty("NewDataSet"))
 			{
-				
-				// System.out.println("Arjun getStoreTypeMstr: 2 "+e.toString());
-				setmovie.director = e.toString();
-				setmovie.movie_name = e.toString();
-				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
-				return setmovie;
+				// remove information XML,only retrieved results that returned
+				responseBody = (SoapObject) responseBody.getProperty(1);
+
+				// get information XMl of tables that is returned
+				table = (SoapObject) responseBody.getProperty(0);
+			}
+			else
+			{
+
 			}
 
+
+
+
+
+
+			int chkTblTradeChannelContainsRow=0;
+
+			if(soDiffg.hasProperty("NewDataSet"))
+			{
+				chkTblTradeChannelContainsRow=1;
+				dbengine.deletetblDayStartAttendanceOptions();
+			}
+
+
+			if(chkTblTradeChannelContainsRow==1)
+			{
+				int AutoIdStore=0;
+				if( table.getPropertyCount()>1)
+				{
+					for(int i = 0; i <= table.getPropertyCount() -1 ; i++)
+					{
+
+						tableRow = (SoapObject) table.getProperty(i);
+
+						String ReasonId="0";
+						String ReasonDescr="NA";
+						int FlgToShowTextBox=0;
+						int flgSOApplicable=0;
+						int flgDSRApplicable=0;
+						int flgNoVisitOption=0;
+						int SeqNo=0;
+
+
+						if (tableRow.hasProperty("ReasonId") )
+						{
+							if (tableRow.getProperty("ReasonId").toString().isEmpty() )
+							{
+								ReasonId="0";
+							}
+							else
+							{
+								ReasonId = tableRow.getProperty("ReasonId").toString().trim();
+								//TradeChannelID=Integer.parseInt(abc);
+							}
+						}
+						if (tableRow.hasProperty("ReasonDescr") )
+						{
+							if (tableRow.getProperty("ReasonDescr").toString().isEmpty() )
+							{
+								ReasonDescr="NA";
+							}
+							else
+							{
+								ReasonDescr = tableRow.getProperty("ReasonDescr").toString().trim();
+							}
+						}
+						if (tableRow.hasProperty("FlgToShowTextBox") )
+						{
+							if (tableRow.getProperty("FlgToShowTextBox").toString().isEmpty() )
+							{
+								FlgToShowTextBox=0;
+							}
+							else
+							{
+								String abc = tableRow.getProperty("FlgToShowTextBox").toString().trim();
+								FlgToShowTextBox=Integer.parseInt(abc);
+							}
+						}
+						if (tableRow.hasProperty("flgSOApplicable") )
+						{
+							if (tableRow.getProperty("flgSOApplicable").toString().isEmpty() )
+							{
+								flgSOApplicable=0;
+							}
+							else
+							{
+								flgSOApplicable=Integer.parseInt(tableRow.getProperty("flgSOApplicable").toString().trim());
+							}
+						}
+						if (tableRow.hasProperty("flgDSRApplicable") )
+						{
+							if (tableRow.getProperty("flgDSRApplicable").toString().isEmpty() )
+							{
+								flgDSRApplicable=0;
+							}
+							else
+							{
+								String abc = tableRow.getProperty("flgDSRApplicable").toString().trim();
+								flgDSRApplicable=Integer.parseInt(abc);
+							}
+						}
+						if (tableRow.hasProperty("flgNoVisitOption") )
+						{
+							if (tableRow.getProperty("flgNoVisitOption").toString().isEmpty() )
+							{
+								flgNoVisitOption=0;
+							}
+							else
+							{
+								String abc = tableRow.getProperty("flgNoVisitOption").toString().trim();
+								flgNoVisitOption=Integer.parseInt(abc);
+							}
+						}
+						if (tableRow.hasProperty("SeqNo") )
+						{
+							if (tableRow.getProperty("SeqNo").toString().isEmpty() )
+							{
+								SeqNo=0;
+							}
+							else
+							{
+								String abc = tableRow.getProperty("SeqNo").toString().trim();
+								SeqNo=Integer.parseInt(abc);
+							}
+						}
+
+
+
+						AutoIdStore= i +1;
+
+
+						//dbengine.savetblNoVisitReasonMaster(AutoIdStore,ReasonId,ReasonDescr,FlgToShowTextBox);
+						//dbengine.savetblDayStartAttendanceOptions(AutoIdStore,ReasonId,ReasonDescr,FlgToShowTextBox,flgSOApplicable,flgDSRApplicable,flgNoVisitOption,SeqNo);
+
+
+
+
+					}
+				}
+
+			}
+
+
+			//dbengine.close();;		// #4
+
+			setmovie.director = "1";
+			flagExecutedServiceSuccesfully=38;
+			return setmovie;
+			//return counts;
+		} catch (Exception e)
+		{
+
+			// System.out.println("Arjun getStoreTypeMstr: 2 "+e.toString());
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
 		}
+
+	}
 		
 		public ServiceWorker callGetLastVisitPOSDetails(Context ctx,String dateVAL, String uuid, String rID) 
 		{
 			this.context = ctx;
-			DBAdapterKenya dbengine = new DBAdapterKenya(context);
-			 dbengine.open();
+			PRJDatabase dbengine = new PRJDatabase(context);
+			 //dbengine.open();
 			decimalFormat.applyPattern(pattern);
 			
 			int chkTblStoreListContainsRow=1;
@@ -16147,18 +16896,18 @@ String RouteType="0";
 			
 
 	            setmovie.director = "1";
-	            dbengine.close();
+	            //dbengine.close();;
 	            // System.out.println("ServiceWorkerNitish getAllNewSchemeStructure Inside");
 	            flagExecutedServiceSuccesfully=4;
 				return setmovie;
 
 			} catch (Exception e) {
-				
+				setmovie.exceptionCode=e.getCause().getMessage();
 				// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatus :"+e.toString());
 				setmovie.director = e.toString();
 				setmovie.movie_name = e.toString();
 				flagExecutedServiceSuccesfully=0;
-				dbengine.close();
+				//dbengine.close();;
 				
 				return setmovie;
 			}
@@ -16186,8 +16935,8 @@ String RouteType="0";
 		SoapObject responseBody = null; //Contains XML content of dataset
 
 		//DBHelper dbengine=new DBHelper(ctx);
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -16523,14 +17272,15 @@ String RouteType="0";
 
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
 
 		} catch (Exception e)
 		{
-			dbengine.close();
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -16544,7 +17294,6 @@ String RouteType="0";
 	public ServiceWorker getfnGetStoreWiseTarget(Context ctx, String dateVAL, String uuid, String rID,String RouteType)
 	{
 		this.context = ctx;
-
 
 		int chkTblStoreListContainsRow=1;
 		StringReader read;
@@ -16562,8 +17311,8 @@ String RouteType="0";
 		SoapObject responseBody = null; //Contains XML content of dataset
 
 		//DBHelper dbengine=new DBHelper(ctx);
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		//SoapObject param
 		HttpTransportSE transport = null; // That call webservice
 		SoapSerializationEnvelope sse = null;
@@ -16665,14 +17414,15 @@ String RouteType="0";
 
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
 
 		} catch (Exception e)
 		{
-			dbengine.close();
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnSingleCallAllWebService :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
@@ -16695,8 +17445,8 @@ String RouteType="0";
 		SoapObject client = null; //Its the client petition to the web service
 		SoapObject responseBody = null; //Contains XML content of dataset
 
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -17043,7 +17793,7 @@ String RouteType="0";
 				dbengine.savetblIncentiveMsgToDisplay(MsgToDisplay);
 			}
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 
 			return setmovie;
@@ -17051,7 +17801,8 @@ String RouteType="0";
 		}
 		catch (Exception e)
 		{
-			dbengine.close();
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 
 			setmovie.director = e.toString();
@@ -17066,8 +17817,8 @@ String RouteType="0";
 	public ServiceWorker getfnCallspPDAGetDayAndMTDSummary(Context ctx ,String dateVAL,String uuid)
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 		//String Sstat = "0";
 
 		final String SOAP_ACTION = "http://tempuri.org/fnCallspPDAGetDayAndMTDSummary";
@@ -17236,7 +17987,7 @@ String RouteType="0";
 				}
 			}
 
-			dbengine.close();		// #4
+			//dbengine.close();;		// #4
 
 				/*setmovie.director = tableRow.getProperty("Director").toString();
 				setmovie.movie_name = tableRow.getProperty("Movie").toString();*/
@@ -17246,11 +17997,11 @@ String RouteType="0";
 			return setmovie;
 			//return counts;
 		} catch (Exception e) {
-
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetStoreListMR :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -17261,8 +18012,8 @@ String RouteType="0";
 	{
 
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
 
 		decimalFormat.applyPattern(pattern);
 
@@ -17509,15 +18260,15 @@ String RouteType="0";
 
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
-
+			setmovie.exceptionCode=e.getCause().getMessage();
 			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
@@ -17529,7 +18280,7 @@ String RouteType="0";
 	}
 
 
-	public ServiceWorker fnGetDistStockData(Context ctx,String IMEINo)
+	/*public ServiceWorker fnGetDistStockData(Context ctx,String IMEINo)
 	{
 		this.context = ctx;
 		String querryString="";
@@ -17543,9 +18294,9 @@ String RouteType="0";
 		SoapObject client = null; //Its the client petition to the web service
 		SoapObject responseBody = null; //Contains XML content of dataset
 
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 		String DstId_OrderPdaId=dbengine.getDstBIDOrderId();
-		dbengine.open();
+		//dbengine.open();
 
 		//SoapObject param
 		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
@@ -17623,9 +18374,16 @@ String RouteType="0";
 			NodeList dtDistributorProdctStockNode = doc.getElementsByTagName("dtDistributorProdctStock");
 			for (int i = 0; i < dtDistributorProdctStockNode.getLength(); i++)
 			{
+				String CategoryID="0";
 				String distId="0";
 				String productId="0";
 				String StockQntity="0";
+				String NetStockQty="0";
+				String SKUName="0";
+
+				String OpeningStock="0";
+				String AddedStock="0";
+				String StockOutQty="0";
 
 				Element element = (Element) dtDistributorProdctStockNode.item(i);
 
@@ -17649,6 +18407,7 @@ String RouteType="0";
 					}
 				}
 
+*//*
 				if(!element.getElementsByTagName("StockQty").equals(null))
 				{
 					NodeList StockQtyNode = element.getElementsByTagName("StockQty");
@@ -17658,10 +18417,84 @@ String RouteType="0";
 						StockQntity=xmlParser.getCharacterDataFromElement(line);
 					}
 				}
+*//*
+				if(!element.getElementsByTagName("OpeningStock").equals(null))
+				{
+					NodeList OpeningStockNode = element.getElementsByTagName("OpeningStock");
+					Element      line = (Element) OpeningStockNode.item(0);
+					if(OpeningStockNode.getLength()>0)
+					{
+						OpeningStock=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
 
-//
 
-				dbengine.insertDistributorStock(productId,StockQntity,distId);
+				if(!element.getElementsByTagName("AddedStock").equals(null))
+				{
+					NodeList AddedStockNode = element.getElementsByTagName("AddedStock");
+					Element      line = (Element) AddedStockNode.item(0);
+					if(AddedStockNode.getLength()>0)
+					{
+						AddedStock=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				*//*if(!element.getElementsByTagName("FinalStockQty").equals(null))
+				{
+					NodeList FinalStockQtyNode = element.getElementsByTagName("FinalStockQty");
+					Element      line = (Element) FinalStockQtyNode.item(0);
+					if(FinalStockQtyNode.getLength()>0)
+					{
+						FinalStockQty=xmlParser.getCharacterDataFromElement(line);
+					}
+				}*//*
+				if(!element.getElementsByTagName("FinalStockQty").equals(null))
+				{
+					NodeList StockQtyNode = element.getElementsByTagName("FinalStockQty");
+					Element      line = (Element) StockQtyNode.item(0);
+					if(StockQtyNode.getLength()>0)
+					{
+						StockQntity=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("SKUName").equals(null))
+				{
+					NodeList SKUNameNode = element.getElementsByTagName("SKUName");
+					Element      line = (Element) SKUNameNode.item(0);
+					if(SKUNameNode.getLength()>0)
+					{
+						SKUName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("NetStockOut").equals(null))
+				{
+					NodeList NetStockQtyNode = element.getElementsByTagName("NetStockOut");
+					Element      line = (Element) NetStockQtyNode.item(0);
+					if(NetStockQtyNode.getLength()>0)
+					{
+						NetStockQty=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("UnloadQty").equals(null))
+				{
+					NodeList StockOutQtyNode = element.getElementsByTagName("UnloadQty");
+					Element      line = (Element)StockOutQtyNode.item(0);
+					if(StockOutQtyNode.getLength()>0)
+					{
+						StockOutQty=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CategoryID").equals(null))
+				{
+					NodeList CategoryIDNode = element.getElementsByTagName("CategoryID");
+					Element      line = (Element)CategoryIDNode.item(0);
+					if(CategoryIDNode.getLength()>0)
+					{
+						CategoryID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				dbengine.insertDistributorStock(productId,StockQntity,distId,SKUName,OpeningStock,AddedStock,NetStockQty,CategoryID,StockOutQty);
 				//System.out.println("MASTER TBL..."+IncId+"-"+OutputType+"-"+IncentiveName+"-"+flgAcheived+"-"+Earning);
 			}
 
@@ -17669,7 +18502,7 @@ String RouteType="0";
 
 
 
-			dbengine.close();
+			//dbengine.close();;
 			setmovie.director = "1";
 			flagExecutedServiceSuccesfully=38;
 			return setmovie;
@@ -17677,7 +18510,7 @@ String RouteType="0";
 		}
 		catch (Exception e)
 		{
-			dbengine.close();
+			//dbengine.close();;
 			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
 			flagExecutedServiceSuccesfully=0;
 			setmovie.director = e.toString();
@@ -17685,13 +18518,15 @@ String RouteType="0";
 
 			return setmovie;
 		}
-	}
+	}*/
 
 	//map distributor
+
+
 	public ServiceWorker getDistributorMstr(Context ctx,String uuid,String CurDate)
 	{
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
+		PRJDatabase dbengine = new PRJDatabase(context);
 
 		decimalFormat.applyPattern(pattern);
 
@@ -17748,7 +18583,7 @@ String RouteType="0";
 			is.setCharacterStream(new StringReader(name));
 			Document doc = db.parse(is);
 
-			dbengine.open();
+			//dbengine.open();
 
 			//delete tbl
 			dbengine.Delete_tblDistributorMstr();
@@ -17761,7 +18596,7 @@ String RouteType="0";
 				String DBRNodeType="0";
 				String Distributor="0";
 				String flgReMap="0";
-				String flgInventory="1";
+				int flgDefault=0;
 
 				Element element = (Element) tblDistributorListForSONode.item(i);
 				if(!element.getElementsByTagName("DBRNodeId").equals(null))
@@ -17800,17 +18635,16 @@ String RouteType="0";
 						flgReMap=xmlParser.getCharacterDataFromElement(line);
 					}
 				}
-				if(!element.getElementsByTagName("flgStockManage").equals(null))
+				if(!element.getElementsByTagName("flgDefault").equals(null))
 				{
-					NodeList flgInventoryNode = element.getElementsByTagName("flgStockManage");
-					Element     line = (Element) flgInventoryNode.item(0);
-					if (flgInventoryNode.getLength()>0)
+					NodeList flgDefaultNode = element.getElementsByTagName("flgDefault");
+					Element     line = (Element) flgDefaultNode.item(0);
+					if (flgDefaultNode.getLength()>0)
 					{
-						flgInventory=xmlParser.getCharacterDataFromElement(line);
+						flgDefault=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
 					}
 				}
-
-				dbengine.saveDistributorMstrData(Integer.parseInt(DBRNodeId),Integer.parseInt(DBRNodeType),Distributor,Integer.parseInt(flgReMap),flgInventory);
+				//dbengine.saveSuplierMstrData(Integer.parseInt(DBRNodeId),Integer.parseInt(DBRNodeType),Distributor,Integer.parseInt(flgReMap),flgDefault);
 				System.out.println("DISTRIBTR MASTR....."+Integer.parseInt(DBRNodeId)+"---"+Integer.parseInt(DBRNodeType)+"---"+Distributor+"---"+Integer.parseInt(flgReMap));
 			}
 
@@ -17840,81 +18674,2479 @@ String RouteType="0";
 					}
 				}
 
-				dbengine.savetblStoreCloseReasonMaster(CloseReasonID,CloseReasonDescr);
-			}
-
-			NodeList tblDstrbtrInventoryDetailNode = doc.getElementsByTagName("tblDstrbtrInventoryDetail");
-			for (int i = 0; i < tblDstrbtrInventoryDetailNode.getLength(); i++)
-			{
-				String dBRNodeId="0";
-				String dBRNodeType="0";
-				String prdId="0";
-				String physicalstock="0";
-
-				Element element = (Element) tblDstrbtrInventoryDetailNode.item(i);
-				if(!element.getElementsByTagName("DBRNodeId").equals(null))
-				{
-					NodeList DBRNodeIdNode = element.getElementsByTagName("DBRNodeId");
-					Element     line = (Element) DBRNodeIdNode.item(0);
-					if (DBRNodeIdNode.getLength()>0)
-					{
-						dBRNodeId=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("DbrNodeType").equals(null))
-				{
-					NodeList DBRNodeTypeNode = element.getElementsByTagName("DbrNodeType");
-					Element     line = (Element) DBRNodeTypeNode.item(0);
-					if (DBRNodeTypeNode.getLength()>0)
-					{
-						dBRNodeType=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("PrdId").equals(null))
-				{
-					NodeList PrdIdNode = element.getElementsByTagName("PrdId");
-					Element     line = (Element) PrdIdNode.item(0);
-					if (PrdIdNode.getLength()>0)
-					{
-						prdId=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("Physicalstock").equals(null))
-				{
-					NodeList PhysicalstockNode = element.getElementsByTagName("Physicalstock");
-					Element     line = (Element) PhysicalstockNode.item(0);
-					if (PhysicalstockNode.getLength()>0)
-					{
-						physicalstock=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-//nitish saving
-				dbengine.savetblDstrbtrStockDetail(dBRNodeId,dBRNodeType,prdId,physicalstock);
+			//	dbengine.savetblStoreCloseReasonMaster(CloseReasonID,CloseReasonDescr);
 			}
 
 			setmovie.director = "1";
-			dbengine.close();
+			//dbengine.close();;
 			return setmovie;
 
 		} catch (Exception e) {
-
+			setmovie.exceptionCode=e.getCause().getMessage();
 			setmovie.director = e.toString();
 			setmovie.movie_name = e.toString();
-			dbengine.close();
+			//dbengine.close();;
 
 			return setmovie;
 		}
 	}
 
-	//account census
+
+	public ServiceWorker fnGetPDACollectionMaster(Context ctx, String dateVAL, String uuid, String rID )
+	{
+		this.context = ctx;
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		String RouteType="0";
+		try
+		{
+			//dbengine.open();
+			String RouteID=dbengine.GetActiveRouteID();
+			RouteType=dbengine.FetchRouteType(RouteID);
+			//dbengine.close();;
+			System.out.println("hi"+RouteType);
+		}
+		catch(Exception e)
+		{
+			System.out.println("error"+e);
+		}
+
+		//dbengine.open();
+		dbengine.deleteAllCollectionTables();
+
+		final String SOAP_ACTION = "http://tempuri.org/fnGetPDACollectionMaster";
+		final String METHOD_NAME = "fnGetPDACollectionMaster";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "ABC_CLASS_NAME" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(
+				URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			Date currDate= new Date();
+			SimpleDateFormat currDateFormat =new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+
+			currSysDate = currDateFormat.format(currDate).toString();
+			SysDate = currSysDate.trim().toString();
+
+			/*// System.out.println("Aman Exception occur value bydate"+ dateVAL.toString());
+			// System.out.println("Aman Exception occur value IMEINo"+ uuid.toString());
+			// System.out.println("Aman Exception occur value rID"+ rID.toString());
+			// System.out.println("Aman Exception occur value SysDate"+ SysDate.toString());
+			// System.out.println("Aman Exception occur value AppVersionID"+ dbengine.AppVersionID.toString());
+			*/
+			client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("rID", rID.toString());
+			client.addProperty("RouteType", RouteType);
+			client.addProperty("SysDate", SysDate.toString());
+			client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
+
+
+
+			sse.setOutputSoapObject(client);
+			sse.bodyOut = client;
+			System.out.println("S1");
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+			responseBody = (SoapObject)sse.bodyIn;
+
+
+			int totalCount = responseBody.getPropertyCount();
+
+			// System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			// System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+			System.out.println("shivam4");
+
+			//   //dbengine.open();
+
+			NodeList tblBankMasterNode = doc.getElementsByTagName("tblBankMaster");
+			for (int i = 0; i < tblBankMasterNode.getLength(); i++)
+			{
+
+				String BankId="0";
+				String	BankName="0";
+				String LoginIdIns="0";
+				String TimeStampIns="0";
+				String LoginIdUpd="0";
+				String TimeStampUpd="0";
+
+
+				Element element = (Element) tblBankMasterNode.item(i);
+
+				if(!element.getElementsByTagName("BankId").equals(null))
+				{
+
+					NodeList BankIdNode = element.getElementsByTagName("BankId");
+					Element     line = (Element) BankIdNode.item(0);
+
+					if(BankIdNode.getLength()>0)
+					{
+
+						BankId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("BankName").equals(null))
+				{
+
+					NodeList BankNameNode = element.getElementsByTagName("BankName");
+					Element     line = (Element) BankNameNode.item(0);
+
+					if(BankNameNode.getLength()>0)
+					{
+
+						BankName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("LoginIdIns").equals(null))
+				{
+
+					NodeList LoginIdInsNode = element.getElementsByTagName("LoginIdIns");
+					Element     line = (Element) LoginIdInsNode.item(0);
+
+					if(LoginIdInsNode.getLength()>0)
+					{
+
+						LoginIdIns=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("TimeStampIns").equals(null))
+				{
+
+					NodeList TimeStampInsNode = element.getElementsByTagName("TimeStampIns");
+					Element     line = (Element) TimeStampInsNode.item(0);
+
+					if(TimeStampInsNode.getLength()>0)
+					{
+
+						TimeStampIns=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("LoginIdUpd").equals(null))
+				{
+
+					NodeList LoginIdUpdNode = element.getElementsByTagName("LoginIdUpd");
+					Element     line = (Element) LoginIdUpdNode.item(0);
+
+					if(LoginIdUpdNode.getLength()>0)
+					{
+
+						LoginIdUpd=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("TimeStampUpd").equals(null))
+				{
+
+					NodeList TimeStampUpdNode = element.getElementsByTagName("TimeStampUpd");
+					Element     line = (Element) TimeStampUpdNode.item(0);
+
+					if(TimeStampUpdNode.getLength()>0)
+					{
+
+						TimeStampUpd=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+			//	dbengine.savetblBankMaster(BankId, BankName, LoginIdIns, TimeStampIns, LoginIdUpd, TimeStampUpd);
+			}
+
+			NodeList tblInstrumentMasterNode = doc.getElementsByTagName("tblInstrumentMaster");
+			for (int i = 0; i < tblInstrumentMasterNode.getLength(); i++)
+			{
+
+				String InstrumentModeId="0";
+				String	InstrumentMode="0";
+				String InstrumentType="0";
+
+
+
+				Element element = (Element) tblInstrumentMasterNode.item(i);
+
+				if(!element.getElementsByTagName("InstrumentModeId").equals(null))
+				{
+
+					NodeList InstrumentModeIdNode = element.getElementsByTagName("InstrumentModeId");
+					Element     line = (Element) InstrumentModeIdNode.item(0);
+
+					if(InstrumentModeIdNode.getLength()>0)
+					{
+
+						InstrumentModeId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("InstrumentMode").equals(null))
+				{
+
+					NodeList InstrumentModeNode = element.getElementsByTagName("InstrumentMode");
+					Element     line = (Element) InstrumentModeNode.item(0);
+
+					if(InstrumentModeNode.getLength()>0)
+					{
+
+						InstrumentMode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("InstrumentType").equals(null))
+				{
+
+					NodeList InstrumentTypeNode = element.getElementsByTagName("InstrumentType");
+					Element     line = (Element) InstrumentTypeNode.item(0);
+
+					if(InstrumentTypeNode.getLength()>0)
+					{
+
+						InstrumentType=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+				//dbengine.savetblInstrumentMaster(InstrumentModeId, InstrumentMode, InstrumentType);
+			}
+
+			setmovie.director = "1";
+			// System.out.println("ServiceWorkerNitish getallStores Completed ");
+			flagExecutedServiceSuccesfully=40;
+			return setmovie;
+
+
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
+		}
+
+	}
+
+
+
+
+
+	public ServiceWorker fnGetVanStockData(Context ctx,String IMEINo)
+	{
+		this.context = ctx;
+		String querryString="";
+		String dbrId="123";
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+		final String SOAP_ACTION = "http://tempuri.org/fnSendGetGetVanStockDet";
+
+		final String METHOD_NAME = "fnSendGetGetVanStockDet";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		// through SoapObject
+		SoapObject client = null; //Its the client petition to the web service
+		SoapObject responseBody = null; //Contains XML content of dataset
+
+
+
+
+		//SoapObject param
+		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,0);
+		String DstId_OrderPdaId=dbengine.getDistinctInvoiceNumbers();
+		//String strStoreCollectionUniquneVisitId=dbengine.getDistinctCollectionPaymentIds();
+		//dbengine.open();
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try
+		{
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			client.addProperty("NewDistributorIDOrderID", DstId_OrderPdaId.toString());
+			client.addProperty("uuid", IMEINo.toString());
+			client.addProperty("CoverageAreaNodeID", CommonInfo.CoverageAreaNodeID);
+			client.addProperty("coverageAreaNodeType", CommonInfo.CoverageAreaNodeType);
+			//client.addProperty("strStoreCollectionUniquneVisitId",strStoreCollectionUniquneVisitId);
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+
+			int totalCount = responseBody.getPropertyCount();
+
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			dbengine.deleteCompleteDataDistStock();
+			//dbengine.Delete_tblProductList_for_refreshData();
+			//dbengine.Delete_tblCategory_for_refreshData();
+			if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
+				NodeList tblCycleIDNode = doc.getElementsByTagName("tblCycleID");
+				for (int i = 0; i < tblCycleIDNode.getLength(); i++)
+				{
+
+					int cycleId=0;
+					String CycStartTime="0";
+					String CycleTime="0";
+
+					Element element = (Element) tblCycleIDNode.item(i);
+
+					if(!element.getElementsByTagName("CycleID").equals(null))
+					{
+						NodeList CycleIDNode = element.getElementsByTagName("CycleID");
+						Element      line = (Element) CycleIDNode.item(0);
+						if(CycleIDNode.getLength()>0)
+						{
+							cycleId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
+					if(!element.getElementsByTagName("CycStartTime").equals(null))
+					{
+						NodeList CycStartTimeNode = element.getElementsByTagName("CycStartTime");
+						Element      line = (Element) CycStartTimeNode.item(0);
+						if(CycStartTimeNode.getLength()>0)
+						{
+							CycStartTime=xmlParser.getCharacterDataFromElement(line);
+						}
+					}
+					if(!element.getElementsByTagName("CycleTime").equals(null))
+					{
+						NodeList CycStartTimeNode = element.getElementsByTagName("CycleTime");
+						Element      line = (Element) CycStartTimeNode.item(0);
+						if(CycStartTimeNode.getLength()>0)
+						{
+							CycleTime=xmlParser.getCharacterDataFromElement(line);
+						}
+					}
+
+
+         /*if(flgStockOutEntryDone==0)
+         {
+            flagExecutedServiceSuccesfully=1;
+            return setmovie;
+         }*/
+
+					//System.out.println("Column DESC TBL..."+IncId+"-"+ReportColumnName+"-"+DisplayColumnName);
+
+					//dbengine.insertCycleId(cycleId,CycStartTime,CycleTime);
+
+				}
+				NodeList dtDistributorStockOutFlgNode = doc.getElementsByTagName("dtDistributorStockOutFlg");
+				for (int i = 0; i < dtDistributorStockOutFlgNode.getLength(); i++)
+				{
+
+					int flgStockOutEntryDone=0;
+
+
+					Element element = (Element) dtDistributorStockOutFlgNode.item(i);
+
+					if(!element.getElementsByTagName("flgStockOutEntryDone").equals(null))
+					{
+						NodeList flgStockOutEntryDoneNode = element.getElementsByTagName("flgStockOutEntryDone");
+						Element      line = (Element) flgStockOutEntryDoneNode.item(0);
+						if(flgStockOutEntryDoneNode.getLength()>0)
+						{
+							flgStockOutEntryDone=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
+					dbengine.insertStockOut(flgStockOutEntryDone);
+
+				}
+			}
+
+
+			NodeList dtDistributorIDOrderIDLeftNode = doc.getElementsByTagName("dtDistributorIDOrderIDLeft");
+			for (int i = 0; i < dtDistributorIDOrderIDLeftNode.getLength(); i++)
+			{
+
+				String DistID="";
+				String PDAOrderId="";
+				int flgProcessedInvoice=0;
+				Element element = (Element) dtDistributorIDOrderIDLeftNode.item(i);
+
+				if(!element.getElementsByTagName("Customer").equals(null))
+				{
+					NodeList CustomerNode = element.getElementsByTagName("Customer");
+					Element      line = (Element) CustomerNode.item(0);
+					if(CustomerNode.getLength()>0)
+					{
+						DistID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("PDAOrderId").equals(null))
+				{
+					NodeList PDAOrderIdNode = element.getElementsByTagName("PDAOrderId");
+					Element      line = (Element) PDAOrderIdNode.item(0);
+					if(PDAOrderIdNode.getLength()>0)
+					{
+						PDAOrderId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+                if(!element.getElementsByTagName("flgInvExists").equals(null))
+                {
+                    NodeList flgProcessedInvoiceNode = element.getElementsByTagName("flgInvExists");
+                    Element      line = (Element) flgProcessedInvoiceNode.item(0);
+                    if(flgProcessedInvoiceNode.getLength()>0)
+                    {
+                        flgProcessedInvoice=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+                    }
+                }
+
+				//dbengine.insertDistributorLeftOrderId(DistID,PDAOrderId,flgProcessedInvoice);
+				//System.out.println("Column DESC TBL..."+IncId+"-"+ReportColumnName+"-"+DisplayColumnName);
+			}
+
+			NodeList dtDistributorProdctStockNode = doc.getElementsByTagName("dtDistributorProdctStock");
+			for (int i = 0; i < dtDistributorProdctStockNode.getLength(); i++)
+			{
+				//// insertDistributorStock(String prdctId,String stockQntty,String distributorNodeIdNodeType,String SKUName,String OpeningStock,String TodaysAddedStock,String CycleAddedStock,String NetStockQty,String TodaysUnloadStk,String CycleUnloadStk,String CategoryID)
+				String distId="0";
+				String productId="0";
+				String StockQntity="0";
+				String NetStockQty="0";
+				String SKUName="0";
+				String ProductNodeType="0";
+				String StockDate="0";
+
+				String OpeningStock="0";
+				String TodaysAddedStock="0";
+				String CycleAddedStock="0";
+				String FinalStockQty="0";
+				String CategoryID="0";
+				String TodaysUnloadStk="0";
+				String CycleUnloadStk="0";
+
+				Element element = (Element) dtDistributorProdctStockNode.item(i);
+
+				if(!element.getElementsByTagName("Customer").equals(null))
+				{
+					NodeList CustomerNode = element.getElementsByTagName("Customer");
+					Element      line = (Element) CustomerNode.item(0);
+					if(CustomerNode.getLength()>0)
+					{
+						distId=xmlParser.getCharacterDataFromElement(line);
+						dbrId=distId;
+					}
+				}
+
+				if(!element.getElementsByTagName("ProductNodeID").equals(null))
+				{
+					NodeList ProductNodeIDNode = element.getElementsByTagName("ProductNodeID");
+					Element      line = (Element) ProductNodeIDNode.item(0);
+					if(ProductNodeIDNode.getLength()>0)
+					{
+						productId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("SKUName").equals(null))
+				{
+					NodeList SKUNameNode = element.getElementsByTagName("SKUName");
+					Element      line = (Element) SKUNameNode.item(0);
+					if(SKUNameNode.getLength()>0)
+					{
+						SKUName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("StockDate").equals(null))
+				{
+					NodeList StockDateNode = element.getElementsByTagName("StockDate");
+					Element      line = (Element) StockDateNode.item(0);
+					if(StockDateNode.getLength()>0)
+					{
+						StockDate=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("DayOpeningStock").equals(null))
+				{
+					NodeList OpeningStockNode = element.getElementsByTagName("DayOpeningStock");
+					Element      line = (Element) OpeningStockNode.item(0);
+					if(OpeningStockNode.getLength()>0)
+					{
+						OpeningStock=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+				if(!element.getElementsByTagName("TodaysAddedStock").equals(null))
+				{
+					NodeList AddedStockNode = element.getElementsByTagName("TodaysAddedStock");
+					Element      line = (Element) AddedStockNode.item(0);
+					if(AddedStockNode.getLength()>0)
+					{
+						TodaysAddedStock=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CycleAddedStock").equals(null))
+				{
+					NodeList CycleAddedStockNode = element.getElementsByTagName("CycleAddedStock");
+					Element      line = (Element) CycleAddedStockNode.item(0);
+					if(CycleAddedStockNode.getLength()>0)
+					{
+						CycleAddedStock=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+				if(!element.getElementsByTagName("FinalStockQty").equals(null))
+				{
+					NodeList StockQtyNode = element.getElementsByTagName("FinalStockQty");
+					Element      line = (Element) StockQtyNode.item(0);
+					if(StockQtyNode.getLength()>0)
+					{
+						StockQntity=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("NetSalesQty").equals(null))
+				{
+					NodeList NetStockQtyNode = element.getElementsByTagName("NetSalesQty");
+					Element      line = (Element) NetStockQtyNode.item(0);
+					if(NetStockQtyNode.getLength()>0)
+					{
+						NetStockQty=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("TodaysUnloadStock").equals(null))
+				{
+					NodeList TodaysUnloadStkNode = element.getElementsByTagName("TodaysUnloadStock");
+					Element      line = (Element)TodaysUnloadStkNode.item(0);
+					if(TodaysUnloadStkNode.getLength()>0)
+					{
+						TodaysUnloadStk=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CycleUnloadStock").equals(null))
+				{
+					NodeList CycleUnloadStkNode = element.getElementsByTagName("CycleUnloadStock");
+					Element      line = (Element)CycleUnloadStkNode.item(0);
+					if(CycleUnloadStkNode.getLength()>0)
+					{
+						CycleUnloadStk=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CategoryID").equals(null))
+				{
+					NodeList CategoryIDNode = element.getElementsByTagName("CategoryID");
+					Element      line = (Element)CategoryIDNode.item(0);
+					if(CategoryIDNode.getLength()>0)
+					{
+						CategoryID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				/*if(CommonInfo.flgDrctslsIndrctSls==1) {
+					dbengine.insertDistributorStock(productId, StockQntity, distId, SKUName, OpeningStock, TodaysAddedStock, CycleAddedStock, NetStockQty, TodaysUnloadStk, CycleUnloadStk, CategoryID);
+				}
+				else
+				{
+					dbengine.insertDistributorStockPermanetTableDirectly(productId, StockQntity, distId, SKUName, OpeningStock, TodaysAddedStock, CycleAddedStock, NetStockQty, TodaysUnloadStk, CycleUnloadStk, CategoryID);
+				}*/
+					System.out.println("MASTER TBL..."+productId+"-"+SKUName+"-"+StockQntity);
+			}
+
+
+			flagExecutedServiceSuccesfully=39;
+			if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
+				int statusId = dbengine.confirmedStock();
+				if (statusId == 2) {
+					dbengine.insertConfirmWArehouse(dbrId, "1");
+					dbengine.inserttblDayCheckIn(1);
+				}
+			}
+			setmovie.director = "1";
+			return setmovie;
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
+		}
+	}
+
+
+
+	public ServiceWorker fnGetStockUploadedStatus(Context ctx,String bydate, String IMEINo)
+	{
+		this.context = ctx;
+		String querryString="";
+
+		final String SOAP_ACTION = "http://tempuri.org/fnGetStockUploadedStatus";
+		final String METHOD_NAME = "fnGetStockUploadedStatus";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		// through SoapObject
+		SoapObject client = null; //Its the client petition to the web service
+		SoapObject responseBody = null; //Contains XML content of dataset
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		//SoapObject param
+		sharedPref = context.getSharedPreferences(CommonInfo.Preference, context.MODE_PRIVATE);
+		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,0);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try
+		{
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			client.addProperty("bydate", bydate.toString());
+			client.addProperty("uuid", IMEINo.toString());
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+
+			int totalCount = responseBody.getPropertyCount();
+
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.deleteIncentivesTbles();
+			dbengine.Delete_tblStockUploadedStatus();
+
+			NodeList tblStockUploadedStatusNode = doc.getElementsByTagName("tblStockUploadedStatus");
+			for (int i = 0; i < tblStockUploadedStatusNode.getLength(); i++)
+			{
+				int flgStockTrans=0;
+				int VanLoadUnLoadCycID=0;
+				String CycleTime="0";
+				int statusId=0;
+				int flgDayEnd=0;
+
+
+				Element element = (Element) tblStockUploadedStatusNode.item(i);
+
+				if(!element.getElementsByTagName("flgStockTrans").equals(null))
+				{
+					NodeList flgStockTransNode = element.getElementsByTagName("flgStockTrans");
+					Element      line = (Element) flgStockTransNode.item(0);
+					if(flgStockTransNode.getLength()>0)
+					{
+						flgStockTrans=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				if(flgStockTrans!=0)
+				{
+					if(!element.getElementsByTagName("VanLoadUnLoadCycID").equals(null))
+					{
+						NodeList CycleIDNode = element.getElementsByTagName("VanLoadUnLoadCycID");
+						Element      line = (Element) CycleIDNode.item(0);
+						if(CycleIDNode.getLength()>0)
+						{
+							VanLoadUnLoadCycID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						}
+					}
+					if(!element.getElementsByTagName("CycleTime").equals(null))
+					{
+						NodeList CycleTimeNode = element.getElementsByTagName("CycleTime");
+						Element      line = (Element) CycleTimeNode.item(0);
+						if(CycleTimeNode.getLength()>0)
+						{
+							CycleTime=xmlParser.getCharacterDataFromElement(line);
+						}
+					}
+
+
+				}
+				if(!element.getElementsByTagName("StatusID").equals(null))
+				{
+					NodeList StatusIDNode = element.getElementsByTagName("StatusID");
+					Element      line = (Element) StatusIDNode.item(0);
+					if(StatusIDNode.getLength()>0)
+					{
+						statusId=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("flgDayEnd").equals(null))
+				{
+					NodeList flgDayEndNode = element.getElementsByTagName("flgDayEnd");
+					Element      line = (Element) flgDayEndNode.item(0);
+					if(flgDayEndNode.getLength()>0)
+					{
+						flgDayEnd=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+						SharedPreferences.Editor editor = sharedPref.edit();
+						editor.putInt("FinalSubmit", flgDayEnd);
+						editor.commit();
+					}
+				}
+
+				if(statusId!=2)
+				{
+					dbengine.deleteVanConfirmFlag();
+				}
+
+
+
+				dbengine.inserttblStockUploadedStatus(flgStockTrans,VanLoadUnLoadCycID,CycleTime,statusId,flgDayEnd);
+
+			}
+
+
+			//dbengine.close();;
+			setmovie.director = "1";
+
+			return setmovie;
+
+		}
+		catch (Exception e)
+		{
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//dbengine.close();;
+			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
+
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+
+			return setmovie;
+		}
+	}
+
+	public int fnConfirmStockUpdate(Context ctx)
+	{
+		this.context = ctx;
+
+		int flgDataConfirmed=-1;
+		final String SOAP_ACTION = "http://tempuri.org/fnGetPDAConfirmVanStock";
+		final String METHOD_NAME = "fnGetPDAConfirmVanStock";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		// through SoapObject
+		SoapObject client = null; //Its the client petition to the web service
+		SoapObject responseBody = null; //Contains XML content of dataset
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		int vanCycleId= dbengine.fetchtblVanCycleId();
+		String CycStartTime=dbengine.fetchtblVanCycleTime();
+		//dbengine.open();
+
+		//SoapObject param
+		SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,0);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try
+		{
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			client.addProperty("CycleID", vanCycleId);
+			client.addProperty("CycleDate", CycStartTime);
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+
+			int totalCount = responseBody.getPropertyCount();
+
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.deleteIncentivesTbles();
+
+
+			NodeList tblflgDataConfirmedNode = doc.getElementsByTagName("tblflgDataConfirmed");
+			for (int i = 0; i < tblflgDataConfirmedNode.getLength(); i++)
+			{
+
+
+
+
+				Element element = (Element) tblflgDataConfirmedNode.item(i);
+
+				if(!element.getElementsByTagName("flgDataConfirmed").equals(null))
+				{
+					NodeList flgStockTransNode = element.getElementsByTagName("flgDataConfirmed");
+					Element      line = (Element) flgStockTransNode.item(0);
+					if(flgStockTransNode.getLength()>0)
+					{
+						flgDataConfirmed=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+
+					}
+				}
+
+
+
+
+			}
+
+
+			//dbengine.close();;
+			setmovie.director = "1";
+
+			return flgDataConfirmed;
+
+		}
+		catch (Exception e)
+		{
+			setmovie.exceptionCode=e.getCause().getMessage();
+			//dbengine.close();;
+			System.out.println("Aman Exception occur in fnIncentive :"+e.toString());
+
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+
+			return flgDataConfirmed;
+		}
+	}
+
+
+
+//-----------------------------------------------------------------------------------------------------------
+
+
+	public ServiceWorker getStoreWiseOutStandings(Context ctx, String dateVAL, String uuid, String rID, String RouteType)
+	{
+		this.context = ctx;
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		final String SOAP_ACTION = "http://tempuri.org/fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest";
+		final String METHOD_NAME = "fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		decimalFormat.applyPattern(pattern);
+		SoapObject table = null; // Contains table of dataset that returned
+		// throug SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		//sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "movie" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+			//String dateVAL = "00.00.0000";
+
+			//////// System.out.println("soap obj date: "+ dateVAL);
+			client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("rID", rID.toString());
+			client.addProperty("RouteType", RouteType);
+			//client.addProperty("SysDate", SysDate.toString());
+			//client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
+			client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
+			client.addProperty("CoverageAreaNodeID", 0);
+			client.addProperty("coverageAreaNodeType", 0);
+
+
+			/*client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());*/
+
+			sse.setOutputSoapObject(client);
+			sse.bodyOut = client;
+			androidHttpTransport.call(SOAP_ACTION, sse);
+			responseBody = (SoapObject)sse.bodyIn;
+			String resultString=androidHttpTransport.responseDump;
+			String name=responseBody.getProperty(0).toString();
+			// This step: get file XML
+			/*responseBody = (SoapObject) sse.getResponse();
+			  String name=responseBody.getProperty(0).toString();*/
+
+			// System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			dbengine.Delete_tblLastOutstanding_for_refreshData();
+
+			NodeList tblLastOutstanding = doc.getElementsByTagName("tblLastOutstanding");
+			for (int i = 0; i < tblLastOutstanding.getLength(); i++)
+			{
+
+
+				String StoreID="NA";
+				Double Outstanding=0.0;
+				Double AmtOverdue=0.0;
+
+
+				Element element = (Element) tblLastOutstanding.item(i);
+
+				if(!element.getElementsByTagName("Storeid").equals(null))
+				{
+
+					NodeList StoreIDNode = element.getElementsByTagName("Storeid");
+					Element     line = (Element) StoreIDNode.item(0);
+
+					if(StoreIDNode.getLength()>0)
+					{
+
+						StoreID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("OutStanding").equals(null))
+				{
+
+					NodeList OutstandingNode = element.getElementsByTagName("OutStanding");
+					Element     line = (Element) OutstandingNode.item(0);
+
+					if(OutstandingNode.getLength()>0)
+					{
+
+						Outstanding=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						Outstanding=Double.parseDouble(decimalFormat.format(Outstanding));
+					}
+				}
+				if(!element.getElementsByTagName("AmtOverdue").equals(null))
+				{
+
+					NodeList AmtOverdueNode = element.getElementsByTagName("AmtOverdue");
+					Element     line = (Element) AmtOverdueNode.item(0);
+
+					if(AmtOverdueNode.getLength()>0)
+					{
+
+						AmtOverdue=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
+						AmtOverdue=Double.parseDouble(decimalFormat.format(AmtOverdue));
+					}
+				}
+
+			//	dbengine.savetblLastOutstanding(StoreID,Outstanding,AmtOverdue);
+			}
+
+			NodeList tblInvoiceLastVisitDetails = doc.getElementsByTagName("tblInvoiceLastVisitDetails");
+			for (int i = 0; i < tblInvoiceLastVisitDetails.getLength(); i++)
+			{
+
+
+				String StoreID="NA";
+				String InvCode="00";
+				String InvDate="NA";
+				String OutstandingAmt="0.0";
+				String AmtOverdue="0.0";
+
+
+				Element element = (Element) tblInvoiceLastVisitDetails.item(i);
+
+				if(!element.getElementsByTagName("Storeid").equals(null))
+				{
+
+					NodeList StoreIDNode = element.getElementsByTagName("Storeid");
+					Element     line = (Element) StoreIDNode.item(0);
+
+					if(StoreIDNode.getLength()>0)
+					{
+
+						StoreID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("InvCode").equals(null))
+				{
+
+					NodeList InvCodeNode = element.getElementsByTagName("InvCode");
+					Element     line = (Element) InvCodeNode.item(0);
+
+					if(InvCodeNode.getLength()>0)
+					{
+
+						InvCode=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+
+				if(!element.getElementsByTagName("InvDate").equals(null))
+				{
+
+					NodeList InvDateNode = element.getElementsByTagName("InvDate");
+					Element     line = (Element) InvDateNode.item(0);
+
+					if(InvDateNode.getLength()>0)
+					{
+
+						InvDate=xmlParser.getCharacterDataFromElement(line);
+
+					}
+				}
+				if(!element.getElementsByTagName("OutStandingAmt").equals(null))
+				{
+
+					NodeList OutstandingAmtNode = element.getElementsByTagName("OutStandingAmt");
+					Element     line = (Element) OutstandingAmtNode.item(0);
+
+					if(OutstandingAmtNode.getLength()>0)
+					{
+
+						Double OutstandingAmtServer= Double.valueOf(""+Double.parseDouble(xmlParser.getCharacterDataFromElement(line)));
+						OutstandingAmt=""+Double.parseDouble(decimalFormat.format(OutstandingAmtServer));
+					}
+				}
+				if(!element.getElementsByTagName("AmtOverdue").equals(null))
+				{
+
+					NodeList AmtOverdueNode = element.getElementsByTagName("AmtOverdue");
+					Element     line = (Element) AmtOverdueNode.item(0);
+
+					if(AmtOverdueNode.getLength()>0)
+					{
+
+						Double AmtOverdueServer= Double.valueOf(""+Double.parseDouble(xmlParser.getCharacterDataFromElement(line)));
+						AmtOverdue=""+Double.parseDouble(decimalFormat.format(AmtOverdueServer));
+					}
+				}
+
+			//	dbengine.savetblInvoiceLastVisitDetails(StoreID,InvCode,InvDate,OutstandingAmt,AmtOverdue);
+			}
+			//dbengine.close();;
+
+			setmovie.director = "1";
+			flagExecutedServiceSuccesfully=2;
+			// System.out.println("ServiceWorkerNitish getallProduct Inside");
+			return setmovie;
+//return counts;
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
+		}
+
+	}
+
+
+
+
+	public ServiceWorker getInvoiceCaption(Context ctx, String dateVAL, String uuid, String rID, String RouteType)
+	{
+		this.context = ctx;
+
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		final String SOAP_ACTION = "http://tempuri.org/fnGetInvoiceCaption";//GetProductListMRNewProductFilterTest";
+		final String METHOD_NAME = "fnGetInvoiceCaption";//GetProductListMRNewProductFilterTest
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+
+		decimalFormat.applyPattern(pattern);
+		SoapObject table = null; // Contains table of dataset that returned
+		// throug SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		//sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+		// Note if class name isn't "movie" ,you must change
+		sse.dotNet = true; // if WebService written .Net is result=true
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+			//String dateVAL = "00.00.0000";
+			//////// System.out.println("soap obj date: "+ dateVAL);
+			client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("rID", rID.toString());
+			client.addProperty("RouteType", RouteType);
+			//client.addProperty("SysDate", SysDate.toString());
+			//client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
+			client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
+			client.addProperty("CoverageAreaNodeID", 0);
+			client.addProperty("coverageAreaNodeType", 0);
+
+			/*client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());*/
+
+			sse.setOutputSoapObject(client);
+			sse.bodyOut = client;
+			androidHttpTransport.call(SOAP_ACTION, sse);
+			responseBody = (SoapObject)sse.bodyIn;
+			String resultString=androidHttpTransport.responseDump;
+			String name=responseBody.getProperty(0).toString();
+			// This step: get file XML
+			/*responseBody = (SoapObject) sse.getResponse();
+			  String name=responseBody.getProperty(0).toString();*/
+
+			// System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			dbengine.Delete_tblInvoiceCaption();
+
+			NodeList tblInvoiceCaption = doc.getElementsByTagName("tblInvoiceCaption");
+			for (int i = 0; i < tblInvoiceCaption.getLength(); i++)
+			{
+				String INVPrefix="";
+				int VanIntialInvoiceIds=0;
+				String InvSuffix="";
+				Element element = (Element) tblInvoiceCaption.item(i);
+				if(!element.getElementsByTagName("InvPrefix").equals(null))
+				{
+					NodeList VanIntialInvoiceCaptionNode = element.getElementsByTagName("InvPrefix");
+					Element     line = (Element) VanIntialInvoiceCaptionNode.item(0);
+					if(VanIntialInvoiceCaptionNode.getLength()>0)
+					{
+						INVPrefix=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("InvSuffix").equals(null))
+				{
+					NodeList InvSuffixNode = element.getElementsByTagName("InvSuffix");
+					Element     line = (Element) InvSuffixNode.item(0);
+					if(InvSuffixNode.getLength()>0)
+					{
+						InvSuffix=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("VanIntialInvoiceIds").equals(null))
+				{
+					NodeList VanIntialInvoiceIdsNode = element.getElementsByTagName("VanIntialInvoiceIds");
+					Element     line = (Element) VanIntialInvoiceIdsNode.item(0);
+					if(VanIntialInvoiceIdsNode.getLength()>0)
+					{
+						VanIntialInvoiceIds=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+				int VanInitialIdFromFile=fnReadTextFIle();
+				if(VanInitialIdFromFile>VanIntialInvoiceIds)
+				{
+					VanIntialInvoiceIds=VanInitialIdFromFile;
+				}
+				dbengine.savetblInvoiceCaption(INVPrefix,VanIntialInvoiceIds,InvSuffix);
+			}
+			//dbengine.close();;
+
+			setmovie.director = "1";
+			flagExecutedServiceSuccesfully=2;
+			// System.out.println("ServiceWorkerNitish getallProduct Inside");
+			return setmovie;
+//return counts;
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			flagExecutedServiceSuccesfully=0;
+			//dbengine.close();;
+			return setmovie;
+		}
+
+	}
+	public ServiceWorker fnGetStateCityListMstr(Context ctx,String uuid,String CurDate,int ApplicationID)
+	{
+
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnGetStateCityListMstr";
+		final String METHOD_NAME = "fnGetStateCityListMstr";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+
+
+
+			client.addProperty("bydate", CurDate);
+			client.addProperty("uuid", uuid.toString());
+			//client.addProperty("DatabaseVersion","11");
+			client.addProperty("ApplicationID", ApplicationID);
+
+
+
+			// // System.out.println("Kajol 102");
+			sse.setOutputSoapObject(client);
+			// // System.out.println("Kajol 103");
+			sse.bodyOut = client;
+			// // System.out.println("Kajol 104");
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			// // System.out.println("Kajol 1");
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			// // System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.open();
+
+			dbengine.deletetblStateCityMaster();
+
+
+			NodeList tblStateCityMaster = doc.getElementsByTagName("tblStateCityMaster");
+			for (int i = 0; i < tblStateCityMaster.getLength(); i++)
+			{
+
+				String StateID="0";
+				String State ="NA";
+				String CityID ="0";
+				String City ="NA";
+				int CityDefault =0;
+
+
+				Element element = (Element) tblStateCityMaster.item(i);
+
+				if(!element.getElementsByTagName("StateID").equals(null))
+				{
+					NodeList StateIDNodeID = element.getElementsByTagName("StateID");
+					Element     line = (Element) StateIDNodeID.item(0);
+					if (StateIDNodeID.getLength()>0)
+					{
+						StateID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("State").equals(null))
+				{
+					NodeList StateNode = element.getElementsByTagName("State");
+					Element     line = (Element) StateNode.item(0);
+					if (StateNode.getLength()>0)
+					{
+						State=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CityID").equals(null))
+				{
+					NodeList CityIDNode = element.getElementsByTagName("CityID");
+					Element     line = (Element) CityIDNode.item(0);
+					if (CityIDNode.getLength()>0)
+					{
+						CityID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("City").equals(null))
+				{
+					NodeList CityNode = element.getElementsByTagName("City");
+					Element     line = (Element) CityNode.item(0);
+					if (CityNode.getLength()>0)
+					{
+						City=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("CityDefault").equals(null))
+				{
+					NodeList CityDefaultNode = element.getElementsByTagName("CityDefault");
+					Element     line = (Element) CityDefaultNode.item(0);
+					if (CityDefaultNode.getLength()>0)
+					{
+						CityDefault=Integer.parseInt(xmlParser.getCharacterDataFromElement(line).trim());
+					}
+				}
+
+
+				dbengine.fnsavetblStateCityMaster(StateID, State, CityID, City,CityDefault);
+
+			}
+
+
+
+			setmovie.director = "1";
+			//dbengine.close();;
+			return setmovie;
+
+		} catch (Exception e) {
+
+			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();;
+
+			return setmovie;
+		}
+
+
+
+
+
+	}
+
+    public ServiceWorker getProductListLastVisitStockOrOrderMstr(Context ctx, String dateVAL, String uuid, String rID)
+    {
+        this.context = ctx;
+
+        PRJDatabase dbengine = new PRJDatabase(context);
+        //dbengine.open();
+
+        final String SOAP_ACTION = "http://tempuri.org/fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest";
+        final String METHOD_NAME = "fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest
+        final String NAMESPACE = "http://tempuri.org/";
+        final String URL = UrlForWebService;
+
+        decimalFormat.applyPattern(pattern);
+        SoapObject table = null; // Contains table of dataset that returned
+        // throug SoapObject
+        SoapObject client = null; // Its the client petition to the web service
+        SoapObject tableRow = null; // Contains row of table
+        SoapObject responseBody = null; // Contains XML content of dataset
+
+        //SoapObject param
+        HttpTransportSE transport = null; // That call webservice
+        SoapSerializationEnvelope sse = null;
+
+
+
+        sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+        //sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
+        // Note if class name isn't "movie" ,you must change
+        sse.dotNet = true; // if WebService written .Net is result=true
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+
+        String RouteNodeType="0";
+        try
+        {
+            RouteNodeType=dbengine.FetchRouteType(rID);
+        }
+        catch(Exception e)
+        {
+            System.out.println("error"+e);
+        }
+
+
+
+        ServiceWorker setmovie = new ServiceWorker();
+        try {
+            client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+            //String dateVAL = "00.00.0000";
+
+            //////// System.out.println("soap obj date: "+ dateVAL);
+            client.addProperty("bydate", dateVAL.toString());
+            client.addProperty("IMEINo", uuid.toString());
+            client.addProperty("rID", rID.toString());
+            client.addProperty("RouteType", RouteNodeType);
+            //client.addProperty("SysDate", SysDate.toString());
+            //client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
+            client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
+            client.addProperty("CoverageAreaNodeID", 0);
+            client.addProperty("coverageAreaNodeType", 0);
+
+
+			/*client.addProperty("bydate", dateVAL.toString());
+			client.addProperty("IMEINo", uuid.toString());*/
+
+            sse.setOutputSoapObject(client);
+            sse.bodyOut = client;
+            androidHttpTransport.call(SOAP_ACTION, sse);
+            responseBody = (SoapObject)sse.bodyIn;
+            String resultString=androidHttpTransport.responseDump;
+            String name=responseBody.getProperty(0).toString();
+            // This step: get file XML
+			/*responseBody = (SoapObject) sse.getResponse();
+			  String name=responseBody.getProperty(0).toString();*/
+
+            // System.out.println("Kajol 3 :"+name);
+
+            XMLParser xmlParser = new XMLParser();
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            InputSource is = new InputSource();
+            is.setCharacterStream(new StringReader(name));
+            Document doc = db.parse(is);
+
+            dbengine.deletetblProductListLastVisitStockOrOrderMstr();
+
+            NodeList tblLastOutstanding = doc.getElementsByTagName("tblProductListLastVisitStockOrOrderMstr");
+            for (int i = 0; i < tblLastOutstanding.getLength(); i++)
+            {
+
+
+                String StoreID="NA";
+                String PrdID="0";
+
+
+                Element element = (Element) tblLastOutstanding.item(i);
+
+                if(!element.getElementsByTagName("StoreID").equals(null))
+                {
+
+                    NodeList StoreIDNode = element.getElementsByTagName("StoreID");
+                    Element     line = (Element) StoreIDNode.item(0);
+
+                    if(StoreIDNode.getLength()>0)
+                    {
+
+                        StoreID=xmlParser.getCharacterDataFromElement(line);
+                    }
+                }
+
+                if(!element.getElementsByTagName("PrdID").equals(null))
+                {
+
+                    NodeList PrdIDNode = element.getElementsByTagName("PrdID");
+                    Element     line = (Element) PrdIDNode.item(0);
+
+                    if(PrdIDNode.getLength()>0)
+                    {
+
+                        PrdID=xmlParser.getCharacterDataFromElement(line);
+
+                    }
+                }
+
+               // dbengine.savetblProductListLastVisitStockOrOrderMstr(StoreID,PrdID);
+            }
+
+
+
+
+            //dbengine.close();;
+
+            setmovie.director = "1";
+            flagExecutedServiceSuccesfully=1;
+            // System.out.println("ServiceWorkerNitish getallProduct Inside");
+            return setmovie;
+//return counts;
+        } catch (Exception e) {
+
+            // System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
+            setmovie.director = e.toString();
+            setmovie.movie_name = e.toString();
+            flagExecutedServiceSuccesfully=0;
+            //dbengine.close();;
+            return setmovie;
+        }
+
+    }
+	public ServiceWorker getStoreAllDetails(Context ctx,String uuid,String CurDate,int DatabaseVersion,int ApplicationID,String RegistrationID)
+	{
+
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+		//dbengine.open();
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnGetLTSummaryAndPreAddedOutletDetails";
+		final String METHOD_NAME = "fnGetLTSummaryAndPreAddedOutletDetails";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+
+		// // System.out.println("Kajol 100");
+
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+
+
+			// // System.out.println("Kajol 101");
+			client.addProperty("uuid", uuid.toString());
+			client.addProperty("DatabaseVersion", DatabaseVersion);
+			client.addProperty("ApplicationID", ApplicationID);
+			client.addProperty("RegistrationID", RegistrationID);
+
+			// // System.out.println("Kajol 102");
+			sse.setOutputSoapObject(client);
+			// // System.out.println("Kajol 103");
+			sse.bodyOut = client;
+			// // System.out.println("Kajol 104");
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			// // System.out.println("Kajol 1");
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			// // System.out.println("Kajol 3 :"+name);
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+
+			dbengine.delete_all_storeDetailTables();
+
+
+
+
+			NodeList tblUserNameNode = doc.getElementsByTagName("tblUserName");
+			for (int i = 0; i < tblUserNameNode.getLength(); i++)
+			{
+
+				String UserName="0";
+
+				Element element = (Element) tblUserNameNode.item(i);
+				if(!element.getElementsByTagName("UserName").equals(null))
+				{
+					NodeList UserNameNode = element.getElementsByTagName("UserName");
+					Element     line = (Element) UserNameNode.item(0);
+					if (UserNameNode.getLength()>0)
+					{
+						UserName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				dbengine.saveTblUserName(UserName);
+			}
+
+			NodeList tblStoreCountDetailsNode = doc.getElementsByTagName("tblStoreCountDetails");
+			for (int i = 0; i < tblStoreCountDetailsNode.getLength(); i++)
+			{
+
+				String TotStoreAdded="0";
+				String TodayStoreAdded ="0";
+
+
+				Element element = (Element) tblStoreCountDetailsNode.item(i);
+				if(!element.getElementsByTagName("TotStoreAdded").equals(null))
+				{
+					NodeList TotStoreAddedNode = element.getElementsByTagName("TotStoreAdded");
+					Element     line = (Element) TotStoreAddedNode.item(0);
+					if (TotStoreAddedNode.getLength()>0)
+					{
+						TotStoreAdded=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("TodayStoreAdded").equals(null))
+				{
+					NodeList TodayStoreAddedNode = element.getElementsByTagName("TodayStoreAdded");
+					Element     line = (Element) TodayStoreAddedNode.item(0);
+					if (TodayStoreAddedNode.getLength()>0)
+					{
+						TodayStoreAdded=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				dbengine.saveTblStoreCountDetails(TotStoreAdded, TodayStoreAdded);
+			}
+
+			NodeList tblPreAddedStoresNode = doc.getElementsByTagName("tblPreAddedStores");
+			for (int i = 0; i < tblPreAddedStoresNode.getLength(); i++)
+			{
+
+				String StoreID="0";
+				String StoreName ="0";
+				String LatCode ="0";
+				String LongCode ="0";
+				String DateAdded ="0";
+				int flgOldNewStore=0;
+				int flgRemap=0;
+				int Sstat=0;
+				int RouteID=0;
+				int RouteNodeType=0;
+				Element element = (Element) tblPreAddedStoresNode.item(i);
+
+
+				if(!element.getElementsByTagName("RouteNodeID").equals(null))
+				{
+					NodeList RouteIDNode = element.getElementsByTagName("RouteNodeID");
+					Element     line = (Element) RouteIDNode.item(0);
+					if (RouteIDNode.getLength()>0)
+					{
+						RouteID=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+
+				if(!element.getElementsByTagName("RouteNodeType").equals(null))
+				{
+					NodeList RouteNodeTypeNode = element.getElementsByTagName("RouteNodeType");
+					Element     line = (Element) RouteNodeTypeNode.item(0);
+					if (RouteNodeTypeNode.getLength()>0)
+					{
+						RouteNodeType=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+				if(!element.getElementsByTagName("StoreIDDB").equals(null))
+				{
+					NodeList StoreIDNode = element.getElementsByTagName("StoreIDDB");
+					Element     line = (Element) StoreIDNode.item(0);
+					if (StoreIDNode.getLength()>0)
+					{
+						StoreID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("StoreName").equals(null))
+				{
+					NodeList StoreNameNode = element.getElementsByTagName("StoreName");
+					Element     line = (Element) StoreNameNode.item(0);
+					if (StoreNameNode.getLength()>0)
+					{
+						StoreName=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("LatCode").equals(null))
+				{
+					NodeList LatCodeNode = element.getElementsByTagName("LatCode");
+					Element     line = (Element) LatCodeNode.item(0);
+					if (LatCodeNode.getLength()>0)
+					{
+						LatCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("LongCode").equals(null))
+				{
+					NodeList LongCodeNode = element.getElementsByTagName("LongCode");
+					Element     line = (Element) LongCodeNode.item(0);
+					if (LongCodeNode.getLength()>0)
+					{
+						LongCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("DateAdded").equals(null))
+				{
+					NodeList DateAddedNode = element.getElementsByTagName("DateAdded");
+					Element     line = (Element) DateAddedNode.item(0);
+					if (DateAddedNode.getLength()>0)
+					{
+						DateAdded=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("flgRemap").equals(null))
+				{
+					NodeList flgRemapNode = element.getElementsByTagName("flgRemap");
+					Element     line = (Element) flgRemapNode.item(0);
+					if (flgRemapNode.getLength()>0)
+					{
+						flgRemap=Integer.parseInt(xmlParser.getCharacterDataFromElement(line));
+					}
+				}
+
+
+			//	dbengine.saveTblPreAddedStores(StoreID, StoreName, LatCode, LongCode, DateAdded,flgOldNewStore,flgRemap,Sstat,RouteID,RouteNodeType);
+			}
+
+			NodeList tblPreAddedStoresDataDetailsNode = doc.getElementsByTagName("tblPreAddedStoresDataDetails");
+			for (int i = 0; i < tblPreAddedStoresDataDetailsNode.getLength(); i++)
+			{
+
+				String StoreIDDB="0";
+				String GrpQuestID ="0";
+				String QstId ="0";
+				String AnsControlTypeID ="0";
+
+				String AnsTextVal ="0";
+
+				String flgPrvVal ="2";
+
+
+				Element element = (Element) tblPreAddedStoresDataDetailsNode.item(i);
+
+				if(!element.getElementsByTagName("StoreIDDB").equals(null))
+				{
+					NodeList StoreIDDBNode = element.getElementsByTagName("StoreIDDB");
+					Element     line = (Element) StoreIDDBNode.item(0);
+					if (StoreIDDBNode.getLength()>0)
+					{
+						StoreIDDB=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("GrpQuestID").equals(null))
+				{
+					NodeList GrpQuestIDNode = element.getElementsByTagName("GrpQuestID");
+					Element     line = (Element) GrpQuestIDNode.item(0);
+					if (GrpQuestIDNode.getLength()>0)
+					{
+						GrpQuestID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("QstId").equals(null))
+				{
+					NodeList QstIdNode = element.getElementsByTagName("QstId");
+					Element     line = (Element) QstIdNode.item(0);
+					if (QstIdNode.getLength()>0)
+					{
+						QstId=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("AnsControlTypeID").equals(null))
+				{
+					NodeList AnsControlTypeIDNode = element.getElementsByTagName("AnsControlTypeID");
+					Element     line = (Element) AnsControlTypeIDNode.item(0);
+					if (AnsControlTypeIDNode.getLength()>0)
+					{
+						AnsControlTypeID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("Ans").equals(null))
+				{
+					NodeList AnsTextValNode = element.getElementsByTagName("Ans");
+					Element     line = (Element) AnsTextValNode.item(0);
+					if (AnsTextValNode.getLength()>0)
+					{
+						AnsTextVal=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+				if(!element.getElementsByTagName("flgPrvValue").equals(null))
+				{
+					NodeList OptionValueNode = element.getElementsByTagName("flgPrvValue");
+					Element     line = (Element) OptionValueNode.item(0);
+					if (OptionValueNode.getLength()>0)
+					{
+						flgPrvVal=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+
+
+			//	dbengine.saveTblPreAddedStoresDataDetails(StoreIDDB, GrpQuestID, QstId, AnsControlTypeID,AnsTextVal,flgPrvVal);
+			}
+
+
+
+
+
+
+
+
+
+			setmovie.director = "1";
+			//dbengine.close();;
+			return setmovie;
+
+		} catch (Exception e) {
+
+			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();;
+
+			return setmovie;
+		}
+
+
+
+
+
+	}
+
+	public ServiceWorker getWarehouseMappingMstr(Context ctx,String uuid,String CurDate)
+	{
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnGetWareHouseMstrListForBasedOnIMEI";
+		final String METHOD_NAME = "fnGetWareHouseMstrListForBasedOnIMEI";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+			client.addProperty("uuid", uuid.toString());
+			client.addProperty("SysDate", CurDate.toString());
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.open();
+
+
+			dbengine.Delete_tblWarehouseMstr();
+
+			NodeList tblDistributorListForSONode = doc.getElementsByTagName("tblWareHouseMstrList");
+			for (int i = 0; i < tblDistributorListForSONode.getLength(); i++)
+			{
+
+				String NodeID="0";
+				String NodeType="0";
+				String Descr="0";
+				String latCode="0";
+				String LongCode="0";
+				String flgMapped="0";
+				String State="NA";
+				String Address="NA";
+				String City="NA";
+				String PinCode="NA";
+				String PhoneNo="NA";
+				String TaxNumber="NA";
+
+				Element element = (Element) tblDistributorListForSONode.item(i);
+				if(!element.getElementsByTagName("NodeID").equals(null))
+				{
+					NodeList NodeIDNode = element.getElementsByTagName("NodeID");
+					Element     line = (Element) NodeIDNode.item(0);
+					if (NodeIDNode.getLength()>0)
+					{
+						NodeID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("NodeType").equals(null))
+				{
+					NodeList NodeTypeNode = element.getElementsByTagName("NodeType");
+					Element     line = (Element) NodeTypeNode.item(0);
+					if (NodeTypeNode.getLength()>0)
+					{
+						NodeType=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("Descr").equals(null))
+				{
+					NodeList DescrNode = element.getElementsByTagName("Descr");
+					Element     line = (Element) DescrNode.item(0);
+					if (DescrNode.getLength()>0)
+					{
+						Descr=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("latCode").equals(null))
+				{
+					NodeList latCodeNode = element.getElementsByTagName("latCode");
+					Element     line = (Element) latCodeNode.item(0);
+					if (latCodeNode.getLength()>0)
+					{
+						latCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("LongCode").equals(null))
+				{
+					NodeList LongCodeNode = element.getElementsByTagName("LongCode");
+					Element     line = (Element) LongCodeNode.item(0);
+					if (LongCodeNode.getLength()>0)
+					{
+						LongCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("flgMapped").equals(null))
+				{
+					NodeList flgMappedNode = element.getElementsByTagName("flgMapped");
+					Element     line = (Element) flgMappedNode.item(0);
+					if (flgMappedNode.getLength()>0)
+					{
+						flgMapped=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("Address").equals(null))
+				{
+					NodeList AddressNode = element.getElementsByTagName("Address");
+					Element     line = (Element) AddressNode.item(0);
+					if (AddressNode.getLength()>0)
+					{
+						Address=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("State").equals(null))
+				{
+					NodeList StateNode = element.getElementsByTagName("State");
+					Element     line = (Element) StateNode.item(0);
+					if (StateNode.getLength()>0)
+					{
+						State=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("City").equals(null))
+				{
+					NodeList CityNode = element.getElementsByTagName("City");
+					Element     line = (Element) CityNode.item(0);
+					if (CityNode.getLength()>0)
+					{
+						City=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("PinCode").equals(null))
+				{
+					NodeList PinCodeNode = element.getElementsByTagName("PinCode");
+					Element     line = (Element) PinCodeNode.item(0);
+					if (PinCodeNode.getLength()>0)
+					{
+						PinCode=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("PhoneNo").equals(null))
+				{
+					NodeList PhoneNoNode = element.getElementsByTagName("PhoneNo");
+					Element     line = (Element) PhoneNoNode.item(0);
+					if (PhoneNoNode.getLength()>0)
+					{
+						PhoneNo=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("TaxNumber").equals(null))
+				{
+					NodeList TaxNumberNode = element.getElementsByTagName("TaxNumber");
+					Element     line = (Element) TaxNumberNode.item(0);
+					if (TaxNumberNode.getLength()>0)
+					{
+						TaxNumber=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				//flgMapped="1";
+
+
+				dbengine.saveWarehouseMstrData(Integer.parseInt(NodeID),Integer.parseInt(NodeType),Descr,latCode,LongCode,Integer.parseInt(flgMapped),Address,State,City,PinCode,PhoneNo,TaxNumber);
+
+			}
+
+
+
+			setmovie.director = "1";
+			//dbengine.close();
+			return setmovie;
+
+		} catch (Exception e) {
+			setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();
+
+			return setmovie;
+		}
+	}
+
+
+	public ServiceWorker getConfirmtionRqstStock(Context ctx,String RqstdStk,String uuid,String CoverageAreaNodeID,String coverageAreaNodeType,int statusID)
+	{
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnSpVanStockRequestSave";
+		final String METHOD_NAME = "fnSpVanStockRequestSave";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		Date currDate= new Date();
+		SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+
+		currSysDate = currDateFormat.format(currDate).toString();
+		String crntDate = currSysDate.trim().toString();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+
+					client.addProperty("bydate", crntDate);
+			client.addProperty("IMEINo", uuid.toString());
+			client.addProperty("CoverageAreaNodeID", CoverageAreaNodeID);
+
+			client.addProperty("coverageAreaNodeType", coverageAreaNodeType);
+			client.addProperty("Prdvalues", RqstdStk);
+			client.addProperty("StatusID", statusID);
+
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.open();
+
+
+
+
+			NodeList tblDistributorListForSONode = doc.getElementsByTagName("tblflgRequestStockAccepted");
+			for (int i = 0; i < tblDistributorListForSONode.getLength(); i++)
+			{
+
+				String VanLoadUnLoadCycID="0";
+				String flgRequestAccept="0";
+
+
+				Element element = (Element) tblDistributorListForSONode.item(i);
+				if(!element.getElementsByTagName("VanLoadUnLoadCycID").equals(null))
+				{
+					NodeList VanLoadUnLoadCycIDNode = element.getElementsByTagName("VanLoadUnLoadCycID");
+					Element     line = (Element) VanLoadUnLoadCycIDNode.item(0);
+					if (VanLoadUnLoadCycIDNode.getLength()>0)
+					{
+						VanLoadUnLoadCycID=xmlParser.getCharacterDataFromElement(line);
+					}
+				}
+				if(!element.getElementsByTagName("flgRequestAccept").equals(null))
+				{
+					NodeList flgRequestAcceptNode = element.getElementsByTagName("flgRequestAccept");
+					Element     line = (Element) flgRequestAcceptNode.item(0);
+					if (flgRequestAcceptNode.getLength()>0)
+					{
+						flgRequestAccept=xmlParser.getCharacterDataFromElement(line);
+
+							if(flgRequestAccept.equals("1"))
+							{
+								setmovie.director = "1";
+								break;
+							}
+
+
+							else
+							{
+								setmovie.director = "0";
+								break;
+							}
+
+
+					}
+				}
+
+			}
+
+
+
+
+			//dbengine.close();
+			return setmovie;
+
+		} catch (Exception e) {
+			//setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();
+
+			return setmovie;
+		}
+	}
+
+	public ServiceWorker submitDayEndClosure(Context ctx,String uuid,int flgUnloading)
+	{
+		this.context = ctx;
+		PRJDatabase dbengine = new PRJDatabase(context);
+
+		decimalFormat.applyPattern(pattern);
+
+		int chkTblStoreListContainsRow=1;
+		StringReader read;
+		InputSource inputstream;
+		final String SOAP_ACTION = "http://tempuri.org/fnPDAVanDayEndDet";
+		final String METHOD_NAME = "fnPDAVanDayEndDet";
+		final String NAMESPACE = "http://tempuri.org/";
+		final String URL = UrlForWebService;
+		//Create request
+		SoapObject table = null; // Contains table of dataset that returned
+		// through SoapObject
+		SoapObject client = null; // Its the client petition to the web service
+		SoapObject tableRow = null; // Contains row of table
+		SoapObject responseBody = null; // Contains XML content of dataset
+
+		//SoapObject param
+		HttpTransportSE transport = null; // That call webservice
+		SoapSerializationEnvelope sse = null;
+
+		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+
+		sse.dotNet = true;
+		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
+
+		ServiceWorker setmovie = new ServiceWorker();
+		Date currDate= new Date();
+
+		long syncTIMESTAMP = System.currentTimeMillis();
+		Date dateobj = new Date(syncTIMESTAMP);
+		SimpleDateFormat df = new SimpleDateFormat(
+				"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+		String EndTS = df.format(dateobj);
+
+		int cycleId=dbengine.fetchtblVanCycleId();
+		if(cycleId==-1)
+		{
+			cycleId=0;
+
+		}
+
+		SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+		String rID=dbengine.GetActiveRouteID();
+		currSysDate = currDateFormat.format(currDate).toString();
+		String crntDate = currSysDate.trim().toString();
+		try {
+			client = new SoapObject(NAMESPACE, METHOD_NAME);
+
+
+
+			client.addProperty("PDA_IMEI", uuid.toString());
+			client.addProperty("DayEndTime", EndTS);
+			client.addProperty("VisitDate", crntDate);
+
+			client.addProperty("AppVersionID", CommonInfo.DATABASE_VERSIONID);
+			client.addProperty("VanLoadUnLoadCycID", cycleId);
+			client.addProperty("flgUnloading", flgUnloading);
+
+
+			sse.setOutputSoapObject(client);
+
+			sse.bodyOut = client;
+
+			androidHttpTransport.call(SOAP_ACTION, sse);
+
+			responseBody = (SoapObject)sse.bodyIn;
+			// This step: get file XML
+			//responseBody = (SoapObject) sse.getResponse();
+			int totalCount = responseBody.getPropertyCount();
+
+			// // System.out.println("Kajol 2 :"+totalCount);
+			String resultString=androidHttpTransport.responseDump;
+
+			String name=responseBody.getProperty(0).toString();
+
+			XMLParser xmlParser = new XMLParser();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(name));
+			Document doc = db.parse(is);
+
+			//dbengine.open();
+
+
+
+
+			NodeList tblDistributorListForSONode = doc.getElementsByTagName("tblflgPDAVanDayEndDet");
+			for (int i = 0; i < tblDistributorListForSONode.getLength(); i++)
+			{
+
+				String VanLoadUnLoadCycID="0";
+				String flgRequestAccept="0";
+
+
+				Element element = (Element) tblDistributorListForSONode.item(i);
+
+				if(!element.getElementsByTagName("flgDayEndRequestAccept").equals(null))
+				{
+					NodeList flgRequestAcceptNode = element.getElementsByTagName("flgDayEndRequestAccept");
+					Element     line = (Element) flgRequestAcceptNode.item(0);
+					if (flgRequestAcceptNode.getLength()>0)
+					{
+						flgRequestAccept=xmlParser.getCharacterDataFromElement(line);
+						if(flgRequestAccept.equals("1"))
+						{
+							setmovie.director = "1";
+							break;
+						}
+						else
+						{
+							setmovie.director = "0";
+							break;
+						}
+					}
+				}
+
+			}
+
+
+
+
+			//dbengine.close();
+			return setmovie;
+
+		} catch (Exception e) {
+			//setmovie.exceptionCode=e.getCause().getMessage();
+			setmovie.director = e.toString();
+			setmovie.movie_name = e.toString();
+			//dbengine.close();
+
+			return setmovie;
+		}
+	}
+
+	public int fnReadTextFIle(){
+		int VanIntialInvoiceIds=0;
+		try {
+			File jsonTxtFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.TextFileFolder);
+			if (!jsonTxtFolder.exists())
+			{
+				jsonTxtFolder.mkdirs();
+
+			}
+			String txtFileNamenew= CommonInfo.TextFileName;
+			File file = new File(jsonTxtFolder,txtFileNamenew);
+			if (file.exists()) {
+				StringBuffer buffer=new StringBuffer();
+				String myjson_stampiGPSLastLocation="";
+				StringBuffer sb = new StringBuffer();
+				BufferedReader br = null;
+
+				try {
+					br = new BufferedReader(new FileReader(file));
+
+					String temp;
+					while ((temp = br.readLine()) != null)
+						sb.append(temp);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						br.close(); // stop reading
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				myjson_stampiGPSLastLocation=sb.toString();
+				JSONObject jsonObjGPSLast = new JSONObject(myjson_stampiGPSLastLocation);
+				JSONArray jsonObjGPSLastInneralues = jsonObjGPSLast.getJSONArray(CommonInfo.TextFileArrayName);
+				String StringjsonGPSLastnew = jsonObjGPSLastInneralues.getString(0);
+				JSONObject jsonObjGPSLastnewwewe = new JSONObject(StringjsonGPSLastnew);
+				int    VanIntialInvoiceIdNum=jsonObjGPSLastnewwewe.getInt("VanIntialInvoiceIdNum");
+				VanIntialInvoiceIds=VanIntialInvoiceIdNum;
+			}
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		}
+		finally {
+			return VanIntialInvoiceIds;
+		}
+	}
+
 	public ServiceWorker getPDAAddedOutletSummaryReport(Context ctx,String uuid,int flgDrillLevel)
 	{
 
 		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
+		PRJDatabase dbengine = new PRJDatabase(context);
+
 
 		decimalFormat.applyPattern(pattern);
 
@@ -18090,7 +21322,7 @@ String RouteType="0";
 			}
 
 			setmovie.director = "1";
-			dbengine.close();
+
 			return setmovie;
 
 		} catch (Exception e) {
@@ -18103,867 +21335,5 @@ String RouteType="0";
 		}
 
 	}
-	public ServiceWorker fnGetPDACollectionMaster(Context ctx, String dateVAL, String uuid, String rID )
-	{
-		this.context = ctx;
 
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		String RouteType="0";
-		try
-		{
-			dbengine.open();
-			String RouteID=dbengine.GetActiveRouteID();
-			RouteType=dbengine.FetchRouteType(RouteID);
-			dbengine.close();
-			System.out.println("hi"+RouteType);
-		}
-		catch(Exception e)
-		{
-			System.out.println("error"+e);
-		}
-
-		dbengine.open();
-		dbengine.deleteAllCollectionTables();
-
-		final String SOAP_ACTION = "http://tempuri.org/fnGetPDACollectionMaster";
-		final String METHOD_NAME = "fnGetPDACollectionMaster";
-		final String NAMESPACE = "http://tempuri.org/";
-		final String URL = UrlForWebService;
-
-		SoapObject table = null; // Contains table of dataset that returned
-		// through SoapObject
-		SoapObject client = null; // Its the client petition to the web service
-		SoapObject tableRow = null; // Contains row of table
-		SoapObject responseBody = null; // Contains XML content of dataset
-
-		//SoapObject param
-		HttpTransportSE transport = null; // That call webservice
-		SoapSerializationEnvelope sse = null;
-
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-		sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
-		// Note if class name isn't "ABC_CLASS_NAME" ,you must change
-		sse.dotNet = true; // if WebService written .Net is result=true
-		HttpTransportSE androidHttpTransport = new HttpTransportSE(
-				URL,timeout);
-
-		ServiceWorker setmovie = new ServiceWorker();
-		try {
-			client = new SoapObject(NAMESPACE, METHOD_NAME);
-
-			Date currDate= new Date();
-			SimpleDateFormat currDateFormat =new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-
-			currSysDate = currDateFormat.format(currDate).toString();
-			SysDate = currSysDate.trim().toString();
-
-			/*// System.out.println("Aman Exception occur value bydate"+ dateVAL.toString());
-			// System.out.println("Aman Exception occur value IMEINo"+ uuid.toString());
-			// System.out.println("Aman Exception occur value rID"+ rID.toString());
-			// System.out.println("Aman Exception occur value SysDate"+ SysDate.toString());
-			// System.out.println("Aman Exception occur value AppVersionID"+ dbengine.AppVersionID.toString());
-			*/
-			client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());
-			client.addProperty("rID", rID.toString());
-			client.addProperty("RouteType", RouteType);
-			client.addProperty("SysDate", SysDate.toString());
-			client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
-
-
-
-			sse.setOutputSoapObject(client);
-			sse.bodyOut = client;
-			System.out.println("S1");
-
-			androidHttpTransport.call(SOAP_ACTION, sse);
-			responseBody = (SoapObject)sse.bodyIn;
-
-
-			int totalCount = responseBody.getPropertyCount();
-
-			// System.out.println("Kajol 2 :"+totalCount);
-			String resultString=androidHttpTransport.responseDump;
-
-			String name=responseBody.getProperty(0).toString();
-
-			// System.out.println("Kajol 3 :"+name);
-
-			XMLParser xmlParser = new XMLParser();
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(name));
-			Document doc = db.parse(is);
-			System.out.println("shivam4");
-
-			//   dbengine.open();
-
-			NodeList tblBankMasterNode = doc.getElementsByTagName("tblBankMaster");
-			for (int i = 0; i < tblBankMasterNode.getLength(); i++)
-			{
-
-				String BankId="0";
-				String	BankName="0";
-				String LoginIdIns="0";
-				String TimeStampIns="0";
-				String LoginIdUpd="0";
-				String TimeStampUpd="0";
-
-
-				Element element = (Element) tblBankMasterNode.item(i);
-
-				if(!element.getElementsByTagName("BankId").equals(null))
-				{
-
-					NodeList BankIdNode = element.getElementsByTagName("BankId");
-					Element     line = (Element) BankIdNode.item(0);
-
-					if(BankIdNode.getLength()>0)
-					{
-
-						BankId=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("BankName").equals(null))
-				{
-
-					NodeList BankNameNode = element.getElementsByTagName("BankName");
-					Element     line = (Element) BankNameNode.item(0);
-
-					if(BankNameNode.getLength()>0)
-					{
-
-						BankName=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("LoginIdIns").equals(null))
-				{
-
-					NodeList LoginIdInsNode = element.getElementsByTagName("LoginIdIns");
-					Element     line = (Element) LoginIdInsNode.item(0);
-
-					if(LoginIdInsNode.getLength()>0)
-					{
-
-						LoginIdIns=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("TimeStampIns").equals(null))
-				{
-
-					NodeList TimeStampInsNode = element.getElementsByTagName("TimeStampIns");
-					Element     line = (Element) TimeStampInsNode.item(0);
-
-					if(TimeStampInsNode.getLength()>0)
-					{
-
-						TimeStampIns=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("LoginIdUpd").equals(null))
-				{
-
-					NodeList LoginIdUpdNode = element.getElementsByTagName("LoginIdUpd");
-					Element     line = (Element) LoginIdUpdNode.item(0);
-
-					if(LoginIdUpdNode.getLength()>0)
-					{
-
-						LoginIdUpd=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("TimeStampUpd").equals(null))
-				{
-
-					NodeList TimeStampUpdNode = element.getElementsByTagName("TimeStampUpd");
-					Element     line = (Element) TimeStampUpdNode.item(0);
-
-					if(TimeStampUpdNode.getLength()>0)
-					{
-
-						TimeStampUpd=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-
-				dbengine.savetblBankMaster(BankId, BankName, LoginIdIns, TimeStampIns, LoginIdUpd, TimeStampUpd);
-			}
-
-			NodeList tblInstrumentMasterNode = doc.getElementsByTagName("tblInstrumentMaster");
-			for (int i = 0; i < tblInstrumentMasterNode.getLength(); i++)
-			{
-
-				String InstrumentModeId="0";
-				String	InstrumentMode="0";
-				String InstrumentType="0";
-
-
-
-				Element element = (Element) tblInstrumentMasterNode.item(i);
-
-				if(!element.getElementsByTagName("InstrumentModeId").equals(null))
-				{
-
-					NodeList InstrumentModeIdNode = element.getElementsByTagName("InstrumentModeId");
-					Element     line = (Element) InstrumentModeIdNode.item(0);
-
-					if(InstrumentModeIdNode.getLength()>0)
-					{
-
-						InstrumentModeId=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("InstrumentMode").equals(null))
-				{
-
-					NodeList InstrumentModeNode = element.getElementsByTagName("InstrumentMode");
-					Element     line = (Element) InstrumentModeNode.item(0);
-
-					if(InstrumentModeNode.getLength()>0)
-					{
-
-						InstrumentMode=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("InstrumentType").equals(null))
-				{
-
-					NodeList InstrumentTypeNode = element.getElementsByTagName("InstrumentType");
-					Element     line = (Element) InstrumentTypeNode.item(0);
-
-					if(InstrumentTypeNode.getLength()>0)
-					{
-
-						InstrumentType=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-
-				dbengine.savetblInstrumentMaster(InstrumentModeId, InstrumentMode, InstrumentType);
-			}
-
-			setmovie.director = "1";
-			// System.out.println("ServiceWorkerNitish getallStores Completed ");
-			flagExecutedServiceSuccesfully=40;
-			return setmovie;
-
-
-		} catch (Exception e) {
-
-			setmovie.director = e.toString();
-			setmovie.movie_name = e.toString();
-			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
-			return setmovie;
-		}
-
-	}
-
-	public ServiceWorker fnGetStateCityListMstr(Context ctx,String uuid,String CurDate,int ApplicationID)
-	{
-
-		this.context = ctx;
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-
-
-		decimalFormat.applyPattern(pattern);
-
-		int chkTblStoreListContainsRow=1;
-		StringReader read;
-		InputSource inputstream;
-		final String SOAP_ACTION = "http://tempuri.org/fnGetStateCityListMstr";
-		final String METHOD_NAME = "fnGetStateCityListMstr";
-		final String NAMESPACE = "http://tempuri.org/";
-		final String URL = UrlForWebService;
-		//Create request
-		SoapObject table = null; // Contains table of dataset that returned
-		// through SoapObject
-		SoapObject client = null; // Its the client petition to the web service
-		SoapObject tableRow = null; // Contains row of table
-		SoapObject responseBody = null; // Contains XML content of dataset
-
-		//SoapObject param
-		HttpTransportSE transport = null; // That call webservice
-		SoapSerializationEnvelope sse = null;
-
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-
-		sse.dotNet = true;
-		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
-
-		ServiceWorker setmovie = new ServiceWorker();
-
-		try {
-			client = new SoapObject(NAMESPACE, METHOD_NAME);
-
-
-
-
-			client.addProperty("bydate", CurDate);
-			client.addProperty("uuid", uuid.toString());
-			//client.addProperty("DatabaseVersion","11");
-			client.addProperty("ApplicationID", ApplicationID);
-
-
-
-			// // System.out.println("Kajol 102");
-			sse.setOutputSoapObject(client);
-			// // System.out.println("Kajol 103");
-			sse.bodyOut = client;
-			// // System.out.println("Kajol 104");
-
-			androidHttpTransport.call(SOAP_ACTION, sse);
-
-			// // System.out.println("Kajol 1");
-
-			responseBody = (SoapObject)sse.bodyIn;
-			// This step: get file XML
-			//responseBody = (SoapObject) sse.getResponse();
-			int totalCount = responseBody.getPropertyCount();
-
-			// // System.out.println("Kajol 2 :"+totalCount);
-			String resultString=androidHttpTransport.responseDump;
-
-			String name=responseBody.getProperty(0).toString();
-
-			// // System.out.println("Kajol 3 :"+name);
-
-			XMLParser xmlParser = new XMLParser();
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(name));
-			Document doc = db.parse(is);
-
-			dbengine.open();
-
-			dbengine.deletetblStateCityMaster();
-
-
-			NodeList tblStateCityMaster = doc.getElementsByTagName("tblStateCityMaster");
-			for (int i = 0; i < tblStateCityMaster.getLength(); i++)
-			{
-
-				String StateID="0";
-				String State ="NA";
-				String CityID ="0";
-				String City ="NA";
-				int CityDefault =0;
-
-
-				Element element = (Element) tblStateCityMaster.item(i);
-
-				if(!element.getElementsByTagName("StateID").equals(null))
-				{
-					NodeList StateIDNodeID = element.getElementsByTagName("StateID");
-					Element     line = (Element) StateIDNodeID.item(0);
-					if (StateIDNodeID.getLength()>0)
-					{
-						StateID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("State").equals(null))
-				{
-					NodeList StateNode = element.getElementsByTagName("State");
-					Element     line = (Element) StateNode.item(0);
-					if (StateNode.getLength()>0)
-					{
-						State=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("CityID").equals(null))
-				{
-					NodeList CityIDNode = element.getElementsByTagName("CityID");
-					Element     line = (Element) CityIDNode.item(0);
-					if (CityIDNode.getLength()>0)
-					{
-						CityID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("City").equals(null))
-				{
-					NodeList CityNode = element.getElementsByTagName("City");
-					Element     line = (Element) CityNode.item(0);
-					if (CityNode.getLength()>0)
-					{
-						City=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-				if(!element.getElementsByTagName("CityDefault").equals(null))
-				{
-					NodeList CityDefaultNode = element.getElementsByTagName("CityDefault");
-					Element     line = (Element) CityDefaultNode.item(0);
-					if (CityDefaultNode.getLength()>0)
-					{
-						CityDefault=Integer.parseInt(xmlParser.getCharacterDataFromElement(line).trim());
-					}
-				}
-
-
-				dbengine.fnsavetblStateCityMaster(StateID, State, CityID, City,CityDefault);
-
-			}
-
-
-
-			setmovie.director = "1";
-			dbengine.close();
-			return setmovie;
-
-		} catch (Exception e) {
-
-			// System.out.println("Aman Exception occur in GetIMEIVersionDetailStatusNew :"+e.toString());
-			setmovie.director = e.toString();
-			setmovie.movie_name = e.toString();
-			dbengine.close();
-
-			return setmovie;
-		}
-
-
-
-
-
-	}
-
-
-	public ServiceWorker getStoreWiseOutStandings(Context ctx, String dateVAL, String uuid, String rID, String RouteType)
-	{
-		this.context = ctx;
-
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
-
-		final String SOAP_ACTION = "http://tempuri.org/fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest";
-		final String METHOD_NAME = "fnGetStoreOutStandings";//GetProductListMRNewProductFilterTest
-		final String NAMESPACE = "http://tempuri.org/";
-		final String URL = UrlForWebService;
-
-		decimalFormat.applyPattern(pattern);
-		SoapObject table = null; // Contains table of dataset that returned
-		// throug SoapObject
-		SoapObject client = null; // Its the client petition to the web service
-		SoapObject tableRow = null; // Contains row of table
-		SoapObject responseBody = null; // Contains XML content of dataset
-
-		//SoapObject param
-		HttpTransportSE transport = null; // That call webservice
-		SoapSerializationEnvelope sse = null;
-
-
-
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-		//sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
-		// Note if class name isn't "movie" ,you must change
-		sse.dotNet = true; // if WebService written .Net is result=true
-		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
-
-
-		ServiceWorker setmovie = new ServiceWorker();
-		try {
-			client = new SoapObject(NAMESPACE, METHOD_NAME);
-
-			//String dateVAL = "00.00.0000";
-
-			//////// System.out.println("soap obj date: "+ dateVAL);
-			client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());
-			client.addProperty("rID", rID.toString());
-			client.addProperty("RouteType", RouteType);
-			//client.addProperty("SysDate", SysDate.toString());
-			//client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
-			client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
-			client.addProperty("CoverageAreaNodeID", 0);
-			client.addProperty("coverageAreaNodeType", 0);
-
-
-			/*client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());*/
-
-			sse.setOutputSoapObject(client);
-			sse.bodyOut = client;
-			androidHttpTransport.call(SOAP_ACTION, sse);
-			responseBody = (SoapObject)sse.bodyIn;
-			String resultString=androidHttpTransport.responseDump;
-			String name=responseBody.getProperty(0).toString();
-			// This step: get file XML
-			/*responseBody = (SoapObject) sse.getResponse();
-			  String name=responseBody.getProperty(0).toString();*/
-
-			// System.out.println("Kajol 3 :"+name);
-
-			XMLParser xmlParser = new XMLParser();
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(name));
-			Document doc = db.parse(is);
-
-			dbengine.Delete_tblLastOutstanding_for_refreshData();
-
-			NodeList tblLastOutstanding = doc.getElementsByTagName("tblLastOutstanding");
-			for (int i = 0; i < tblLastOutstanding.getLength(); i++)
-			{
-
-
-				String StoreID="NA";
-				Double Outstanding=0.0;
-				Double AmtOverdue=0.0;
-
-
-				Element element = (Element) tblLastOutstanding.item(i);
-
-				if(!element.getElementsByTagName("Storeid").equals(null))
-				{
-
-					NodeList StoreIDNode = element.getElementsByTagName("Storeid");
-					Element     line = (Element) StoreIDNode.item(0);
-
-					if(StoreIDNode.getLength()>0)
-					{
-
-						StoreID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("OutStanding").equals(null))
-				{
-
-					NodeList OutstandingNode = element.getElementsByTagName("OutStanding");
-					Element     line = (Element) OutstandingNode.item(0);
-
-					if(OutstandingNode.getLength()>0)
-					{
-
-						Outstanding=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						Outstanding=Double.parseDouble(decimalFormat.format(Outstanding));
-					}
-				}
-				if(!element.getElementsByTagName("OverDue").equals(null))
-				{
-
-					NodeList AmtOverdueNode = element.getElementsByTagName("OverDue");
-					Element     line = (Element) AmtOverdueNode.item(0);
-
-					if(AmtOverdueNode.getLength()>0)
-					{
-
-						AmtOverdue=Double.parseDouble(xmlParser.getCharacterDataFromElement(line));
-						AmtOverdue=Double.parseDouble(decimalFormat.format(AmtOverdue));
-					}
-				}
-
-				dbengine.savetblLastOutstanding(StoreID,Outstanding,AmtOverdue);
-			}
-
-			NodeList tblInvoiceLastVisitDetails = doc.getElementsByTagName("tblInvoiceLastVisitDetails");
-			for (int i = 0; i < tblInvoiceLastVisitDetails.getLength(); i++)
-			{
-
-
-				String StoreID="NA";
-				String InvCode="00";
-				String InvDate="NA";
-				String OutstandingAmt="0.0";
-				String AmtOverdue="0.0";
-
-
-				Element element = (Element) tblInvoiceLastVisitDetails.item(i);
-
-				if(!element.getElementsByTagName("Storeid").equals(null))
-				{
-
-					NodeList StoreIDNode = element.getElementsByTagName("Storeid");
-					Element     line = (Element) StoreIDNode.item(0);
-
-					if(StoreIDNode.getLength()>0)
-					{
-
-						StoreID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("InvCode").equals(null))
-				{
-
-					NodeList InvCodeNode = element.getElementsByTagName("InvCode");
-					Element     line = (Element) InvCodeNode.item(0);
-
-					if(InvCodeNode.getLength()>0)
-					{
-
-						InvCode=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-
-				if(!element.getElementsByTagName("InvDate").equals(null))
-				{
-
-					NodeList InvDateNode = element.getElementsByTagName("InvDate");
-					Element     line = (Element) InvDateNode.item(0);
-
-					if(InvDateNode.getLength()>0)
-					{
-
-						InvDate=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-				if(!element.getElementsByTagName("OutStandingAmt").equals(null))
-				{
-
-					NodeList OutstandingAmtNode = element.getElementsByTagName("OutStandingAmt");
-					Element     line = (Element) OutstandingAmtNode.item(0);
-
-					if(OutstandingAmtNode.getLength()>0)
-					{
-
-						Double OutstandingAmtServer= Double.valueOf(""+Double.parseDouble(xmlParser.getCharacterDataFromElement(line)));
-						OutstandingAmt=""+Double.parseDouble(decimalFormat.format(OutstandingAmtServer));
-					}
-				}
-				if(!element.getElementsByTagName("OverDue").equals(null))
-				{
-
-					NodeList AmtOverdueNode = element.getElementsByTagName("OverDue");
-					Element     line = (Element) AmtOverdueNode.item(0);
-
-					if(AmtOverdueNode.getLength()>0)
-					{
-
-						Double AmtOverdueServer= Double.valueOf(""+Double.parseDouble(xmlParser.getCharacterDataFromElement(line)));
-						AmtOverdue=""+Double.parseDouble(decimalFormat.format(AmtOverdueServer));
-					}
-				}
-
-				dbengine.savetblInvoiceLastVisitDetails(StoreID,InvCode,InvDate,OutstandingAmt,AmtOverdue);
-			}
-			dbengine.close();
-
-			setmovie.director = "1";
-			flagExecutedServiceSuccesfully=39;
-			// System.out.println("ServiceWorkerNitish getallProduct Inside");
-			return setmovie;
-//return counts;
-		} catch (Exception e) {
-
-			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
-			setmovie.director = e.toString();
-			setmovie.movie_name = e.toString();
-			flagExecutedServiceSuccesfully=0;
-			dbengine.close();
-			return setmovie;
-		}
-
-	}
-	public void downLoadingSelfieImage(String SelfieNameURL,String SelfieName){
-		String URL_String=  SelfieNameURL;
-		String Video_Name=  SelfieName;
-
-		try {
-
-			URL url = new URL(URL_String);
-			URLConnection connection = url.openConnection();
-			HttpURLConnection urlConnection = (HttpURLConnection) connection;
-			urlConnection.setRequestMethod("GET");
-			urlConnection.setDoInput(true);
-			urlConnection.connect();
-			String PATH = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolderServer + "/";
-
-			File file2 = new File(PATH + Video_Name);
-			if (file2.exists()) {
-				file2.delete();
-			}
-
-			File file1 = new File(PATH);
-			if (!file1.exists()) {
-				file1.mkdirs();
-			}
-
-
-			File file = new File(file1, Video_Name);
-
-			int size = connection.getContentLength();
-
-
-			FileOutputStream fileOutput = new FileOutputStream(file);
-
-			InputStream inputStream = urlConnection.getInputStream();
-
-			byte[] buffer = new byte[size];
-			int bufferLength = 0;
-			long total = 0;
-			int current = 0;
-			while ((bufferLength = inputStream.read(buffer)) != -1) {
-				total += bufferLength;
-
-				fileOutput.write(buffer, 0, bufferLength);
-			}
-
-			fileOutput.close();
-
-		}
-		catch (Exception e){
-
-		}
-
-	}
-
-	public ServiceWorker getProductListLastVisitStockOrOrderMstr(Context ctx, String dateVAL, String uuid, String rID)
-	{
-		this.context = ctx;
-
-		DBAdapterKenya dbengine = new DBAdapterKenya(context);
-		dbengine.open();
-
-		final String SOAP_ACTION = "http://tempuri.org/fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest";
-		final String METHOD_NAME = "fnGetProductListWithStockOrOrderLastVisit";//GetProductListMRNewProductFilterTest
-		final String NAMESPACE = "http://tempuri.org/";
-		final String URL = UrlForWebService;
-
-		decimalFormat.applyPattern(pattern);
-		SoapObject table = null; // Contains table of dataset that returned
-		// throug SoapObject
-		SoapObject client = null; // Its the client petition to the web service
-		SoapObject tableRow = null; // Contains row of table
-		SoapObject responseBody = null; // Contains XML content of dataset
-
-		//SoapObject param
-		HttpTransportSE transport = null; // That call webservice
-		SoapSerializationEnvelope sse = null;
-
-
-
-		sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-		//sse.addMapping(NAMESPACE, "ServiceWorker", this.getClass());
-		// Note if class name isn't "movie" ,you must change
-		sse.dotNet = true; // if WebService written .Net is result=true
-		HttpTransportSE androidHttpTransport = new HttpTransportSE(URL,timeout);
-
-
-		String RouteNodeType="0";
-		try
-		{
-			RouteNodeType=dbengine.FetchRouteType(rID);
-		}
-		catch(Exception e)
-		{
-			System.out.println("error"+e);
-		}
-
-
-
-		ServiceWorker setmovie = new ServiceWorker();
-		try {
-			client = new SoapObject(NAMESPACE, METHOD_NAME);
-
-			//String dateVAL = "00.00.0000";
-
-			//////// System.out.println("soap obj date: "+ dateVAL);
-			client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());
-			client.addProperty("rID", rID.toString());
-			client.addProperty("RouteType", RouteNodeType);
-			//client.addProperty("SysDate", SysDate.toString());
-			//client.addProperty("AppVersionID", dbengine.AppVersionID.toString());
-			client.addProperty("flgAllRoutesData", CommonInfo.flgAllRoutesData);
-			client.addProperty("CoverageAreaNodeID", 0);
-			client.addProperty("coverageAreaNodeType", 0);
-
-
-			/*client.addProperty("bydate", dateVAL.toString());
-			client.addProperty("IMEINo", uuid.toString());*/
-
-			sse.setOutputSoapObject(client);
-			sse.bodyOut = client;
-			androidHttpTransport.call(SOAP_ACTION, sse);
-			responseBody = (SoapObject)sse.bodyIn;
-			String resultString=androidHttpTransport.responseDump;
-			String name=responseBody.getProperty(0).toString();
-			// This step: get file XML
-			/*responseBody = (SoapObject) sse.getResponse();
-			  String name=responseBody.getProperty(0).toString();*/
-
-			// System.out.println("Kajol 3 :"+name);
-
-			XMLParser xmlParser = new XMLParser();
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(name));
-			Document doc = db.parse(is);
-
-			dbengine.deletetblProductListLastVisitStockOrOrderMstr();
-
-			NodeList tblLastOutstanding = doc.getElementsByTagName("tblProductListLastVisitStockOrOrderMstr");
-			for (int i = 0; i < tblLastOutstanding.getLength(); i++)
-			{
-
-
-				String StoreID="NA";
-				String PrdID="0";
-
-
-				Element element = (Element) tblLastOutstanding.item(i);
-
-				if(!element.getElementsByTagName("StoreID").equals(null))
-				{
-
-					NodeList StoreIDNode = element.getElementsByTagName("StoreID");
-					Element     line = (Element) StoreIDNode.item(0);
-
-					if(StoreIDNode.getLength()>0)
-					{
-
-						StoreID=xmlParser.getCharacterDataFromElement(line);
-					}
-				}
-
-				if(!element.getElementsByTagName("PrdID").equals(null))
-				{
-
-					NodeList PrdIDNode = element.getElementsByTagName("PrdID");
-					Element     line = (Element) PrdIDNode.item(0);
-
-					if(PrdIDNode.getLength()>0)
-					{
-
-						PrdID=xmlParser.getCharacterDataFromElement(line);
-
-					}
-				}
-
-				dbengine.savetblProductListLastVisitStockOrOrderMstr(StoreID,PrdID);
-			}
-
-
-
-
-			dbengine.close();;
-
-			setmovie.director = "1";
-			flagExecutedServiceSuccesfully=1;
-			// System.out.println("ServiceWorkerNitish getallProduct Inside");
-			return setmovie;
-//return counts;
-		} catch (Exception e) {
-
-			// System.out.println("Aman Exception occur in GetProductListMRNew :"+e.toString());
-			setmovie.director = e.toString();
-			setmovie.movie_name = e.toString();
-			flagExecutedServiceSuccesfully=0;
-			//dbengine.close();;
-			return setmovie;
-		}
-
-	}
 }

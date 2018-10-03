@@ -1,6 +1,34 @@
 package project.astix.com.parasorder;
 
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,36 +41,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
-import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
-
 public class Delivery_Details_Activity extends Activity implements  DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener{
 	TextView PaymentStageTextView,paymentModeTextviewNew,creditdaysTextboxNew,CreditlimitTextboxNew,percentageTextviewNew,paymentstagetextviewNew, CreditDaysTextbox, PaymentModeTextView, Date,SalesQuoteTypeSpinner,ValFrom,ValTo,SalesQuoteType,ValidityFrom,PaymentTerms,headerstring;
 	RelativeLayout DeliveryDetailsHeader,delivey_details_parent,PaymentDetailsHeader, Payment_Details_Parent;
@@ -51,11 +49,11 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 	TextView RequiredDeliveryDate, Delivery_Time_From,biltocustomernameSpinner,Billing_AddressText,Delivery_Time_To,DoNotDeliverTime_From,DoNotDeliverTime_To;
 	LinearLayout ll_data,parentOfAdvanceBeforeDeliveryPayMentMode,parentOfOnDeliveryPayMentMode,parentOfCreditPayMentMode,parentOfCheckBox;
 	public String storeID;
+	public String StoreVisitCode="NA";
 	public String OrderPDAID;
 	public String imei;
 	public String date;
 	public String pickerDate;
-	int flgOrderType=0;
 	public String SN;
 	boolean DeliveryTimeImg_From_boolean=false;
 	boolean DeliveryTimeImg_To_boolean=false;
@@ -66,9 +64,14 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 	int Year, Month, Day;
 	Button Done_btn;
 	 AlertDialog ad;
+
+	public String strGlobalInvoiceNumber="NA";
+	public int chkflgInvoiceAlreadyGenerated=0;
+
+
 	 View convertView;
 	TextView Delivery_Location_Spinner;
-	 DBAdapterKenya helperDb;
+	 PRJDatabase helperDb=new PRJDatabase(this);
 	 ArrayAdapter<String> adapterDeliveryAddress,adapterBillingAddress;
 	 ArrayList<LinkedHashMap<String, String>> arrgetStoreBillToAddressAndDiliverToAddress;
 	 LinkedHashMap<String, String> hmapStoreBillTogAddresse;
@@ -113,8 +116,9 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.delivery_details_activity);
-		helperDb=new DBAdapterKenya(this);
+		//helperDb=new PRJDatabase(this);
 		arrowHeaderSelection();
+		StoreVisitCode=helperDb.fnGetStoreVisitCode(storeID);
 		timeSelection();
 		getDataFromIntent();
 		initializeAllViewOfPaymentSection();
@@ -124,6 +128,11 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		fillAllDataOfDeliverySectionToView();
 		arrowOfDeleveryInfo.setChecked(true);
 		delivey_details_parent.setVisibility(View.VISIBLE);
+		chkflgInvoiceAlreadyGenerated=helperDb.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+		if(chkflgInvoiceAlreadyGenerated==1)
+		{
+			strGlobalInvoiceNumber=helperDb.fnGetExistingInvoiceNumber(storeID);
+		}
 		/*arrowOfPaymentDetails.setChecked(true);
 		Payment_Details_Parent.setVisibility(View.VISIBLE);*/
 		
@@ -251,13 +260,13 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 								public void onClick(DialogInterface dialog,
 										int which) {
 									dialog.dismiss();
-									Intent fireBackDetPg=new Intent(Delivery_Details_Activity.this,OrderReview.class);
+									Intent fireBackDetPg=new Intent(Delivery_Details_Activity.this,ProductOrderReview.class);
 						               fireBackDetPg.putExtra("storeID", storeID);
 						               fireBackDetPg.putExtra("SN", SN);
 						              fireBackDetPg.putExtra("imei", imei);
 						               fireBackDetPg.putExtra("userdate", date);
 						               fireBackDetPg.putExtra("pickerDate", pickerDate);
-									fireBackDetPg.putExtra("flgOrderType", flgOrderType);
+						               
 						             
 						               startActivity(fireBackDetPg);
 						               finish();
@@ -585,9 +594,9 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		
 		fullstring=string_Delivery_Location_Spinner+"^"+string_Delivery_Time_From+"^"+string_Delivery_Time_To+"^"+string_DoNotDeliverTime_From+"^"+string_DoNotDeliverTime_To+"^"+string_RequiredDeliveryDate+"^"+string_biltocustomernameSpinner;
 		helperDb.fndeleteStoreOrderBillAddressDetails(storeID, OrderPDAID);
-		helperDb.open();
+		//helperDb.open();
 		helperDb.fnsaveStoreOrderBillAddressDetails(storeID, OrderPDAID, string_biltocustomernameSpinner, string_Delivery_Location_Spinner+"^"+string_Delivery_Time_From+"^"+string_Delivery_Time_To+"^"+string_DoNotDeliverTime_From+"^"+string_DoNotDeliverTime_To+"^"+string_RequiredDeliveryDate, "1");
-		helperDb.close();
+		//helperDb.close();
 		//"1"+"^"+string_biltocustomernameSpinner=Bill To Customer
 
 		}
@@ -776,20 +785,20 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		
 		
 		
-		helperDb.open();
-		helperDb.fndeleteStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID);
-		helperDb.fnsaveStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID,PAYMENT_STAGEID_Values,"1");
+		//helperDb.open();
+		helperDb.fndeleteStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID,strGlobalInvoiceNumber);
+		helperDb.fnsaveStoreSalesOrderPaymentDetails(storeIDString,OrderPDAID,PAYMENT_STAGEID_Values,"1",strGlobalInvoiceNumber);
 	
-		helperDb.close();
+		//helperDb.close();
 		
 		 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-		 Intent fireBackDetPg=new Intent(Delivery_Details_Activity.this,OrderReview.class);
+		 Intent fireBackDetPg=new Intent(Delivery_Details_Activity.this,ProductOrderReview.class);
          fireBackDetPg.putExtra("storeID", storeID);
          fireBackDetPg.putExtra("SN", SN);
         fireBackDetPg.putExtra("imei", imei);
          fireBackDetPg.putExtra("userdate", date);
          fireBackDetPg.putExtra("pickerDate", pickerDate);
-			fireBackDetPg.putExtra("flgOrderType", flgOrderType);
+         
        
          startActivity(fireBackDetPg);
          finish();
@@ -1069,7 +1078,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 				}
 			});
 		 
-		 if(helperDb.checkCountIntblStoreSalesOrderPaymentDetails(storeID,OrderPDAID)==1){
+		 if(helperDb.checkCountIntblStoreSalesOrderPaymentDetails(storeID,OrderPDAID,strGlobalInvoiceNumber)==1){
 			 String allValuesOfPaymentStageID="0";	
 			 fillValuesInPaymentSection(allValuesOfPaymentStageID);
 		 }
@@ -1097,7 +1106,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 	
 	public void fillValuesInPaymentSection(String allValuesOfPaymentStageID) {
 		//String all	helperDb.fngettblNewStoreSalesQuotePaymentDetails(AddNewStore_DynamicSectionWise.selStoreID)
-			allValuesOfPaymentStageID=helperDb.fngettblStoreSalesOrderPaymentDetails(storeID,OrderPDAID);
+			allValuesOfPaymentStageID=helperDb.fngettblStoreSalesOrderPaymentDetails(storeID,OrderPDAID,strGlobalInvoiceNumber);
 			
 			String pymntStagIDofAdvn="0";
 			if(allValuesOfPaymentStageID.split(Pattern.quote("~"))[0].equals("1")){
@@ -1825,7 +1834,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		  pickerDate = passedvals.getStringExtra("pickerDate");
 		  SN = passedvals.getStringExtra("SN");
 		  OrderPDAID= passedvals.getStringExtra("OrderPDAID");
-		flgOrderType = passedvals.getIntExtra("flgOrderType",0);
+		    
 		
 		 // hmapProductRelatedSchemesList=dbengine.fnProductRelatedSchemesList();
 		 

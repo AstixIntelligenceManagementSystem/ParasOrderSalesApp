@@ -1,26 +1,9 @@
 package project.astix.com.parasorder;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.Map.Entry;
-
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.location.Location;
-
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,6 +19,21 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map.Entry;
+import java.util.Timer;
 
 public class ProductOrderFilterSearch_RecycleView  extends BaseActivity
 {
@@ -336,7 +334,7 @@ public class ProductOrderFilterSearch_RecycleView  extends BaseActivity
 
     //Database
 
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
+    PRJDatabase dbengine = new PRJDatabase(this);
     DatabaseAssistant DA = new DatabaseAssistant(this);
 
     //Common Controls Box
@@ -426,9 +424,9 @@ public class ProductOrderFilterSearch_RecycleView  extends BaseActivity
 
     private void getProductData() {
         // CategoryID,ProductID,ProductShortName,ProductRLP,Date/Qty)
-        dbengine.open();
+        //dbengine.open();
         StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-        dbengine.close();
+        //dbengine.close();
 
         arrLstHmapPrdct=dbengine.fetch_catgry_prdctsData(storeID,StoreCurrentStoreType);
         hmapSchemeIDandDescr=dbengine.fnSchemeIDandDescr();

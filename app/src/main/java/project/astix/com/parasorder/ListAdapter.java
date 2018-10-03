@@ -1,23 +1,25 @@
 package project.astix.com.parasorder;
-import java.util.ArrayList;  
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
-import android.view.View;  
-import android.view.View.OnClickListener;  
-import android.view.ViewGroup;  
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
-public class ListAdapter extends ArrayAdapter<String>  {  
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+public class ListAdapter extends ArrayAdapter<String>  {
     customButtonListener customListner; 
-    DBAdapterKenya dbengine;
+    PRJDatabase dbengine;
     public String storeStatus;
     public String[] StoreID1;
     public String[] StoreSstat1;
@@ -59,7 +61,7 @@ public class ListAdapter extends ArrayAdapter<String>  {
         this.data = dataItem;  
         this.context = context;  
         
-        dbengine= new DBAdapterKenya(context);
+        dbengine= new PRJDatabase(context);
         StoreID1=new String[StoreID.length];
         StoreSstat1=new String[StoreSstatnew.length];
         StoreSstat1=StoreSstatnew;

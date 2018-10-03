@@ -7,13 +7,11 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -28,7 +26,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -63,20 +60,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,23 +76,10 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 public class DistributorCheckInFirstActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,OnMapReadyCallback
 {
-    DBAdapterKenya dbengine = new DBAdapterKenya(DistributorCheckInFirstActivity.this);
-    SyncXMLfileData task2;
-  //  public ProgressDialog pDialogGetStores;
-   // int serverResponseCode = 0;
-
-    public String[] xmlForWeb = new String[1];
-    int serverResponseCode = 0;
-    public int syncFLAG = 0;
-    public ProgressDialog pDialogGetStores;
-    AlertDialog ad;
-
     LinkedHashMap<String,String> hmapDistributorListWithRemapFlg=new LinkedHashMap<String,String>();
     LinkedHashMap<String,String> hmapDistributorListWithNodeIDType=new LinkedHashMap<String,String>();
     String gblSelectedDistributor="Select Distributor";
@@ -115,9 +91,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
     public ProgressDialog pDialog2STANDBY;
 
     public CoundownClass countDownTimer;
-  //  DatabaseAssistantDistributorMap DA=new DatabaseAssistantDistributorMap(this);
-
-    DatabaseAssistantDistributorCheckIn DA = new DatabaseAssistantDistributorCheckIn(this);
+    DatabaseAssistantDistributorMap DA=new DatabaseAssistantDistributorMap(this);
     public String newfullFileName;
     private final long startTime = 15000;
     private final long interval = 200;
@@ -160,7 +134,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
     public String fnLongi="0";
     public Double fnAccuracy=0.0;
 
-    DBAdapterKenya helperDb;
+    PRJDatabase helperDb=new PRJDatabase(this);
 
     public String AccuracyFromLauncher="NA";
     String AddressFromLauncher="NA";
@@ -205,8 +179,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
     RadioButton rb_yes,rb_no;
     TextView txt_rfrshCmnt,tv_MapLocationCorrectText;
     EditText edit_gstYesVal;
-    Button btn_submit,btn_refresh,btn_done;
-    LinearLayout ll_btn;
+    Button btn_submit,btn_refresh;
     ImageView img_back_Btn;
     Spinner spinner_for_filter;
     RadioButton rb_gstYes,rb_gstNo,rb_gstPending;
@@ -247,7 +220,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         setContentView(R.layout.activity_distributor_map);
 
         refreshCount=0;
-        helperDb=new DBAdapterKenya(DistributorCheckInFirstActivity.this);
+        helperDb=new PRJDatabase(DistributorCheckInFirstActivity.this);
         locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
         ll_locationDetails= (LinearLayout) findViewById(R.id.ll_locationDetails);
         ll_parentLayout= (LinearLayout) findViewById(R.id.ll_parentLayout);
@@ -271,9 +244,8 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         rb_gstNo= (RadioButton) findViewById(R.id.rb_gstNo);
         rb_gstPending= (RadioButton) findViewById(R.id.rb_gstPending);
         spinner_for_filter= (Spinner) findViewById(R.id.spinner_for_filter);
-        btn_submit= (Button) findViewById(R.id.btn_next);
-        btn_done= (Button) findViewById(R.id.btn_submit);
-
+        btn_submit= (Button) findViewById(R.id.btn_submit);
+        btn_submit.setText(getText(R.string.txtSubmit));
         ll_gstDetails= (LinearLayout) findViewById(R.id.ll_gstDetails);
         img_back_Btn= (ImageView) findViewById(R.id.img_back_Btn);
         txt_gst= (TextView) findViewById(R.id.txt_gst);
@@ -291,7 +263,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
 
         if(imei==null)
         {
-            imei=CommonInfo.imei;
+            imei= CommonInfo.imei;
         }
         if(fDate==null)
         {
@@ -547,10 +519,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
 
     public void fnGetDistributorList()
     {
-        helperDb.open();
+        //helperDb.open();
 
-        Distribtr_list=helperDb.getDistributorDataMstr();
-        helperDb.close();
+        Distribtr_list=helperDb.getSuplierDataMstr();
+        //helperDb.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -577,10 +549,6 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 spinner_for_filter.setSelection(1);
                 ll_parentLayout.setVisibility(View.VISIBLE);
                 btn_submit.setVisibility(View.VISIBLE);
-                if(helperDb.getflgInventory())
-                {
-                    btn_done.setVisibility(View.VISIBLE);
-                }
 
             }
             else
@@ -588,10 +556,6 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 spinner_for_filter.setSelection(0);
                 ll_parentLayout.setVisibility(View.VISIBLE);
                 btn_submit.setVisibility(View.VISIBLE);
-                if(helperDb.getflgInventory())
-                {
-                    btn_done.setVisibility(View.VISIBLE);
-                }
             }
         }
 
@@ -610,10 +574,6 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 {
                     ll_parentLayout.setVisibility(View.GONE);
                     btn_submit.setVisibility(View.GONE);
-                    if(helperDb.getflgInventory())
-                    {
-                        btn_done.setVisibility(View.GONE);
-                    }
                 }
                 else
                 {
@@ -627,10 +587,6 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                             if(false)
                             {
                                 btn_submit.setVisibility(View.GONE);
-                                if(helperDb.getflgInventory())
-                                {
-                                    btn_done.setVisibility(View.GONE);
-                                }
 
                                 etLocalArea.setEnabled(false);
                                 etPinCode.setEnabled(false);
@@ -661,10 +617,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                             else
                             {
                                 btn_submit.setVisibility(View.VISIBLE);
-                                if(helperDb.getflgInventory())
-                                {
-                                    btn_done.setVisibility(View.VISIBLE);
-                                }
+
                                 etLocalArea.setEnabled(true);
                                 etPinCode.setEnabled(true);
                                 etCity.setEnabled(true);
@@ -1142,10 +1095,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -1250,10 +1203,10 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 ft.show(mapFrag);
 
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
                 //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {
@@ -1341,7 +1294,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
             // If file does not exists, then create it
             if (file.exists()) {
@@ -1421,7 +1374,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             }
             String txtFileNamenew="GPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1488,7 +1441,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1528,12 +1481,12 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         }
     }
 
-   /* public String getAddressOfProviders(String latti, String longi){
+    public String getAddressOfProviders(String latti, String longi){
 
         StringBuilder FULLADDRESS2 =new StringBuilder();
         Geocoder geocoder;
         List<Address> addresses;
-        geocoder = new Geocoder(DistributorCheckInFirstActivity.this, Locale.getDefault());
+        geocoder = new Geocoder(DistributorCheckInFirstActivity.this, Locale.ENGLISH);
 
 
 
@@ -1559,7 +1512,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                         }
                     }
                 }
-		      *//* //String address = addresses.get(0).getAddressLine(0);
+		      /* //String address = addresses.get(0).getAddressLine(0);
 		       String address = addresses.get(0).getAddressLine(1); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
 		       String city = addresses.get(0).getLocality();
 		       String state = addresses.get(0).getAdminArea();
@@ -1567,42 +1520,8 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
 		       String postalCode = addresses.get(0).getPostalCode();
 		       String knownName = addresses.get(0).getFeatureName();
 		       FULLADDRESS=address+","+city+","+state+","+country+","+postalCode;
-		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*//*
+		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*/
 
-            }
-
-        } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-
-
-        return FULLADDRESS2.toString();
-
-    }*/
-
-    public String getAddressOfProviders(String latti, String longi){
-
-        StringBuilder FULLADDRESS2 =new StringBuilder();
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(DistributorCheckInFirstActivity.this, Locale.ENGLISH);
-
-
-
-        try {
-            addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
-
-            if (addresses == null || addresses.size()  == 0 || addresses.get(0).getAddressLine(0)==null)
-            {
-                FULLADDRESS2=  FULLADDRESS2.append("NA");
-            }
-            else
-            {
-                FULLADDRESS2 =FULLADDRESS2.append(addresses.get(0).getAddressLine(0));
             }
 
         } catch (NumberFormatException e) {
@@ -1804,17 +1723,7 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             {
                 if (validate())
                 {
-                    saveDataToDatabase(0);
-
-                }
-            }
-        });
-        btn_done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (validate())
-                {
-                    saveDataToDatabase(1);
+                    saveDataToDatabase();
 
                 }
             }
@@ -1909,39 +1818,13 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         //-_
     }
 
-    public void saveDataToDatabase(int flgButoonClkd)
+    public void saveDataToDatabase()
     {
         UniqueDistribtrMapId=genTempID();
 
         String flgGSTCompliance = "NA";
         String GSTNumber = "NA";
 
-       /* if (ll_gstDetails.getVisibility() == View.VISIBLE)
-        {
-            flgGSTCapture = "1";
-        }
-        else if (ll_gstDetails.getVisibility() == View.GONE)
-        {
-            flgGSTCapture = "0";
-        }
-
-        if (rb_gstYes.isChecked())
-        {
-            flgGSTCompliance = "1";
-            if (!edit_gstYesVal.getText().toString().trim().equals(null) ||
-                    !edit_gstYesVal.getText().toString().trim().equals(""))
-            {
-                GSTNumber = edit_gstYesVal.getText().toString().trim();
-            }
-        }
-        else if (rb_gstNo.isChecked())
-        {
-            flgGSTCompliance = "0";
-        }
-        else if (rb_gstPending.isChecked())
-        {
-            flgGSTCompliance = "2";
-        }*/
 
         String allLoctionDetails=  helperDb.getLocationDetails();
 
@@ -2026,8 +1909,8 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         String finalCity=etCity.getText().toString().trim();
         String finalState=etState.getText().toString().trim();
 
-        helperDb.open();
-        helperDb.savetblDistributorMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
+        //helperDb.open();
+        helperDb.savetblSuplierMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
                 GSTNumber,finalAddress,finalPinCode,finalCity,finalState,SOLattitudeFromLauncher,SOLongitudeFromLauncher,
                 SOAccuracyFromLauncer,"0",SOProviderFromLauncher,SOAllProvidersLocationFromLauncher,fnAddressFromLauncher,
                 SOGpsLatFromLauncher,SOGpsLongFromLauncher,SOGpsAccuracyFromLauncher,SOGpsAddressFromLauncher,
@@ -2037,30 +1920,26 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
                 SOFusedLocationAccuracyWithFirstAttemptFromLauncher,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart);
 
 
-        helperDb.close();
+        //Nitika
+        //  By Nitika dbengine.savetblDistributorSavedData(header,Short_name,pID,Date, Et_value,DistID,DistNodeType,ProductNodeType,StockDate,Sstat,EntryType,StockPcsCaseType);
+
+
+        //helperDb.close();
         try
         {
            // FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInFirstActivity.this);
            // task.execute();
-            if(flgButoonClkd==0)
-            {
-                Intent intent=new Intent(DistributorCheckInFirstActivity.this,DistributorCheckInSecondActivity.class);
-                intent.putExtra("imei", imei);
-                intent.putExtra("fDate", fDate);
-                startActivity(intent);
-                finish();
-            }
-            else
-            {
 
-                FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInFirstActivity.this);
-                task.execute();
-               /* Intent i=new Intent(DistributorCheckInFirstActivity.this,AllButtonActivity.class);
-                i.putExtra("imei", imei);
+            //Nitika
+            Intent intent=new Intent(DistributorCheckInFirstActivity.this,DistributorCheckInSecondActivity.class);
+            intent.putExtra("imei", imei);
+            intent.putExtra("fDate", fDate);
+            startActivity(intent);
+            finish();
 
-                startActivity(i);
-                finish();*/
-            }
+
+
+
         }
         catch (Exception e)
         {
@@ -2068,534 +1947,6 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
             e.printStackTrace();
             //System.out.println("onGetStoresForDayCLICK: Exec(). EX: "+e);
         }
-    }
-
-    private class FullSyncDataNow extends AsyncTask<Void, Void, Void>
-    {
-
-
-        ProgressDialog pDialogGetStores;
-        public FullSyncDataNow(DistributorCheckInFirstActivity activity)
-        {
-            if(pDialog2STANDBY!=null)
-            {
-                if(pDialog2STANDBY.isShowing())
-                {
-                    pDialog2STANDBY.dismiss();
-                }
-            }
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-            pDialogGetStores.setMessage("Submitting Distributor Entry Details...");
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-
-
-        }
-
-        @Override
-
-        protected Void doInBackground(Void... params)
-        {
-
-            int Outstat=3;
-
-            long  syncTIMESTAMP = System.currentTimeMillis();
-            Date dateobj = new Date(syncTIMESTAMP);
-            SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-            String StampEndsTime = df.format(dateobj);
-
-
-
-            dbengine.open();
-            String presentRoute=dbengine.GetActiveRouteIDForDistributor();
-            dbengine.close();
-
-
-
-            SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
-
-            newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
-
-
-
-
-            try {
-
-
-                File MeijiDistributorEntryXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorCheckInXMLFolder);
-
-                if (!MeijiDistributorEntryXMLFolder.exists())
-                {
-                    MeijiDistributorEntryXMLFolder.mkdirs();
-
-                }
-
-
-                int checkNoFiles=dbengine.counttbltblDistributorMapping();
-                if(checkNoFiles==1)
-                {
-                    String routeID=dbengine.GetActiveRouteIDSunil();
-                    DA.open();
-                    DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
-                    DA.close();
-					 /*dbengine.open();
-					 dbengine.savetbl_XMLfiles(newfullFileName, "3","3");
-					 dbengine.close();*/
-                }
-
-              /*  dbengine.open();
-                dbengine.updateDistributorSstat();
-                dbengine.close();*/
-                dbengine.open();
-                dbengine.updateDistributorCheckInSstat();
-                dbengine.close();
-
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-                if(pDialogGetStores.isShowing())
-                {
-                    pDialogGetStores.dismiss();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-            if(pDialogGetStores.isShowing())
-            {
-                pDialogGetStores.dismiss();
-            }
-            if(isOnline())
-            {
-                try
-                {
-
-                    task2 = new SyncXMLfileData(DistributorCheckInFirstActivity.this);
-                    task2.execute();
-                }
-                catch(Exception e)
-                {
-
-                }
-            }
-            else
-            {
-                try
-                {
-                    int checkNoFiles=dbengine.counttblDistributorSavedData();
-                    if(checkNoFiles==1)
-                    {
-                        showNoConnAlertforLocalDataSaved();
-                    }
-                    else
-                    {
-                        Intent i=new Intent(DistributorCheckInFirstActivity.this,AllButtonActivity.class);
-                        i.putExtra("imei", imei);
-
-                        startActivity(i);
-                        finish();
-                    }
-                }
-                catch(Exception e)
-                {
-
-                }
-
-            }
-
-
-
-        }
-    }
-    public void showNoConnAlertforLocalDataSaved()
-    {
-        AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(DistributorCheckInFirstActivity.this);
-        alertDialogNoConn.setTitle(R.string.genTermNoDataConnection);
-        alertDialogNoConn.setMessage(R.string.genlocaldataMsg);
-        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,
-                new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                        Intent i=new Intent(DistributorCheckInFirstActivity.this,AllButtonActivity.class);
-                        startActivity(i);
-                        finish();
-                    }
-                });
-        alertDialogNoConn.setIcon(R.drawable.error_ico);
-        AlertDialog alert = alertDialogNoConn.create();
-        alert.show();
-
-    }
-    private class SyncXMLfileData extends AsyncTask<Void, Void, Integer> {
-
-
-        public SyncXMLfileData(DistributorCheckInFirstActivity activity) {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-
-            File MeijiIndirectSFAxmlFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorCheckInXMLFolder);
-
-            if (!MeijiIndirectSFAxmlFolder.exists())
-            {
-                MeijiIndirectSFAxmlFolder.mkdirs();
-            }
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-
-            pDialogGetStores.setMessage("Submitting Distributor Details...");
-
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-
-        }
-
-        @Override
-        protected Integer doInBackground(Void... params) {
-
-
-            // This method used for sending xml from Folder without taking records in DB.
-
-            // Sending only one xml at a times
-
-            File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorCheckInXMLFolder);
-
-
-            // check number of files in folder
-            String[] AllFilesName = checkNumberOfFiles(del);
-
-
-            if (AllFilesName.length > 0) {
-                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-
-
-                for (int vdo = 0; vdo < AllFilesName.length; vdo++) {
-                    String fileUri = AllFilesName[vdo];
-
-
-                    System.out.println("Sunil Again each file Name :" + fileUri);
-
-                    if (fileUri.contains(".zip")) {
-                        File file = new File(fileUri);
-                        file.delete();
-                    } else {
-                        //String f1 = Environment.getExternalStorageDirectory().getPath() + "/LTACEDistStockXml/" + fileUri;
-                        String f1 = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.DistributorCheckInXMLFolder+"/"+fileUri;
-
-                        System.out.println("Sunil Again each file full path" + f1);
-                        try {
-                            upLoad2ServerXmlFiles(f1, fileUri);
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-
-                }
-
-            } else {
-
-            }
-
-
-            // pDialogGetStores.dismiss();
-
-            return serverResponseCode;
-        }
-
-        @Override
-        protected void onCancelled() {
-            //Log.i("SyncMasterForDistributor", "Sync Cancelled");
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            super.onPostExecute(result);
-            if (!isFinishing()) {
-
-                if (pDialogGetStores.isShowing()) {
-                    pDialogGetStores.dismiss();
-                }
-
-
-            }
-
-            //Intent i=new Intent(LauncherActivity.this,DistributorEntryActivity.class);
-            dbengine.deleteDistributorStockTblesOnDistributorIDBasic(DistribtrId_Global, DistributorNodeType_Global);
-
-
-            // Intent i=new Intent(DistributorEntryActivity.this,LauncherActivity.class);
-            //i.putExtra("imei", imei);
-
-            //startActivity(i);
-            //finish();
-            if (isOnline())
-            {
-                AlertDialog.Builder alertDialogSyncOK = new AlertDialog.Builder(DistributorCheckInFirstActivity.this);
-                alertDialogSyncOK.setTitle(getText(R.string.genTermInformation));
-                alertDialogSyncOK.setCancelable(false);
-
-
-                alertDialogSyncOK.setMessage(getText(R.string.DistributorDataSubmit));
-
-                alertDialogSyncOK.setNeutralButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-
-
-                        Intent intent=new Intent(DistributorCheckInFirstActivity.this,AllButtonActivity.class);
-                        startActivity(intent);
-                        finish();
-
-
-                    }
-                });
-                alertDialogSyncOK.setIcon(R.drawable.info_ico);
-
-                AlertDialog alert = alertDialogSyncOK.create();
-                alert.show();
-
-            } else
-            {
-                showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
-            }
-
-
-        }
-    }
-
-    public  int upLoad2ServerXmlFiles(String sourceFileUri,String fileUri)
-    {
-
-        fileUri=fileUri.replace(".xml", "");
-
-        String fileName = fileUri;
-        String zipFileName=fileUri;
-
-        // String newzipfile = Environment.getExternalStorageDirectory() + "/LTACEDistStockXml/" + fileName + ".zip";
-
-        String newzipfile = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.DistributorCheckInXMLFolder+"/" + fileName + ".zip";
-
-        sourceFileUri=newzipfile;
-
-        // xmlForWeb[0] = Environment.getExternalStorageDirectory() + "/LTACEDistStockXml/" + fileName + ".xml";
-        xmlForWeb[0]=         Environment.getExternalStorageDirectory() + "/"+ CommonInfo.DistributorCheckInXMLFolder+"/" + fileName + ".xml";
-
-        try
-        {
-            zip(xmlForWeb,newzipfile);
-        }
-        catch (Exception e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-            //java.io.FileNotFoundException: /359648069495987.2.21.04.2016.12.44.02: open failed: EROFS (Read-only file system)
-        }
-
-
-        HttpURLConnection conn = null;
-        DataOutputStream dos = null;
-        String lineEnd = "\r\n";
-        String twoHyphens = "--";
-        String boundary = "*****";
-        int bytesRead, bytesAvailable, bufferSize;
-        byte[] buffer;
-        int maxBufferSize = 1 * 1024 * 1024;
-
-
-        File file2send = new File(newzipfile);
-
-        String urlString = CommonInfo.DistributorSyncPath.trim()+"?CLIENTFILENAME=" + zipFileName;
-
-        try {
-
-            // open a URL connection to the Servlet
-            FileInputStream fileInputStream = new FileInputStream(file2send);
-            URL url = new URL(urlString);
-
-            // Open a HTTP  connection to  the URL
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoInput(true); // Allow Inputs
-            conn.setDoOutput(true); // Allow Outputs
-            conn.setUseCaches(false); // Don't use a Cached Copy
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Connection", "Keep-Alive");
-            conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            conn.setRequestProperty("zipFileName", zipFileName);
-
-            dos = new DataOutputStream(conn.getOutputStream());
-
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
-                    + zipFileName + "\"" + lineEnd);
-
-            dos.writeBytes(lineEnd);
-
-            // create a buffer of  maximum size
-            bytesAvailable = fileInputStream.available();
-
-            bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            buffer = new byte[bufferSize];
-
-            // read file and write it into form...
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
-            while (bytesRead > 0)
-            {
-                dos.write(buffer, 0, bufferSize);
-                bytesAvailable = fileInputStream.available();
-                bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-            }
-
-            // send multipart form data necesssary after file data...
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
-            // Responses from the server (code and message)
-            serverResponseCode = conn.getResponseCode();
-            String serverResponseMessage = conn.getResponseMessage();
-
-            Log.i("uploadFile", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
-
-            if(serverResponseCode == 200)
-            {
-						  /* dbengine.open();
-						   dbengine.upDateXMLFileFlag(fileUri, 4);
-						   dbengine.close();*/
-
-                //new File(dir, fileUri).delete();
-                syncFLAG=1;
-
-                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-                SharedPreferences.Editor editor = pref.edit();
-                // editor.remove(xmlForWeb[0]);
-                editor.putString(fileUri, ""+4);
-                editor.commit();
-
-                String FileSyncFlag=pref.getString(fileUri, ""+1);
-
-                delXML(xmlForWeb[0].toString());
-						   		/*dbengine.open();
-					            dbengine.deleteXMLFileRow(fileUri);
-					            dbengine.close();*/
-
-            }
-            else
-            {
-                syncFLAG=0;
-            }
-
-            //close the streams //
-            fileInputStream.close();
-            dos.flush();
-            dos.close();
-
-        } catch (MalformedURLException ex)
-        {
-            ex.printStackTrace();
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-
-
-
-        return serverResponseCode;
-
-    }
-
-    public void delXML(String delPath)
-    {
-        File file = new File(delPath);
-        file.delete();
-        File file1 = new File(delPath.toString().replace(".xml", ".zip"));
-        file1.delete();
-    }
-
-    public static void zip(String[] files, String zipFile) throws IOException
-    {
-        BufferedInputStream origin = null;
-        final int BUFFER_SIZE = 2048;
-
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
-        try
-        {
-            byte data[] = new byte[BUFFER_SIZE];
-
-            for (int i = 0; i < files.length; i++)
-            {
-                FileInputStream fi = new FileInputStream(files[i]);
-                origin = new BufferedInputStream(fi, BUFFER_SIZE);
-                try
-                {
-                    ZipEntry entry = new ZipEntry(files[i].substring(files[i].lastIndexOf("/") + 1));
-                    out.putNextEntry(entry);
-                    int count;
-                    while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1)
-                    {
-                        out.write(data, 0, count);
-                    }
-                }
-                finally
-                {
-                    origin.close();
-                }
-            }
-        }
-        finally
-        {
-            out.close();
-        }
-    }
-
-    public static String[] checkNumberOfFiles(File dir)
-    {
-        int NoOfFiles=0;
-        String [] Totalfiles = null;
-
-        if (dir.isDirectory())
-        {
-            String[] children = dir.list();
-            NoOfFiles=children.length;
-            Totalfiles=new String[children.length];
-
-            for (int i=0; i<children.length; i++)
-            {
-                Totalfiles[i]=children[i];
-            }
-        }
-        return Totalfiles;
     }
 
     public void BackBtnWorking()

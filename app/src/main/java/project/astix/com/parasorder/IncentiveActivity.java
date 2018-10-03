@@ -1,34 +1,34 @@
 package project.astix.com.parasorder;
 
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-        import java.util.ArrayList;
-        import java.util.LinkedHashMap;
-        import java.util.Map;
-        import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 
-        import android.app.ProgressDialog;
-        import android.content.Context;
-        import android.content.Intent;
-        import android.graphics.Color;
-        import android.graphics.Typeface;
-        import android.os.AsyncTask;
-        import android.os.Bundle;
-        import android.text.TextUtils;
-        import android.view.Gravity;
-        import android.view.LayoutInflater;
-        import android.view.View;
-        import android.view.View.OnClickListener;
-        import android.view.ViewGroup.LayoutParams;
-        import android.widget.ImageView;
-        import android.widget.LinearLayout;
-        import android.widget.TextView;
-
-
-public class IncentiveActivity extends BaseActivity
+public class IncentiveActivity extends Activity
 {
-    DBAdapterKenya dbengine=new DBAdapterKenya(IncentiveActivity.this);
+    PRJDatabase dbengine=new PRJDatabase(IncentiveActivity.this);
     public LinearLayout ll_Parent;
     ProgressDialog pDialogGetStores;
     public String Total_Earning="NA",DisplayMsg="NA";
@@ -44,7 +44,29 @@ public class IncentiveActivity extends BaseActivity
     LinkedHashMap<String, ArrayList<String>> HmapIncIdColumnNameAndData;
     LinkedHashMap<String, ArrayList<String>> HmapIncPastDetailColData;
 
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        // TODO Auto-generated method stub
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_HOME)
+        {
+            // finish();
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_MENU)
+        {
+            return true;
+        }
+        if(keyCode==KeyEvent.KEYCODE_SEARCH)
+        {
+            return true;
+        }
 
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -177,7 +199,7 @@ public class IncentiveActivity extends BaseActivity
 
             final ImageView img_Openlayout=(ImageView) view.findViewById(R.id.img_Openlayout);
 
-            ll_hdr.setOnClickListener(new View.OnClickListener()
+            ll_hdr.setOnClickListener(new OnClickListener()
             {
                 @Override
                 public void onClick(View arg0)

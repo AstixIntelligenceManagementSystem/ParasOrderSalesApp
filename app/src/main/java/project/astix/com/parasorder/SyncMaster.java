@@ -1,14 +1,47 @@
 package project.astix.com.parasorder;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Base64;
+import android.util.Log;
+
+import com.astix.Common.CommonInfo;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,44 +56,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-
-import android.media.MediaScannerConnection;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
-import android.util.Log;
-
-import com.astix.Common.CommonInfo;
-
-
 public class SyncMaster extends Activity
 {
-	ProgressDialog pDialogGetStoresImage;
-	private File[] listFileFolder;
-	public  File fileintialFolder;
+
 	public Timer timerForDataSubmission;
 	public	MyTimerTaskForDataSubmission myTimerTaskForDataSubmission;
 
+
+
+	// New Sync way
 
 	 SyncImageData task1;
 	 SyncXMLfileData task2;
@@ -72,20 +76,40 @@ public class SyncMaster extends Activity
 
 	 private File[] listFile;
 	 public  File fileintial;
-	 private File[] listFileDSRSignature;
-	 public  File fileintialDSRSignature;
+	private File[] listFileDSRSignature;
+	public  File fileintialDSRSignature;
 	 public String routeID="0";
 	 String xmlFileName;
 	 int serverResponseCode = 0;
 
 
+
+
+
+
+
+
+
+
+
+
 	Timer timer,timer2;
 	String progressMsg;
-
+	/* MyTimerTask myTimerTask;
+	 MyTimerTask2 mytimerTask2;
+	 SyncPROdata task;*/
 	 ProgressDialog pDialogGetStores;
 
 
 	public String[] xmlForWeb = new String[1];
+
+	//ProgressDialog dialog = null;
+
+	//public TextView chkString;
+	HttpEntity resEntity;
+	private SyncMaster _activity;
+
+	private static final String DATASUBDIRECTORY = "NMPphotos";
 
 
 	public int syncFLAG = 0;
@@ -98,10 +122,12 @@ public class SyncMaster extends Activity
 	InputStream inputStream;
 
 
+
+	// SyncTextFileTaster task1;
 	 public  File dir;
 
-	DBAdapterKenya db = new DBAdapterKenya(this);
-	//DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase db = new PRJDatabase(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 
 	public void showSyncError() {
 		AlertDialog.Builder alertDialogSyncError = new AlertDialog.Builder(
@@ -116,7 +142,7 @@ public class SyncMaster extends Activity
 		}
 		else
 		{
-		alertDialogSyncError.setMessage(getText(R.string.syncAlertErrMsg));
+			alertDialogSyncError.setMessage(getText(R.string.syncAlertErrMsg));
 		}
 		alertDialogSyncError.setNeutralButton(getText(R.string.AlertDialogOkButton),
 				new DialogInterface.OnClickListener() {
@@ -134,7 +160,7 @@ public class SyncMaster extends Activity
 							startActivity(submitStoreIntent);
 							finish();
 						}
-						//SyncMaster.this.finish();
+
 					}
 				});
 		alertDialogSyncError.setIcon(R.drawable.sync_error_ico);
@@ -189,7 +215,7 @@ public class SyncMaster extends Activity
 
 					dialog.dismiss();
 
-					db.open();
+					//db.open();
 					//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 					/*if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 					{
@@ -198,7 +224,7 @@ public class SyncMaster extends Activity
 
 
 					db.reCreateDB();
-					db.close();
+					//db.close();
 
 					Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
 					startActivity(submitStoreIntent);
@@ -221,7 +247,159 @@ public class SyncMaster extends Activity
 
 
 
+	public  int upLoad2Server(String sourceFileUri,String fileUri)
+	{
 
+		     String fileName = fileUri;
+		   //  String upLoadServerUri ="http://103.16.141.16/ReadTxtFileForFerrero/Default.aspx?CLIENTFILENAME="+fileUri;
+
+
+
+			   String upLoadServerUri = CommonInfo.OrderTextSyncPath.trim()+"?CLIENTFILENAME=" +fileUri;
+
+
+		   //  String upLoadServerUri ="http://103.16.141.16/ReadTxtFileForPrabhatFDPSFALive/Default.aspx?CLIENTFILENAME="+fileUri;
+
+
+
+		    // http://103.16.141.16/ReadTxtFileForPrabhatFDPSFALive/Default.aspx
+
+		      int serverResponseCode = 0;
+		      HttpClient httpclient = null;
+			  HttpURLConnection conn = null;
+			  DataOutputStream dos = null;
+			  DataInputStream inStream = null;
+			  String lineEnd = "\r\n";
+			  String twoHyphens = "--";
+			  String boundary = "*****";
+			  int bytesRead, bytesAvailable, bufferSize;
+			  byte[] buffer;
+			  int maxBufferSize = 1024;
+			  String responseFromServer = "";
+		      String Title="MyVedio";
+
+
+			  File sourceFile = new File(sourceFileUri);
+			  if (!sourceFile.isFile())
+			  {
+				  System.out.println("S6 I M in the upLoad2Server End"+"Source File Does not exist");
+			      Log.e("Huzza", "Source File Does not exist");
+			      return 0;
+			  }
+
+			  try
+			      { 	// open a URL connection to the Servlet
+				  		FileInputStream fileInputStream = new FileInputStream(sourceFile);
+				  		//  System.out.println("End_fileInputStream"+fileInputStream);
+
+
+
+			   URL url = new URL(upLoadServerUri);
+			 //  System.out.println("End_fileInputStream_url"+url);
+			   conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
+			 //  System.out.println("End_fileInputStream_url_conn"+conn);
+			   conn.setDoInput(true); // Allow Inputs
+			   conn.setDoOutput(true); // Allow Outputs
+			   conn.setUseCaches(false); // Don't use a Cached Copy
+			   conn.setRequestMethod("POST");
+			   conn.setRequestProperty("Connection", "Keep-Alive");
+			   conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+			   conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+			   conn.setRequestProperty("uploaded_file", fileName);
+			  // System.out.println("uploaded_file"+fileName);
+			   dos = new DataOutputStream(conn.getOutputStream());
+			  // System.out.println("End_fileInputStream_url_dos"+dos);
+			   dos.writeBytes(twoHyphens + boundary + lineEnd);
+			  // System.out.println("FileName_Niti"+fileName);
+			   dos.writeBytes("Content-Disposition: form-data; name=\"title\"" + lineEnd);
+			   dos.writeBytes(lineEnd);
+			   dos.writeBytes(Title);
+			   dos.writeBytes(lineEnd);
+			   dos.writeBytes(twoHyphens + boundary + lineEnd);
+			   dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""+ fileName + "\"" + lineEnd);
+			   dos.writeBytes(lineEnd);
+
+			   bytesAvailable = fileInputStream.available(); // create a buffer of  maximum size
+			  // Log.i("Huzza", "Initial .available : " + bytesAvailable);
+
+			   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+			   buffer = new byte[bufferSize];
+
+			   // read file and write it into form...
+			   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+			  // System.out.println("End_fileInputStream_url_dos_bytesRead"+bytesRead);
+			   while (bytesRead > 0)
+			   {
+				   dos.write(buffer, 0, bufferSize);
+				   bytesAvailable = fileInputStream.available();
+				   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+				   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+			    }
+
+			   // send multipart form data necesssary after file data...
+			   dos.writeBytes(lineEnd);
+			   dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+			   fileInputStream.close();
+			   // Responses from the server (code and message)
+			   serverResponseCode = conn.getResponseCode();
+			   if(serverResponseCode==200)
+			    {
+				// System.out.println("Ajay delete file from sdcard"+ new File(dir, fileUri).delete());
+				   //dbengine.open();
+				   dbengine.upDateTextFileFlag(fileUri, 1);
+				   //dbengine.close();
+				   		new File(dir, fileUri).delete();
+			           // System.out.println("Ajay file deleted");
+			         //   //dbengine.open();
+			           // System.out.println("Ajay  delete file from our database start");
+				   		//dbengine.open();
+			            dbengine.deleteTextFileRow(fileUri);
+			            //dbengine.close();
+			           // System.out.println("Ajay delete file from our database end");
+			          //  //dbengine.close();
+
+
+			        //}
+			     //   nitishStart();
+			    }
+
+
+			  // System.out.println("Ajay Server return serverResponseCode :"+serverResponseCode);
+			   String serverResponseMessage = conn.getResponseMessage();
+
+			  // Log.i("Upload file to server", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
+
+			   // close streams
+			  // Log.i("Upload file to server", fileName + " File is written");
+
+			   dos.flush();
+			   dos.close();
+			  } catch (MalformedURLException ex) {
+			   ex.printStackTrace();
+			   Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
+			  } catch (Exception e) {
+			   e.printStackTrace();
+			  }
+			//this block will give the response of upload link
+			  try {
+			   BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+			   String line;
+			   while ((line = rd.readLine()) != null)
+			   {
+				  // System.out.println("End_fileInputStream_url_dos_bytesRead_line"+line);
+
+			    Log.i("Huzza", "RES Message: " + line);
+			   }
+			   rd.close();
+			  } catch (IOException ioex) {
+			   Log.e("Huzza", "error: " + ioex.getMessage(), ioex);
+			  }
+			  System.out.println("End_fileInputStream_url_dos_bytesRead_serverResponseCode"+serverResponseCode);
+
+			  return serverResponseCode;  // like 200 (Ok)
+
+			 }
 
 
 
@@ -276,19 +454,19 @@ public class SyncMaster extends Activity
 			 String[] fp2s; // = "/mnt/sdcard/NMPphotos/1539_24-05-2013_1.jpg";
 
 				try {
-					db.open();
+					//db.open();
 					String[] sySTidS = db.getStoreIDTblSelectedStoreIDinChangeRouteCase();
 					//String date= db.GetPickerDate();
-					db.close();
+					//db.close();
 					/*for(int chkCountstore=0; chkCountstore < sySTidS.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int syUPlimit = db.getExistingPicNos(sySTidS[chkCountstore].toString());
 						String[] syP2F = db.getImgsPath(sySTidS[chkCountstore].toString());
 						String[] syC4P = db.getImgsComment(sySTidS[chkCountstore].toString());
 
 						String actRid = db.GetActiveRouteID();
-						db.close();
+						//db.close();
 
 						//fp2s = new String[syUPlimit];
 						fp2s = new String[5];
@@ -328,11 +506,11 @@ public class SyncMaster extends Activity
 				} catch (Exception e)
 				{
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				} /*catch (ExecutionException e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				}*/
 
@@ -436,6 +614,32 @@ public class SyncMaster extends Activity
 				    			}
 			    		}
 
+						flag=0;
+						String[] imageToBeDeletedNewStoreFromSdCard=db.deletFromSDcCardPhotoNewStoreValidationBasedSstat("4");
+						if(!imageToBeDeletedNewStoreFromSdCard[0].equals("No Data"))
+						{
+							for(int i=0;i<imageToBeDeletedNewStoreFromSdCard.length;i++)
+							{
+								flag=1;
+
+								String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +imageToBeDeletedNewStoreFromSdCard[i].toString().trim();
+
+								File fdelete = new File(file_dj_path);
+								if (fdelete.exists())
+								{
+									if (fdelete.delete())
+									{
+										//Log.e("-->", "file Deleted :" + file_dj_path);
+										callBroadCast();
+									}
+									else
+									{
+										//Log.e("-->", "file not Deleted :" + file_dj_path);
+									}
+								}
+							}
+						}
+
 
 
 
@@ -449,40 +653,50 @@ public class SyncMaster extends Activity
 						if(whereTo.contentEquals("11"))
 						{
 							int chkSct=0;
-							/*db.open();
+							/*//db.open();
 							chkSct=db.getExistingPicNosOnRemStoreOnChangeRoute();
-							db.close();*/
+							//db.close();*/
 							if(chkSct>0)
 							{
 								whereTo = "";
+								//sysncStart();
+
+								/*File dirORIGimg = new File(Environment.getExternalStorageDirectory(),DATASUBDIRECTORY);
+								deleteFolderFiles(dirORIGimg);*/
+
+
 							}
 							else
 							{
 								whereTo = "";
 
+								/*File dirORIGimg = new File(Environment.getExternalStorageDirectory(),DATASUBDIRECTORY);
+								deleteFolderFiles(dirORIGimg);*/
 
 
-								db.open();
+								//db.open();
 								if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 								{
 									db.reTruncateRouteTbl();
 									//db.reTruncateRouteMstrTbl();
 								}
 								db.reCreateDB();
-								db.close();
+								//db.close();
 
 								Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 								startActivity(submitStoreIntent);
 								finish();
-							}
-						/*	whereTo = "";
-							db.open();
-							db.reCreateDB();
-							db.close();
 
-							Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
-							startActivity(submitStoreIntent);
-							finish();*/
+								/*Intent i = new Intent(SyncMaster.this, WebViewActivity.class);
+								i.putExtra("comeFrom","StockIn");
+								startActivity(i);
+								finish();*/
+
+								//if(whereTo.contentEquals("11"))
+
+
+							}
+
 						}
 
 						else
@@ -558,19 +772,15 @@ public class SyncMaster extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sync_master);
 
-		//_activity = this;
+		_activity = this;
 		//System.out.println("Induwati 0");
 		Intent syncIntent = getIntent();
-		 xmlForWeb[0] = syncIntent.getStringExtra("xmlPathForSync");
+		xmlForWeb[0] = syncIntent.getStringExtra("xmlPathForSync");
 		zipFileName = syncIntent.getStringExtra("OrigZipFileName");
 		whereTo = syncIntent.getStringExtra("whereTo");
 
-
 		try
 		{
-
-
-
 			try
 			{
 			 task1 = new SyncImageData(SyncMaster.this);
@@ -707,7 +917,7 @@ public class SyncMaster extends Activity
 
 	    						dialog.dismiss();
 
-	    					//	db.open();
+	    					//	//db.open();
 	    						//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 	    						if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 	    						{
@@ -716,7 +926,7 @@ public class SyncMaster extends Activity
 
 
 	    					//	db.reCreateDB();
-	    					//	db.close();
+	    					//	//db.close();
 	    						ProductOrderSearch pd=new ProductOrderSearch();
 	    						Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
 	    						startActivity(submitStoreIntent);
@@ -759,9 +969,9 @@ public class SyncMaster extends Activity
 		  {
 			    super.onPreExecute();
 
-			    db.open();
-			    routeID=db.GetActiveRouteID();
-				db.close();
+			    //dbengine.open();
+			    routeID=dbengine.GetActiveRouteID();
+				//dbengine.close();
 
 
 			    pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -776,6 +986,7 @@ public class SyncMaster extends Activity
 				{
 					 pDialogGetStores.setMessage(getResources().getString(R.string.txtSubmitQuoteDetail));
 					}
+
 				else if(DayStartActivity.flgDaySartWorking==1)
 				{
 					pDialogGetStores.setMessage(getResources().getString(R.string.submittingDayStart));
@@ -833,22 +1044,22 @@ public class SyncMaster extends Activity
 
 					  try
 						{
-							db.open();
+							//db.open();
 							NoOfOutletID = db.getAllStoreIDIntblStoreMaterialPhotoDetail();
-							db.close();
+							//db.close();
 
 						} catch (Exception e)
 						{
 							// TODO Auto-generated catch block
-							db.close();
+							//db.close();
 							e.printStackTrace();
 						}
 				for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 				{
-					db.open();
+					//db.open();
 					int NoOfImages = db.getExistingPicNos(NoOfOutletID[chkCountstore].toString());
 					String[] NoOfImgsPath = db.getImgsPath(NoOfOutletID[chkCountstore].toString());
-					db.close();
+					//db.close();
 
 					fp2s = new String[2];
 
@@ -882,12 +1093,13 @@ public class SyncMaster extends Activity
 							/* Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
 				             ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-				             String image_str=  BitMapToString(bmp);*/
+				             String image_str=  BitMapToString(bmp);
+				             ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
 							ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
 							String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
-				             ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
-
+							ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
 
 				        try
 				        {
@@ -991,23 +1203,23 @@ public class SyncMaster extends Activity
 					  try
 						{
 
-							db.open();
+							//db.open();
 							NoOfOutletID = db.getAllStoreIDIntblStoreReturnPhotoDetail();
-							db.close();
+							//db.close();
 
 						} catch (Exception e)
 						{
 							// TODO Auto-generated catch block
-							db.close();
+							//db.close();
 							e.printStackTrace();
 						}
 
 						for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 						{
-							db.open();
+							//db.open();
 							int NoOfImages = db.getExistingPicNosForReturn(NoOfOutletID[chkCountstore].toString());
 							String[] NoOfImgsPath = db.getImgsPathForReturn(NoOfOutletID[chkCountstore].toString());
-							db.close();
+							//db.close();
 
 							fp2s = new String[2];
 
@@ -1041,12 +1253,13 @@ public class SyncMaster extends Activity
 									/* Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
 						             ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-						             String image_str=  BitMapToString(bmp);*/
+						             String image_str=  BitMapToString(bmp);
+						             ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
 									ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
 									String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
-						             ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
-
+									ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
 
 						        try
 						        {
@@ -1142,186 +1355,29 @@ public class SyncMaster extends Activity
 			        }
 
 
-				// Sync Add New Stores Images
-
 				try
 				{
 
 					try
 					{
 
-						db.open();
-						NoOfOutletID = db.getAllStoreIDIntblNewAddedStorePhotoDetail();
-						db.close();
-
-					} catch (Exception e)
-					{
-						// TODO Auto-generated catch block
-						db.close();
-						e.printStackTrace();
-					}
-
-					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
-					{
-						db.open();
-						int NoOfImages = db.getExistingPicNosForNewAddedStore(NoOfOutletID[chkCountstore].toString());
-						String[] NoOfImgsPath = db.getImgsPathForNewAddedStore(NoOfOutletID[chkCountstore].toString());
-						db.close();
-
-						fp2s = new String[2];
-
-						for(int syCOUNT = 0; syCOUNT < NoOfImages; syCOUNT++)
-						{
-							fp2s[0] = NoOfImgsPath[syCOUNT];
-							fp2s[1] = NoOfOutletID[chkCountstore];
-
-							// New Way
-
-							fnameIMG = fp2s[0];
-							UploadingImageName=fp2s[0];
-
-
-							String stID = fp2s[1];
-							String currentImageFileName=fnameIMG;
-
-							boolean isImageExist=false;
-							for (int i = 0; i < listFile.length; i++)
-							{
-								FilePathStrings = listFile[i].getAbsolutePath();
-								if(listFile[i].getName().equals(fnameIMG))
-								{
-									fnameIMG=listFile[i].getAbsolutePath();
-									isImageExist=true;
-									break;
-								}
-							}
-							if(isImageExist)
-							{
-								//Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
-								ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-								String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
-								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
-
-
-								try
-								{
-									stream.flush();
-								}
-								catch (IOException e1)
-								{
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-								try
-								{
-									stream.close();
-								}
-								catch (IOException e1)
-								{
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-
-								long syncTIMESTAMP = System.currentTimeMillis();
-								Date datefromat = new Date(syncTIMESTAMP);
-								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
-								String onlyDate=df.format(datefromat);
-
-
-								nameValuePairs.add(new BasicNameValuePair("image", image_str));
-								nameValuePairs.add(new BasicNameValuePair("FileName",currentImageFileName));
-								nameValuePairs.add(new BasicNameValuePair("comment","NA"));
-								nameValuePairs.add(new BasicNameValuePair("storeID",stID));
-								nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
-								nameValuePairs.add(new BasicNameValuePair("routeID",routeID));
-
-								try
-								{
-
-									HttpParams httpParams = new BasicHttpParams();
-									HttpConnectionParams.setSoTimeout(httpParams, 0);
-									HttpClient httpclient = new DefaultHttpClient(httpParams);
-									HttpPost httppost = new HttpPost(CommonInfo.ImageSyncPath.trim());
-
-
-									httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-									HttpResponse response = httpclient.execute(httppost);
-									String the_string_response = convertResponseToString(response);
-
-									System.out.println("Sunil Doing Testing Response after sending Image" + the_string_response);
-
-									//  if(serverResponseCode == 200)
-									if(the_string_response.equals("Abhinav"))
-									{
-
-										System.out.println("Sunil Doing Testing Response after sending Image inside if" + the_string_response);
-										db.updateImageRecordsSyncdForNewAddedStore(UploadingImageName.toString().trim());
-										// String file_dj_path = Environment.getExternalStorageDirectory() + "/RSPLSFAImages/"+UploadingImageName.toString().trim();
-										String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +UploadingImageName.toString().trim();
-
-										File fdelete = new File(file_dj_path);
-										if (fdelete.exists())
-										{
-											if (fdelete.delete())
-											{
-												//Log.e("-->", "file Deleted :" + file_dj_path);
-												callBroadCast();
-											}
-											else
-											{
-												//Log.e("-->", "file not Deleted :" + file_dj_path);
-											}
-										}
-						            	/* File file = new File(UploadingImageName.toString().trim());
-							         	    file.delete();  */
-									}
-
-								}catch(Exception e)
-								{
-									IMGsyOK = 1;
-
-								}
-							}
-
-
-						}
-
-
-					}
-
-				}
-				catch(Exception e)
-				{
-					IMGsyOK = 1;
-
-				}
-
-				// Sync Stores Close Images
-
-				try
-				{
-
-					try
-					{
-
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllStoreClosePhotoDetail();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 
 					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int NoOfImages = db.getExistingPicNosForStoreClose(NoOfOutletID[chkCountstore].toString());
 						String[] NoOfImgsPath = db.getImgsPathForStoreClose(NoOfOutletID[chkCountstore].toString());
-						db.close();
+						//db.close();
 
 						fp2s = new String[2];
 
@@ -1351,18 +1407,18 @@ public class SyncMaster extends Activity
 								}
 							}
 							if(isImageExist)
-							{
-								/*Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
+							{/*
+								Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
 								ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-								String image_str=  BitMapToString(bmp);*/
+								String image_str=  BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
 
+*/
 								ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
 								String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
 								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
-
-
 								try
 								{
 									stream.flush();
@@ -1457,8 +1513,323 @@ public class SyncMaster extends Activity
 				}
 
 
+				// Sync Add New Stores Images
+
+				try
+				{
+
+					try
+					{
+
+						//db.open();
+						NoOfOutletID = db.getAllStoreIDIntblNewAddedStorePhotoDetail();
+						//db.close();
+
+					} catch (Exception e)
+					{
+						// TODO Auto-generated catch block
+						//db.close();
+						e.printStackTrace();
+					}
+
+					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
+					{
+						//db.open();
+						int NoOfImages = db.getExistingPicNosForNewAddedStore(NoOfOutletID[chkCountstore].toString());
+						String[] NoOfImgsPath = db.getImgsPathForNewAddedStore(NoOfOutletID[chkCountstore].toString());
+						//db.close();
+
+						fp2s = new String[2];
+
+						for(int syCOUNT = 0; syCOUNT < NoOfImages; syCOUNT++)
+						{
+							fp2s[0] = NoOfImgsPath[syCOUNT];
+							fp2s[1] = NoOfOutletID[chkCountstore];
+
+							// New Way
+
+							fnameIMG = fp2s[0];
+							UploadingImageName=fp2s[0];
 
 
+							String stID = fp2s[1];
+							String currentImageFileName=fnameIMG;
+
+							boolean isImageExist=false;
+							for (int i = 0; i < listFile.length; i++)
+							{
+								FilePathStrings = listFile[i].getAbsolutePath();
+								if(listFile[i].getName().equals(fnameIMG))
+								{
+									fnameIMG=listFile[i].getAbsolutePath();
+									isImageExist=true;
+									break;
+								}
+							}
+							if(isImageExist)
+							{
+							/*	Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str=  BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+
+								try
+								{
+									stream.flush();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								try
+								{
+									stream.close();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+
+								long syncTIMESTAMP = System.currentTimeMillis();
+								Date datefromat = new Date(syncTIMESTAMP);
+								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
+								String onlyDate=df.format(datefromat);
+
+
+								nameValuePairs.add(new BasicNameValuePair("image", image_str));
+								nameValuePairs.add(new BasicNameValuePair("FileName",currentImageFileName));
+								nameValuePairs.add(new BasicNameValuePair("comment","NA"));
+								nameValuePairs.add(new BasicNameValuePair("storeID",stID));
+								nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
+								nameValuePairs.add(new BasicNameValuePair("routeID",routeID));
+
+								try
+								{
+
+									HttpParams httpParams = new BasicHttpParams();
+									HttpConnectionParams.setSoTimeout(httpParams, 0);
+									HttpClient httpclient = new DefaultHttpClient(httpParams);
+									HttpPost httppost = new HttpPost(CommonInfo.ImageSyncPath.trim());
+
+
+									httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+									HttpResponse response = httpclient.execute(httppost);
+									String the_string_response = convertResponseToString(response);
+
+									System.out.println("Sunil Doing Testing Response after sending Image" + the_string_response);
+
+									//  if(serverResponseCode == 200)
+									if(the_string_response.equals("Abhinav"))
+									{
+
+										System.out.println("Sunil Doing Testing Response after sending Image inside if" + the_string_response);
+										db.updateImageRecordsSyncdForNewAddedStore(UploadingImageName.toString().trim());
+										// String file_dj_path = Environment.getExternalStorageDirectory() + "/RSPLSFAImages/"+UploadingImageName.toString().trim();
+										String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +UploadingImageName.toString().trim();
+
+										File fdelete = new File(file_dj_path);
+										if (fdelete.exists())
+										{
+											if (fdelete.delete())
+											{
+												//Log.e("-->", "file Deleted :" + file_dj_path);
+												callBroadCast();
+											}
+											else
+											{
+												//Log.e("-->", "file not Deleted :" + file_dj_path);
+											}
+										}
+						            	/* File file = new File(UploadingImageName.toString().trim());
+							         	    file.delete();  */
+									}
+
+								}catch(Exception e)
+								{
+									IMGsyOK = 1;
+
+								}
+							}
+
+
+						}
+
+
+					}
+
+				}
+				catch(Exception e)
+				{
+					IMGsyOK = 1;
+
+				}
+
+				// Sync StoreCheckPic
+
+				try
+				{
+
+					try
+					{
+
+						//db.open();
+						NoOfOutletID = db.getAllStoreIDIntblStoreCheckIn();
+						//db.close();
+
+					} catch (Exception e)
+					{
+						// TODO Auto-generated catch block
+						//db.close();
+						e.printStackTrace();
+					}
+
+					for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
+					{
+						//db.open();
+						int NoOfImages = db.getExistingPicNosForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
+						String[] NoOfImgsPath = db.getImgsPathForStoreCheckIn(NoOfOutletID[chkCountstore].toString());
+						//db.close();
+
+						fp2s = new String[2];
+
+						for(int syCOUNT = 0; syCOUNT < NoOfImages; syCOUNT++)
+						{
+							fp2s[0] = NoOfImgsPath[syCOUNT];
+							fp2s[1] = NoOfOutletID[chkCountstore];
+
+							// New Way
+
+							fnameIMG = fp2s[0];
+							UploadingImageName=fp2s[0];
+
+
+							String stID = fp2s[1];
+							String currentImageFileName=fnameIMG;
+
+							boolean isImageExist=false;
+							for (int i = 0; i < listFile.length; i++)
+							{
+								FilePathStrings = listFile[i].getAbsolutePath();
+								if(listFile[i].getName().equals(fnameIMG))
+								{
+									fnameIMG=listFile[i].getAbsolutePath();
+									isImageExist=true;
+									break;
+								}
+							}
+							if(isImageExist)
+							{
+							/*	Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str=  BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
+								ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+								String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
+								ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+
+								try
+								{
+									stream.flush();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								try
+								{
+									stream.close();
+								}
+								catch (IOException e1)
+								{
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+
+								long syncTIMESTAMP = System.currentTimeMillis();
+								Date datefromat = new Date(syncTIMESTAMP);
+								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
+								String onlyDate=df.format(datefromat);
+
+
+								nameValuePairs.add(new BasicNameValuePair("image", image_str));
+								nameValuePairs.add(new BasicNameValuePair("FileName",currentImageFileName));
+								nameValuePairs.add(new BasicNameValuePair("comment","NA"));
+								nameValuePairs.add(new BasicNameValuePair("storeID",stID));
+								nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
+								nameValuePairs.add(new BasicNameValuePair("routeID",routeID));
+
+								try
+								{
+
+									HttpParams httpParams = new BasicHttpParams();
+									HttpConnectionParams.setSoTimeout(httpParams, 0);
+									HttpClient httpclient = new DefaultHttpClient(httpParams);
+									HttpPost httppost = new HttpPost(CommonInfo.ImageSyncPath.trim());
+
+
+									httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+									HttpResponse response = httpclient.execute(httppost);
+									String the_string_response = convertResponseToString(response);
+
+									System.out.println("Sunil Doing Testing Response after sending Image" + the_string_response);
+
+									//  if(serverResponseCode == 200)
+									if(the_string_response.equals("Abhinav"))
+									{
+
+										System.out.println("Sunil Doing Testing Response after sending Image inside if" + the_string_response);
+										db.updateImageRecordsSyncdForStoreCheckIN(UploadingImageName.toString().trim());
+										// String file_dj_path = Environment.getExternalStorageDirectory() + "/RSPLSFAImages/"+UploadingImageName.toString().trim();
+										String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +UploadingImageName.toString().trim();
+
+										File fdelete = new File(file_dj_path);
+										if (fdelete.exists())
+										{
+											if (fdelete.delete())
+											{
+												//Log.e("-->", "file Deleted :" + file_dj_path);
+												callBroadCast();
+											}
+											else
+											{
+												//Log.e("-->", "file not Deleted :" + file_dj_path);
+											}
+										}
+						            	/* File file = new File(UploadingImageName.toString().trim());
+							         	    file.delete();  */
+									}
+
+								}catch(Exception e)
+								{
+									IMGsyOK = 1;
+
+								}
+							}
+
+
+						}
+
+
+					}
+
+				}
+				catch(Exception e)
+				{
+					IMGsyOK = 1;
+
+				}
 
 				// Sync Signature And selfi Images
 
@@ -1468,24 +1839,24 @@ public class SyncMaster extends Activity
 					try
 					{
 
-						db.open();
+						//db.open();
 						NoOfOutletID = db.getAllDSRSignatureAndSelfi();
-						db.close();
+						//db.close();
 
 					} catch (Exception e)
 					{
 						// TODO Auto-generated catch block
-						db.close();
+						//db.close();
 						e.printStackTrace();
 					}
 if(NoOfOutletID.length>0)
 {
 	for(int chkCountstore=0; chkCountstore < NoOfOutletID.length;chkCountstore++)
 	{
-		db.open();
+		//db.open();
 		int NoOfImages = db.getExistingPicNosForSignatureAndSelfi();
 		String[] NoOfImgsPath = db.getImgsPathForSignatureAndSelfi();
-		db.close();
+		//db.close();
 
 		fp2s = new String[2];
 
@@ -1519,13 +1890,13 @@ if(NoOfOutletID.length>0)
 				/*Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-				String image_str=  BitMapToStringDSSelfiAndSignature(bmp);*/
-
+				String image_str=  BitMapToStringDSSelfiAndSignature(bmp);
+				ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
+*/
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
 				String image_str= compressImage(fnameIMG);// BitMapToString(bmp);
 				ArrayList<NameValuePair> nameValuePairs = new  ArrayList<NameValuePair>();
-
 
 				try
 				{
@@ -1622,8 +1993,6 @@ if(NoOfOutletID.length>0)
 
 				}
 
-
-
 				return null;
 			}
 
@@ -1659,10 +2028,10 @@ if(NoOfOutletID.length>0)
 					}
 					else
 					{
-						db.open();
+						//db.open();
 
 			    		db.updateImageRecordsSyncd();
-			    		db.close();
+			    		//db.close();
 
 						//showSyncSuccess();
 
@@ -1706,153 +2075,7 @@ if(NoOfOutletID.length>0)
 		String result=Base64.encodeToString(arr, Base64.DEFAULT);
 		return result;
 	}
-	/*private String getRealPathFromURI(String contentURI) {
-		Uri contentUri = Uri.parse(contentURI);
-		Cursor cursor = getContentResolver().query(contentUri, null, null, null, null);
-		if (cursor == null) {
-			return contentUri.getPath();
-		} else {
-			cursor.moveToFirst();
-			int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-			return cursor.getString(index);
-		}
-	}*/
 
-	public String compressImage(String imageUri) {
-		String filePath = imageUri;//getRealPathFromURI(imageUri);
-		Bitmap scaledBitmap=null;
-		BitmapFactory.Options options = new BitmapFactory.Options();
-
-//      by setting this field as true, the actual bitmap pixels are not loaded in the memory. Just the bounds are loaded. If
-//      you try the use the bitmap here, you will get null.
-		options.inJustDecodeBounds = true;
-		Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
-
-		int actualHeight = options.outHeight;
-		int actualWidth = options.outWidth;
-
-//      max Height and width values of the compressed image is taken as 816x612
-
-		float maxHeight = 1024.0f;
-		float maxWidth = 768.0f;
-		float imgRatio = actualWidth / actualHeight;
-		float maxRatio = maxWidth / maxHeight;
-
-//      width and height values are set maintaining the aspect ratio of the image
-
-		if (actualHeight > maxHeight || actualWidth > maxWidth) {
-			if (imgRatio < maxRatio) {
-				imgRatio = maxHeight / actualHeight;
-				actualWidth = (int) (imgRatio * actualWidth);
-				actualHeight = (int) maxHeight;
-			} else if (imgRatio > maxRatio) {
-				imgRatio = maxWidth / actualWidth;
-				actualHeight = (int) (imgRatio * actualHeight);
-				actualWidth = (int) maxWidth;
-			} else {
-				actualHeight = (int) maxHeight;
-				actualWidth = (int) maxWidth;
-
-			}
-		}
-
-//      setting inSampleSize value allows to load a scaled down version of the original image
-
-		options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
-
-//      inJustDecodeBounds set to false to load the actual bitmap
-		options.inJustDecodeBounds = false;
-
-//      this options allow android to claim the bitmap memory if it runs low on memory
-		options.inPurgeable = true;
-		options.inInputShareable = true;
-		options.inTempStorage = new byte[768*1024];
-
-		//bmp
-		/*try {
-//          load the bitmap from its path
-
-
-		} catch (OutOfMemoryError exception) {
-			exception.printStackTrace();
-
-		}
-*/
-
-
-		/*if(actualWidth > 768 || h1 > 1024)
-		{
-			bitmap=Bitmap.createScaledBitmap(bitmap,1024,768,true);
-		}
-		else
-		{
-
-			bitmap=Bitmap.createScaledBitmap(bitmap,w1,h1,true);
-		}*/
-		//Bitmap bitmap=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
-	// 	bmp =BitmapFactory.decodeFile(filePath, options);//Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);;//
-
-		try {
-//          load the bitmap from its path
-			bmp = BitmapFactory.decodeFile(filePath, options);
-
-			//bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
-			//scaledBitmap=Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
-		//	bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
-		} catch (OutOfMemoryError exception) {
-			exception.printStackTrace();
-
-		}
-
-		//Bitmap scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
-		//bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
-		ByteArrayOutputStream baos=new  ByteArrayOutputStream();
-		//scaledBitmap.compress(Bitmap.CompressFormat.JPEG,100, baos);
-		bmp.compress(Bitmap.CompressFormat.JPEG,100, baos);
-
-		byte [] arr=baos.toByteArray();
-		String result=Base64.encodeToString(arr, Base64.DEFAULT);
-		return result;
-
-		/*try {
-//          load the bitmap from its path
-			bmp = BitmapFactory.decodeFile(filePath, options);
-		} catch (OutOfMemoryError exception) {
-			exception.printStackTrace();
-
-		}
-		try {
-			scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
-		} catch (OutOfMemoryError exception) {
-			exception.printStackTrace();
-		}*/
-
-		/*float ratioX = actualWidth / (float) options.outWidth;
-		float ratioY = actualHeight / (float) options.outHeight;
-		float middleX = actualWidth / 2.0f;
-		float middleY = actualHeight / 2.0f;*/
-
-
-		//return filename;
-
-	}
-	public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-		final int height = options.outHeight;
-		final int width = options.outWidth;
-		int inSampleSize = 1;
-
-		if (height > reqHeight || width > reqWidth) {
-			final int heightRatio = Math.round((float) height/ (float) reqHeight);
-			final int widthRatio = Math.round((float) width / (float) reqWidth);
-			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;      }
-		final float totalPixels = width * height;
-		final float totalReqPixelsCap = reqWidth * reqHeight * 2;
-		while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
-			inSampleSize++;
-		}
-
-		return inSampleSize;
-	}
 	/*public String BitMapToString(Bitmap bitmap)
 	{
 		int h1=bitmap.getHeight();
@@ -1943,7 +2166,7 @@ if(NoOfOutletID.length>0)
 					}
 				else if(DayStartActivity.flgDaySartWorking==1)
 				{
-                    pDialogGetStores.setMessage(getResources().getString(R.string.submittingDayStart));
+					pDialogGetStores.setMessage(getResources().getString(R.string.submittingDayStart));
 
 				}
 				else
@@ -1965,7 +2188,7 @@ if(NoOfOutletID.length>0)
 
 		     try {
 
-		     String xmlfileNames = db.fnGetXMLFile("3");
+		     String xmlfileNames = dbengine.fnGetXMLFile("3");
 
 		      int index=0;
 				 if(!xmlfileNames.equals("")) {
@@ -2067,8 +2290,8 @@ if(NoOfOutletID.length>0)
 
 							 if (serverResponseCode == 200) {
 
-								 db.upDateTblXmlFile(xmlFileName);
-								 db.deleteXmlTable("4");
+								 dbengine.upDateTblXmlFile(xmlFileName);
+								 dbengine.deleteXmlTable("4");
 		                     /*dbengine.upDatetbl_allAnswermstr("3");
 		                     dbengine.upDatetbl_DynamcDataAnswer("3");*/
 
@@ -2236,7 +2459,11 @@ if(NoOfOutletID.length>0)
 								timer2 = null;
 							}
 
-
+				/*	int Sstat=6;
+					//db.open();
+					db.updateRecordsSyncd(Sstat);		// update syncd' records
+					//db.close();*/
+							db.UpdateStoreVisitWiseTablesAfterSync(4);
 
 
 
@@ -2377,17 +2604,18 @@ if(NoOfOutletID.length>0)
 			super.onPreExecute();
 
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
+			//  pDialogGetStores.setMessage("Uploading Data...");
 
 
-            if(DayStartActivity.flgDaySartWorking==1)
-            {
-                pDialogGetStores.setMessage(getResources().getString(R.string.submittingDayStart));
-                DayStartActivity.flgDaySartWorking=0;
-            }
-            else
-            {
-                pDialogGetStores.setMessage(getResources().getString(R.string.txtGetStockData));
-            }
+				if(DayStartActivity.flgDaySartWorking==1)
+		           {
+			pDialogGetStores.setMessage(getResources().getString(R.string.submittingDayStart));
+
+		           }
+		           else
+				{
+					pDialogGetStores.setMessage(getResources().getString(R.string.txtGetStockData));
+				}
 			pDialogGetStores.setIndeterminate(false);
 			pDialogGetStores.setCancelable(false);
 			pDialogGetStores.setCanceledOnTouchOutside(false);
@@ -2398,15 +2626,15 @@ if(NoOfOutletID.length>0)
 		@Override
 		protected Void doInBackground(Void... params)
 		{
-			/*ServiceWorker newservice=new ServiceWorker();
+			ServiceWorker newservice=new ServiceWorker();
 
-			newservice=newservice.fnGetDistStockData(getApplicationContext(),CommonInfo.imei);
-			if(newservice.flagExecutedServiceSuccesfully!=38)
+			/*newservice=newservice.fnGetVanStockData(getApplicationContext(),CommonInfo.imei);
+			if(newservice.flagExecutedServiceSuccesfully!=39)
 			{
 				serviceException=true;
 
-			}
-*/
+			}*/
+
 			return null;
 		}
 
@@ -2433,17 +2661,17 @@ if(NoOfOutletID.length>0)
 				if(whereTo.contentEquals("11"))
 				{
 					int Sstat=4;
-					db.open();
+					//db.open();
 					db.updateRecordsSyncd(Sstat);		// update syncd' records
-					db.close();
+					//db.close();
 					Date pdaDate=new Date();
 					SimpleDateFormat	sdfPDaDate = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 					String getPDADate = sdfPDaDate.format(pdaDate).toString().trim();
 
-					db.open();
+					//db.open();
 					String getServerDate=db.fnGetServerDate();
 					db.reCreateDB();
-					db.close();
+					//db.close();
 
 					if(!getPDADate.equals(""))
 					{
@@ -2465,24 +2693,22 @@ if(NoOfOutletID.length>0)
 							        			e.printStackTrace();
 							        		}*/
 
-							/*Intent submitStoreIntent = new Intent(SyncMaster.this, AllButtonActivity.class);
+							Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 							startActivity(submitStoreIntent);
-							finish();*/
-							UploadImageFromFolder(1);
+							finish();
+
 
 						}
 						else
 						{
-							/*Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
+							Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 							startActivity(submitStoreIntent);
-							finish();*/
-							UploadImageFromFolder(2);
+							finish();
 						}
 					}
 					else
 					{
-						//showSyncSuccess();
-						UploadImageFromFolder( 3);
+						showSyncSuccess();
 					}
 
 
@@ -2490,21 +2716,19 @@ if(NoOfOutletID.length>0)
 				}
 				else if(whereTo.contentEquals("DayStart"))
 				{
-					Intent submitStoreIntent = new Intent(SyncMaster.this, AllButtonActivity.class);
-					startActivity(submitStoreIntent);
-					finish();
-					/*Intent intent=new Intent(SyncMaster.this,DSR_Registration.class);
+					Intent intent=new Intent(SyncMaster.this,DSR_Registration.class);
 					intent.putExtra("IntentFrom", "SPLASH");
 					startActivity(intent);
-					finish();;*/
+					finish();;
 
 				}
 				else
 				{
-					int Sstat=6;
-					db.open();
+				/*	int Sstat=6;
+					//db.open();
 					db.updateRecordsSyncd(Sstat);		// update syncd' records
-					db.close();
+					//db.close();*/
+					//db.UpdateStoreVisitWiseTablesAfterSync(4);
 					showSyncSuccess();
 
 
@@ -2513,253 +2737,140 @@ if(NoOfOutletID.length>0)
 
 		}
 	}
+	public String compressImage(String imageUri) {
+		String filePath = imageUri;//getRealPathFromURI(imageUri);
+		Bitmap scaledBitmap=null;
+		BitmapFactory.Options options = new BitmapFactory.Options();
 
-	private class SyncImageDataFromFolder extends AsyncTask<Void, Void, Void>
-	{
-		String[] fp2s;
-		String[] NoOfOutletID;
-		int flagForWheresendAfterSyncComplete;
+//      by setting this field as true, the actual bitmap pixels are not loaded in the memory. Just the bounds are loaded. If
+//      you try the use the bitmap here, you will get null.
+		options.inJustDecodeBounds = true;
+		Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
 
-		public SyncImageDataFromFolder(SyncMaster activity,int flagForWheresendAfterSyncComplete)
-		{
-			pDialogGetStoresImage = new ProgressDialog(activity);
-			this.flagForWheresendAfterSyncComplete=flagForWheresendAfterSyncComplete;
+		int actualHeight = options.outHeight;
+		int actualWidth = options.outWidth;
+
+//      max Height and width values of the compressed image is taken as 816x612
+
+		float maxHeight = 1024.0f;
+		float maxWidth = 768.0f;
+		float imgRatio = actualWidth / actualHeight;
+		float maxRatio = maxWidth / maxHeight;
+
+//      width and height values are set maintaining the aspect ratio of the image
+
+		if (actualHeight > maxHeight || actualWidth > maxWidth) {
+			if (imgRatio < maxRatio) {
+				imgRatio = maxHeight / actualHeight;
+				actualWidth = (int) (imgRatio * actualWidth);
+				actualHeight = (int) maxHeight;
+			} else if (imgRatio > maxRatio) {
+				imgRatio = maxWidth / actualWidth;
+				actualHeight = (int) (imgRatio * actualHeight);
+				actualWidth = (int) maxWidth;
+			} else {
+				actualHeight = (int) maxHeight;
+				actualWidth = (int) maxWidth;
+
+			}
 		}
 
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
+//      setting inSampleSize value allows to load a scaled down version of the original image
+
+		options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
+
+//      inJustDecodeBounds set to false to load the actual bitmap
+		options.inJustDecodeBounds = false;
+
+//      this options allow android to claim the bitmap memory if it runs low on memory
+		options.inPurgeable = true;
+		options.inInputShareable = true;
+		options.inTempStorage = new byte[768*1024];
+
+		//bmp
+  /*try {
+//          load the bitmap from its path
 
 
-			pDialogGetStoresImage.setTitle(getText(R.string.genTermPleaseWaitNew));
+  } catch (OutOfMemoryError exception) {
+   exception.printStackTrace();
 
-			pDialogGetStoresImage.setMessage("Submitting Pending Images...");
-
-			pDialogGetStoresImage.setIndeterminate(false);
-			pDialogGetStoresImage.setCancelable(false);
-			pDialogGetStoresImage.setCanceledOnTouchOutside(false);
-			pDialogGetStoresImage.show();
+  }
+*/
 
 
-			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-			{
+  /*if(actualWidth > 768 || h1 > 1024)
+  {
+   bitmap=Bitmap.createScaledBitmap(bitmap,1024,768,true);
+  }
+  else
+  {
 
-			}
-			else
-			{
-				// Locate the image folder in your SD Card
-				fileintialFolder = new File(Environment.getExternalStorageDirectory()
-						+ File.separator + CommonInfo.ImagesFolder);
-				// Create a new folder if no folder named SDImageTutorial exist
-				fileintialFolder.mkdirs();
-			}
+   bitmap=Bitmap.createScaledBitmap(bitmap,w1,h1,true);
+  }*/
+		//Bitmap bitmap=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
+		//  bmp =BitmapFactory.decodeFile(filePath, options);//Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);;//
 
+		try {
+//          load the bitmap from its path
+			bmp = BitmapFactory.decodeFile(filePath, options);
 
-			if (fileintialFolder.isDirectory())
-			{
-				listFileFolder = fileintialFolder.listFiles();
-			}
-
-
-
-
-
-		}
-
-		@Override
-		protected Void doInBackground(Void... params)
-		{
-
-
-			// Sync POS Images
-
-			try
-			{
-
-				if(listFileFolder!=null && listFileFolder.length>0)
-				{
-					for(int chkCountstore=0; chkCountstore < listFileFolder.length;chkCountstore++)
-					{
-
-
-
-
-
-						// Bitmap bmp = BitmapFactory.decodeFile(listFileFolder[chkCountstore].getAbsolutePath());
-						// ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-						//String image_str=  BitMapToString(bmp);
-
-
-						//Bitmap bmp = BitmapFactory.decodeFile(fnameIMG);
-						ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-						String image_str= compressImage(listFileFolder[chkCountstore].getAbsolutePath());// BitMapToString(bmp);
-
-
-						ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
-						String UploadingImageName=listFileFolder[chkCountstore].getName();
-
-						try
-						{
-							stream.flush();
-						}
-						catch (IOException e1)
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						try
-						{
-							stream.close();
-						}
-						catch (IOException e1)
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-						long syncTIMESTAMP = System.currentTimeMillis();
-						Date datefromat = new Date(syncTIMESTAMP);
-						SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
-						String onlyDate=df.format(datefromat);
-
-
-						nameValuePairs.add(new BasicNameValuePair("image", image_str));
-						nameValuePairs.add(new BasicNameValuePair("FileName",UploadingImageName));
-						nameValuePairs.add(new BasicNameValuePair("comment","NA"));
-						nameValuePairs.add(new BasicNameValuePair("storeID","0"));
-						nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
-						nameValuePairs.add(new BasicNameValuePair("routeID","0"));
-
-						try
-						{
-
-							HttpParams httpParams = new BasicHttpParams();
-							HttpConnectionParams.setSoTimeout(httpParams, 0);
-							HttpClient httpclient = new DefaultHttpClient(httpParams);
-							HttpPost httppost = new HttpPost(CommonInfo.ImageSyncPath.trim());
-
-
-							httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-							HttpResponse response = httpclient.execute(httppost);
-							String the_string_response = convertResponseToString(response);
-
-							System.out.println("Sunil Doing Testing Response after sending Image" + the_string_response);
-
-							//  if(serverResponseCode == 200)
-							if(the_string_response.equals("Abhinav"))
-							{
-
-
-								String file_dj_path = Environment.getExternalStorageDirectory() + "/"+CommonInfo.ImagesFolder+"/"+ UploadingImageName.trim();
-								File fdelete = new File(file_dj_path);
-								if (fdelete.exists())
-								{
-									if (fdelete.delete())
-									{
-										Log.e("-->", "file Deleted :" + file_dj_path);
-										callBroadCast();
-									}
-									else
-									{
-										Log.e("-->", "file not Deleted :" + file_dj_path);
-									}
-								}
-
-
-							}
-
-						}catch(Exception e)
-						{
-
-
-						}
-
-
-
-
-
-					}
-				}
-
-
-			}
-			catch(Exception e)
-			{
-
-
-			}
-
-			return null;
-		}
-
-		@Override
-		protected void onCancelled()
-		{
-			Log.i("SvcMgr", "Service Execution Cancelled");
-		}
-
-		@Override
-		protected void onPostExecute(Void result)
-		{
-			super.onPostExecute(result);
-			if(pDialogGetStoresImage.isShowing() && pDialogGetStoresImage!=null)
-			{
-				pDialogGetStoresImage.dismiss();
-			}
-
-			//  version checkup
-
-			if(flagForWheresendAfterSyncComplete==1){
-				Intent submitStoreIntent = new Intent(SyncMaster.this, AllButtonActivity.class);
-				startActivity(submitStoreIntent);
-				finish();
-			}
-			if(flagForWheresendAfterSyncComplete==2){
-				Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
-				startActivity(submitStoreIntent);
-				finish();
-			}
-			if(flagForWheresendAfterSyncComplete==3){
-				showSyncSuccess();
-			}
+			//bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
+			//scaledBitmap=Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
+			// bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
+		} catch (OutOfMemoryError exception) {
+			exception.printStackTrace();
 
 		}
+
+		//Bitmap scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
+		//bmp=Bitmap.createScaledBitmap(bmp,actualWidth,actualHeight,true);
+		ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+		//scaledBitmap.compress(Bitmap.CompressFormat.JPEG,100, baos);
+		bmp.compress(Bitmap.CompressFormat.JPEG,100, baos);
+
+		byte [] arr=baos.toByteArray();
+		String result=Base64.encodeToString(arr, Base64.DEFAULT);
+		return result;
+
+  /*try {
+//          load the bitmap from its path
+   bmp = BitmapFactory.decodeFile(filePath, options);
+  } catch (OutOfMemoryError exception) {
+   exception.printStackTrace();
+
+  }
+  try {
+   scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight,Bitmap.Config.ARGB_8888);
+  } catch (OutOfMemoryError exception) {
+   exception.printStackTrace();
+  }*/
+
+  /*float ratioX = actualWidth / (float) options.outWidth;
+  float ratioY = actualHeight / (float) options.outHeight;
+  float middleX = actualWidth / 2.0f;
+  float middleY = actualHeight / 2.0f;*/
+
+
+		//return filename;
+
 	}
-	public void	UploadImageFromFolder(int flagForWheresendAfterSyncComplete){
-		db.open();
-		int tableCount1=  db.CheckTableImageHaveData();
-		int tableCount2=  db.ChecktblStoreMaterialPhotoDetailHaveData();
-		int tableCount3=  db.ChecktblStoreProductPhotoDetailHaveData();
-		int tableCount4=  db.ChecktblStoreClosedPhotoDetailHaveData();
-		int tableCount5=  db.ChecktblDsrRegDetailsHaveData();
-		db.close();
-		File   fileintial = new File(Environment.getExternalStorageDirectory()
-				+ File.separator + CommonInfo.ImagesFolder);
+	public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
 
-		if(tableCount1==0 && tableCount2==0 && tableCount3==0 && tableCount4==0 && tableCount5==0 && fileintial.isDirectory() && (fileintial.listFiles()!=null) && (fileintial.listFiles().length>0)){
-			SyncImageDataFromFolder syncImage=new SyncImageDataFromFolder(SyncMaster.this,flagForWheresendAfterSyncComplete);
-			syncImage.execute();
-		}
-		else{
-			if(flagForWheresendAfterSyncComplete==1){
-				Intent submitStoreIntent = new Intent(SyncMaster.this, AllButtonActivity.class);
-				startActivity(submitStoreIntent);
-				finish();
-			}
-			if(flagForWheresendAfterSyncComplete==2){
-				Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
-				startActivity(submitStoreIntent);
-				finish();
-			}
-			if(flagForWheresendAfterSyncComplete==3){
-				showSyncSuccess();
-			}
-
+		if (height > reqHeight || width > reqWidth) {
+			final int heightRatio = Math.round((float) height/ (float) reqHeight);
+			final int widthRatio = Math.round((float) width / (float) reqWidth);
+			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;      }
+		final float totalPixels = width * height;
+		final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+		while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+			inSampleSize++;
 		}
 
+		return inSampleSize;
 	}
 
 }

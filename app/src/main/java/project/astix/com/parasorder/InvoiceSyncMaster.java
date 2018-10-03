@@ -1,18 +1,20 @@
 package project.astix.com.parasorder;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.format.DateUtils;
+import android.util.Log;
+import android.view.WindowManager;
 
+import com.astix.Common.CommonInfo;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,21 +30,18 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.text.format.DateUtils;
-import android.util.Log;
-import android.view.WindowManager;
-
-import com.astix.Common.CommonInfo;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 public class InvoiceSyncMaster extends Activity
@@ -77,7 +76,7 @@ public class InvoiceSyncMaster extends Activity
 	
 	 ArrayList<String> stIDs;
 		ArrayList<String> stNames;
-	DBAdapterKenya db = new DBAdapterKenya(this);
+	PRJDatabase db = new PRJDatabase(this);
 	
 	public void showSyncError()
 	{
@@ -144,7 +143,7 @@ public class InvoiceSyncMaster extends Activity
 					
 					dialog.dismiss();
 					
-					//db.open();
+					////db.open();
 					//System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 					/*if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 					{
@@ -153,7 +152,7 @@ public class InvoiceSyncMaster extends Activity
 					
 					
 					//db.reCreateDB();
-					//db.close();
+					////db.close();
 					
 					Intent submitStoreIntent = new Intent(InvoiceSyncMaster.this, InvoiceStoreSelection.class);
 					submitStoreIntent.putExtra("imei", imei);
@@ -303,9 +302,9 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	        }
 	        
 	        if(IMGsyOK == 0){
-	        	/*db.open();
+	        	/*//db.open();
 	        	db.PicRecordPath2del(fnameIMG);
-	        	db.close();*/
+	        	//db.close();*/
 	        }
 				
 		}
@@ -386,19 +385,19 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 			 String[] fp2s; // = "/mnt/sdcard/NMPphotos/1539_24-05-2013_1.jpg";
 		        
 				try {
-					db.open();
+					//db.open();
 					String[] sySTidS = db.getStoreIDTblSelectedStoreIDinChangeRouteCase();
 					//String date= db.GetPickerDate();
-					db.close();
+					//db.close();
 					/*for(int chkCountstore=0; chkCountstore < sySTidS.length;chkCountstore++)
 					{
-						db.open();
+						//db.open();
 						int syUPlimit = db.getExistingPicNos(sySTidS[chkCountstore].toString());
 						String[] syP2F = db.getImgsPath(sySTidS[chkCountstore].toString());
 						String[] syC4P = db.getImgsComment(sySTidS[chkCountstore].toString());
 						
 						String actRid = db.GetActiveRouteID();
-						db.close();
+						//db.close();
 						
 						//fp2s = new String[syUPlimit];
 						fp2s = new String[5];
@@ -437,11 +436,11 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 					
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				} /*catch (ExecutionException e) {
 					// TODO Auto-generated catch block
-					db.close();
+					//db.close();
 					e.printStackTrace();
 				}*/
 				
@@ -639,7 +638,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 			 
 			 			// ZIPPING XML FILE HERE
 			 //String newzipfile = Environment.getExternalStorageDirectory() + "/TJUKSFAInvoicexml/" + zipFileName + ".zip";
-				String newzipfile = Environment.getExternalStorageDirectory() + "/"+CommonInfo.InvoiceXMLFolder+"/" + zipFileName + ".zip";
+				String newzipfile = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.InvoiceXMLFolder+"/" + zipFileName + ".zip";
 
 				try {
 				zip(xmlForWeb,newzipfile);
@@ -714,7 +713,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	                                	if(res_code==200){
 	                                		syncFLAG = 1;
 	                                		System.out.println("After Sync Successful res_code: if " + res_code);
-	                                		/*db.open();
+	                                		/*//db.open();
 	                                		System.out.println("After Sync Successful mSelectedItems.size(): " + mSelectedItems.size());
 	                                		
 	                                		for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++) 
@@ -729,8 +728,8 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 
 	                							
 	                						}
-	                                		db.close();*/
-	                                		db.open();
+	                                		//db.close();*/
+	                                		//db.open();
 	                                		if(whereTo.contentEquals("7"))
 	                                		{
 	                                			db.updateInvoiceButtonRecordsSyncd("7");
@@ -747,7 +746,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	                                		db.updateInvoiceButtonRecordsSyncd("3");		// update syncd' records
 	                                		
 	                                		}
-	                                		db.close();
+	                                		//db.close();
 	                                		//delete recently synced xml (not zip)
 	                                		delXML(xmlForWeb[0].toString());
 	                                		//System.out.println("inside runonUIthread() - Sync OK");
@@ -808,7 +807,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	        	}
 	        	else
 	        	{
-	        		/*db.open();
+	        		/*//db.open();
 	        		if(whereTo.contentEquals("11"))
             		{
             			db.updateInvoiceButtonRecordsSyncd("7");
@@ -819,7 +818,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
             		db.updateInvoiceButtonRecordsSyncd("3");		// update syncd' records
             		
             		}		// update syncd' records
-            		db.close();*/
+            		//db.close();*/
 	        		showSyncSuccess();
 	        	}
 	        }

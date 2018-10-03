@@ -1,8 +1,12 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+    >
 
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
     <RelativeLayout 
     android:layout_height="48dp"
     android:layout_width="fill_parent" 
@@ -40,33 +44,28 @@
 
 </RelativeLayout>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/rtv_hdr"
-        android:layout_above="@+id/btn_done"
-        android:id="@+id/scrollView">
-
     <RelativeLayout 
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+         android:layout_below="@+id/rtv_hdr" 
+         
         android:padding="2dp">
-
-        <TableLayout
+    <TableLayout 
    android:id="@+id/tbl_main"
     android:layout_width="match_parent" 
     android:layout_height="wrap_content"
    android:layout_alignParentTop="true"
     android:shrinkColumns="*" 
-     android:stretchColumns="*">
+     android:stretchColumns="*" 
+ 
+      >
 
         <TableRow 
         android:layout_height="wrap_content" 
         android:layout_width="fill_parent" 
         android:gravity="center_horizontal"
         android:background="@drawable/table_row_bg"
-        android:weightSum="4">
-
+        android:weightSum="4">  
         <TextView 
             android:layout_width="0dp"
              android:layout_height="match_parent"
@@ -99,28 +98,30 @@
             android:textColor="#ffffff"/>
     </TableRow>
 
-    </TableLayout>
+
+</TableLayout>
+
 
         <TableLayout
+
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="2dp"
             android:shrinkColumns="*"
             android:stretchColumns="*"
             android:id="@+id/tbl_inflate"
-            android:layout_below="@+id/tbl_main">
+            android:layout_below="@+id/tbl_main"
 
+            >
         </TableLayout>
 
-        <TableLayout
+            <TableLayout
                 android:layout_height="match_parent"
                 android:layout_width="fill_parent"
                 android:gravity="center_horizontal"
                 android:background="@drawable/table_row_last_bg"
                 android:padding="2dp"
-
                 android:layout_marginTop="20dp"
-            android:id="@+id/tbl_targetAchieved"
                 android:layout_below="@+id/tbl_inflate"
                 android:weightSum="4">
 
@@ -160,6 +161,7 @@
                         android:textColor="#ffffff"
                         android:text="@string/txtTargetvsAchieved"
                         android:textSize="13sp"
+                        android:visibility="gone"
                         android:background="@drawable/custom_button"/>
 
                     <LinearLayout
@@ -270,20 +272,10 @@
             </TableRow>
             </TableLayout>
 
+
 </RelativeLayout>
 
+
+
+</RelativeLayout>
     </ScrollView>
-
-    <Button
-        android:id="@+id/btn_done"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/scroll_view"
-        android:textSize="12sp"
-        android:textColor="#000"
-        android:background="@drawable/custom_button_dayend"
-        android:text="@string/txtDone" />
-
-    </RelativeLayout>

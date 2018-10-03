@@ -107,7 +107,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Fresh Order"
+        android:text="Fresh Invoice"
          android:gravity="center"
          android:textSize="10sp"
         android:textStyle="bold"

@@ -129,17 +129,17 @@ android:visibility="visible"
        android:layout_weight="1.5"
        android:gravity="center"
         android:textSize="12sp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:textColor="#FF4A4F"
         android:textStyle="bold"
-
+        
         android:id="@+id/txt_stockEntry_Cases"
         android:text="Stock Entry(In Pieces)"
         />
         <RadioButton android:layout_width="0dp"
              android:layout_weight="1"
            android:textSize="12sp"
-            android:visibility="gone"
+            
             android:layout_height="match_parent"
             android:id="@+id/RB_inpieces"
             android:text="In Pieces"
@@ -149,7 +149,6 @@ android:visibility="visible"
             android:text="In Cases"
             android:textSize="12sp"
             android:id="@+id/RB_InCases"
-             android:visibility="gone"
             android:layout_weight="1"/>
     </LinearLayout>
     

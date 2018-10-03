@@ -1,28 +1,5 @@
 package project.astix.com.parasorder;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
-
-
-
-
-
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.provider.Settings;
 import android.app.ActionBar.LayoutParams;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -32,6 +9,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.BatteryManager;
+import android.os.Bundle;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.UnderlineSpan;
@@ -40,7 +22,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -54,18 +35,29 @@ import android.widget.TextView;
 
 import com.astix.Common.CommonInfo;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+
 public class LastVisitDetails extends BaseActivity
 {
-
-	TextView tv_outstandingvalue,tv_overdueVal;
-	String[] strInvoiceData;
-	LinearLayout ll_InvoiceLastVisit,ll_inflateInvoiceData;
-
+	public int flgOrderType=0;
+	public static String TempStoreVisitCode="NA";
+	public int flgVisitCollectionMarkedStatus=0;
+	public static int battLevel=0;
 	public  LinearLayout ll_gstDetails,ll_gstDependent;
 	public  RadioButton rb_gst_yes,rb_gst_no,rb_pending;
 	public  EditText edit_gstYes;
 	public Button gst_Details_but,btn_CloseStore;
-		 
+	public String StoreVisitCode="NA";
 	public  ArrayList<String> GstComplianceData=new  ArrayList<String>();
 		 
 	public  String flagforGstLayout="",flagforGstRadio="";
@@ -77,8 +69,6 @@ public class LastVisitDetails extends BaseActivity
 	
 	public int chkIfStoreFasQuote=0;
 	public int chkIfStoreAllowedQuote=1;
-	
-	 LinkedHashMap<String, String> hmapDistinctSalesQuotePersonMeetMstr=new LinkedHashMap<String, String>();
 	public String storeID;
 	public String imei;
 	public String date;
@@ -86,56 +76,35 @@ public class LastVisitDetails extends BaseActivity
 	public Double currLon;
 	public Double currLat;
 	public String selStoreName;
-	
 	public String startTS;
 	public int bck = 0;
-	
 	public int checkdataForVisit=0;
-	
-	
 	public LocationManager locationManager;
 	public Location location;
 	public float acc;
-	
-	
-	public Double myCurrentLon; 
+	public Double myCurrentLon;
 	public Double myCurrentLat;
-	
-	
-	public int battLevel;
-	
-	Float locACC;
-	
-	
-	
-	public TableLayout tbl4_dyntable_dynprodtableQuatation; 
+	public TableLayout tbl4_dyntable_dynprodtableQuatation;
 	public TableRow tr2PG4;
-	
-	public TableLayout tbl1_dyntable_For_OrderDetails; 
+	public TableLayout tbl1_dyntable_For_OrderDetails;
 	public TableRow tr1PG2;
-	
-	public TableLayout tbl3_dyntable_SchemeApplicable; 
+	public TableLayout tbl3_dyntable_SchemeApplicable;
 	public TableRow tr2PG2;
-	
-	public TableLayout tbl3_dyntable_SpecialSchemeApplicable; 
+	public TableLayout tbl3_dyntable_SpecialSchemeApplicable;
 	public TableRow tr2PG2_SpecialScheme;
-	
-	
 	public String Noti_text="Null";
 	public int MsgServerID=0;
-
-
-
-	public TableLayout tbl2_dyntable_For_LastVisitDate; 
+	public TableLayout tbl2_dyntable_For_LastVisitDate;
 	public TableRow tr3PG2;
-	
-	
-	public TableLayout tbl1_dyntable_For_ExecutionDetails; 
+	public TableLayout tbl1_dyntable_For_ExecutionDetails;
 	public TableRow ExecutionRow;
-	
 	public String lastVisitDate="";
 	public String lastOrderDate="";
-	
+	LinkedHashMap<String, String> hmapStoreBasicDetails=new LinkedHashMap<String, String>();
+	String[] strInvoiceData;
+	LinearLayout ll_InvoiceLastVisit,ll_inflateInvoiceData;
+	 LinkedHashMap<String, String> hmapDistinctSalesQuotePersonMeetMstr=new LinkedHashMap<String, String>();
+	Float locACC;
 	 LinkedHashMap<String, String> hmapAllValuesOfPaymentMode;
 	 CheckBox chBoxView,AdvanceBeforeDeliveryCheckBoxNew,OnDeliveryCheckBoxNew,CreditCheckBoxNew;
 	 LinearLayout ll_data,parentOfAdvanceBeforeDeliveryPayMentMode,parentOfOnDeliveryPayMentMode,parentOfCreditPayMentMode,parentOfCheckBox;
@@ -147,11 +116,17 @@ public class LastVisitDetails extends BaseActivity
 	Locale locale  = new Locale("en", "UK");
 	String pattern = "###.##";
 	DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getNumberInstance(locale);
-	
-	
-	DBAdapterKenya dbengine = new DBAdapterKenya(this); 
-	
-	
+	TextView tv_outstandingvalue;
+
+	PRJDatabase dbengine = new PRJDatabase(this);
+	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context arg0, Intent intent) {
+
+			battLevel =intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+
+		}
+	};
 
 	@Override
 	protected void onResume() {
@@ -161,21 +136,21 @@ public class LastVisitDetails extends BaseActivity
 		try
 		{
 
-		dbengine.open();
-		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		////dbengine.open();
+		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
 		StringTokenizer token = new StringTokenizer(String.valueOf(Noti_textWithMsgServerID), "_");
-		
+
 		MsgServerID= Integer.parseInt(token.nextToken().trim());
 		Noti_text= token.nextToken().trim();
-		
-		
+
+
 		if(Noti_text.equals("") || Noti_text.equals("Null"))
 		{
-			
+
 		}
 		else
 		{
@@ -184,27 +159,27 @@ public class LastVisitDetails extends BaseActivity
 				LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		        View openDialog = inflater.inflate(R.layout.custom_dialog, null);
 		        openDialog.setBackgroundColor(Color.parseColor("#ffffff"));
-		        
+
 		        builder.setCancelable(false);
 		     	TextView header_text=(TextView)openDialog. findViewById(R.id.txt_header);
 		     	final TextView msg=(TextView)openDialog. findViewById(R.id.msg);
-		     	
+
 				final Button ok_but=(Button)openDialog. findViewById(R.id.but_yes);
 				final Button cancel=(Button)openDialog. findViewById(R.id.but_no);
-				
+
 				cancel.setVisibility(View.GONE);
 			    header_text.setText(getText(R.string.AlertDialogHeaderMsg));
 			     msg.setText(Noti_text);
-			     	
+
 			     	ok_but.setText(getText(R.string.AlertDialogOkButton));
-			     	
+
 					builder.setView(openDialog,0,0,0,0);
 
-			        ok_but.setOnClickListener(new OnClickListener() 
+			        ok_but.setOnClickListener(new OnClickListener()
 			        {
-						
+
 						@Override
-						public void onClick(View arg0) 
+						public void onClick(View arg0)
 						{
 							// TODO Auto-generated method stub
 
@@ -212,102 +187,87 @@ public class LastVisitDetails extends BaseActivity
 							Date dateobj = new Date(syncTIMESTAMP);
 							SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 							String Noti_ReadDateTime = df.format(dateobj);
-				    	
-							dbengine.open();
-							dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-							dbengine.close();
-							
+
+							////dbengine.open();
+							dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+							//dbengine.close();
+
 							try
 							{
-								dbengine.open();
-							    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
+								////dbengine.open();
+							    int checkleftNoti=dbengine.countNumberOFNotificationtblPDANotificationMaster();
 							    if(checkleftNoti>0)
 							    {
-								    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
+								    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
 										System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 										if(!Noti_textWithMsgServerID.equals("Null"))
 										{
 											StringTokenizer token = new StringTokenizer(String.valueOf(Noti_textWithMsgServerID), "_");
-											
+
 											MsgServerID= Integer.parseInt(token.nextToken().trim());
 											Noti_text= token.nextToken().trim();
-											
-											dbengine.close();
+
+											//dbengine.close();
 											if(Noti_text.equals("") || Noti_text.equals("Null"))
 											{
-												
+
 											}
 											else
 											{
 												  msg.setText(Noti_text);
 											}
 										}
-							    	
+
 							    }
 								else
 								{
 									builder.dismiss();
 								}
-							
+
 							}
 							catch(Exception e)
 							{
-								
+
 							}
 				            finally
 				            {
-				            	dbengine.close();
-							   
+				            	//dbengine.close();
+
 				            }
-			            
-						
+
+
 						}
 					});
-			        
-			       
-			      
-			 
-			     	builder.show();
-				
-				
-				
 
-		
-			 
+
+
+
+			     	builder.show();
+
+
+
+
+
+
 		}
 		}
 		}
 		catch(Exception e)
 		{
-			
+
 		}
 	}
 
-	//lockdown_KEYS STARTS
-	private Runnable mUpdateUiMsg = new Runnable() {
-        public void run() {
-            getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-         }
-    };
-	/*@Override
-	 public void onAttachedToWindow() {
-	  // TODO Auto-generated method stub
-	     super.onAttachedToWindow();  
-	     Handler lockdownhandler = new android.os.Handler();
-	     
-	     lockdownhandler.postDelayed(mUpdateUiMsg, 100);
-	 }*/
-
 	public void showSettingsAlert(){
 		  AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-		     
+
 		        // Setting Dialog Title
 		        alertDialog.setTitle(R.string.genTermInformation);
 		        alertDialog.setIcon(R.drawable.error_info_ico);
-	
+
 		        // Setting Dialog Message
 		        alertDialog.setMessage(R.string.genTermGPSDisablePleaseEnable);
-		 
+
 		        // On pressing Settings button
 		        alertDialog.setPositiveButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
 		            public void onClick(DialogInterface dialog,int which) {
@@ -315,88 +275,103 @@ public class LastVisitDetails extends BaseActivity
 		             startActivity(intent);
 		            }
 		        });
-		 
+
 		        // Showing Alert Message
 		        alertDialog.show();
 		 }
-	
-
-	
-	 
-	 private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context arg0, Intent intent) {
-
-				battLevel = intent.getIntExtra("level", 0);
-				
-			}
-		};
 		
-		private final BroadcastReceiver KillME = new BroadcastReceiver() {
-	        @Override
-	        public void onReceive(Context context, Intent intent) {
-			// Location_Getting_Service.closeFlag = 1;
-			 StoreSelection.scheduler.shutdownNow();
-			 finish();                                   
-	        }
-	};
-	
-	
-	public String[] changeHmapToArrayKey(HashMap hmap)
+	public void StoreNameAndSalesPersonInfo()
 	{
-		String[] stringArray=new String[hmap.size()];
-		int index=0;
-		if(hmap!=null)
-    	{
-            Set set2 = hmap.entrySet();
-            Iterator iterator = set2.iterator();
-            while(iterator.hasNext()) 
-            {
-            	 Map.Entry me2 = (Map.Entry)iterator.next();
-            	 stringArray[index]=me2.getKey().toString();
-                 index=index+1;
-            }
-    	}
-		return stringArray;
+		hmapStoreBasicDetails=dbengine.fngetStoreBasicDetails(storeID);
+		TextView storeName = (TextView)findViewById(R.id.txt_storeSummary);
+		TextView txt_SalesPersonName_Value = (TextView)findViewById(R.id.txt_SalesPersonName_Value);
+		TextView txt_SalesPersonContact_Value = (TextView)findViewById(R.id.txt_SalesPersonContact_Value);
+
+		TextView txt_StoreOwner_Value = (TextView)findViewById(R.id.txt_StoreOwner_Value);
+		TextView txt_StoreOwnerContact_Value = (TextView)findViewById(R.id.txt_StoreOwnerContact_Value);
+
+		TextView txt_StoreCatType_Value = (TextView)findViewById(R.id.txt_StoreCatType_Value);
+
+		storeName.setText(hmapStoreBasicDetails.get("StoreName")+" "+getText(R.string.Summary));
+		txt_StoreOwner_Value.setText(hmapStoreBasicDetails.get("OwnerName"));
+		txt_StoreOwnerContact_Value.setText(hmapStoreBasicDetails.get("StoreContactNo"));
+		txt_StoreCatType_Value.setText(hmapStoreBasicDetails.get("StoreCatType"));
+		txt_SalesPersonName_Value.setText(hmapStoreBasicDetails.get("SalesPersonName"));
+		txt_SalesPersonContact_Value.setText(hmapStoreBasicDetails.get("SalesPersonContact"));
 	}
-	
-	public String[] changeHmapToArrayValue(HashMap hmap)
+
+	public String  getStoreVisitCode()
 	{
-		String[] stringArray=new String[hmap.size()];
-		int index=0;
-		if(hmap!=null)
-    	{
-            Set set2 = hmap.entrySet();
-            Iterator iterator = set2.iterator();
-            while(iterator.hasNext()) {
-            	 Map.Entry me2 = (Map.Entry)iterator.next();
-            	 stringArray[index]=me2.getValue().toString();
-            	 System.out.println("Betu Slab = "+stringArray[index]);
-                 index=index+1;
-            }
-    	}
-		return stringArray;
+		/*int flgDrctslsIndrctSls=1;
+		int ISNewStore =dbengine.fncheckStoreIsNewOrOld(storeID);
+
+		if(CommonInfo.FlgDSRSO==1)
+		{
+			String SOCoverageAreaIDAndType=dbengine.fnGetPersonNodeIDAndPersonNodeTypeForSO();
+			flgDrctslsIndrctSls=dbengine.fnGetflgDrctslsIndrctSls(Integer.parseInt(SOCoverageAreaIDAndType.split(Pattern.quote("^"))[0]),Integer.parseInt(SOCoverageAreaIDAndType.split(Pattern.quote("^"))[1]));
+		}
+		else
+		{
+			flgDrctslsIndrctSls=dbengine.fnGetflgDrctslsIndrctSls(CommonInfo.CoverageAreaNodeID,CommonInfo.CoverageAreaNodeType);
+		}*/
+
+		if(CommonInfo.flgDrctslsIndrctSls==0)
+		{
+			int flgCheckIfVisitExists=dbengine.fnGetCountStoreVisitCode(storeID);
+			if(flgCheckIfVisitExists==0)
+			{
+				String passdLevel = battLevel + "%";
+				StoreVisitCode=genStoreVisitCode();
+				dbengine.fnInsertOrUpdate_tblStoreVisitMstr(StoreVisitCode,storeID,1,getDateInMonthTextFormat(),"0","0",getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),"","0",passdLevel,0,0,0,0,0,0,0,0,0,0,0,0,0,0,flgVisitCollectionMarkedStatus);
+				dbengine.fnInsertOrUpdate_tblStoreOrderVisitDayActivity(StoreVisitCode,storeID,StoreVisitCode,getDateInMonthTextFormat(),1,getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond());
+				TempStoreVisitCode=StoreVisitCode;
+			}
+			else
+			{
+				StoreVisitCode=dbengine.fnGetStoreVisitCodeInCaseOfIndrectSales(storeID);
+				if(dbengine.fnGetStoreTempStoreVisitCodeFromtblStoreOrderVisitDayActivity(storeID).equals("NA"))
+				{
+					TempStoreVisitCode=genStoreTempVisitCode();
+					dbengine.fnInsertOrUpdate_tblStoreOrderVisitDayActivity(StoreVisitCode,storeID,TempStoreVisitCode,getDateInMonthTextFormat(),1,getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond());
+
+				}
+				else
+				{
+					TempStoreVisitCode=dbengine.fnGetStoreTempStoreVisitCodeFromtblStoreOrderVisitDayActivity(storeID);
+				}
+			}
+		}
+		else
+		{
+			int StoreCurrentOutsStat=dbengine.fnGetStoreCurrentOutsStat(storeID);
+			if(StoreCurrentOutsStat!=1)
+			{
+				String passdLevel = battLevel + "%";
+				StoreVisitCode=genStoreVisitCode();
+				dbengine.fnInsertOrUpdate_tblStoreVisitMstr(StoreVisitCode,storeID,1,getDateInMonthTextFormat(),"0","0",getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond(),"","0",passdLevel,0,0,0,0,0,0,0,0,0,0,0,0,0,0,flgVisitCollectionMarkedStatus);
+				dbengine.fnInsertOrUpdate_tblStoreOrderVisitDayActivity(StoreVisitCode,storeID,StoreVisitCode,getDateInMonthTextFormat(),1,getDateAndTimeInMilliSecond(),getDateAndTimeInMilliSecond());
+				//dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
+			}
+			else
+			{
+				StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+			}
+		}
+		return StoreVisitCode;
 	}
-	
-	
-	public void setQuotationList()
-	{}
-	
-	
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_last_visit_details);
-		
-	
-	
-		
-		this.registerReceiver(this.KillME, new IntentFilter("KillMEnow"));
-		
+
+		CommonInfo.ActiveRouteSM="0";
+
+
+		registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 		locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
-		
+
 		decimalFormat.applyPattern(pattern);
 		Intent passedvals = getIntent();
 		bck = passedvals.getIntExtra("bck", 0);
@@ -410,8 +385,6 @@ public class LastVisitDetails extends BaseActivity
 			date = passedvals.getStringExtra("userdate");
 			pickerDate= passedvals.getStringExtra("pickerDate");
 		}
-		
-		
 		else
 		{
 			storeID = passedvals.getStringExtra("storeID");
@@ -423,14 +396,12 @@ public class LastVisitDetails extends BaseActivity
 			currLat = passedvals.getDoubleExtra("currUsrLat", 0);
 			selStoreName = passedvals.getStringExtra("selStoreName");
 			startTS = passedvals.getStringExtra("startTS");
-		
 		}
-		
-		
-		
-		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-		
-		
+
+
+		/*IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		Intent batteryStatus = getApplicationContext().registerReceiver(null, ifilter);*/
+		StoreNameAndSalesPersonInfo();
 		long syncTIMESTAMP;
 		String fullTS;
 		
@@ -439,11 +410,9 @@ public class LastVisitDetails extends BaseActivity
 		SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 		fullTS = df.format(dateobj);
 		
-		
-		    TextView storeName = (TextView)findViewById(R.id.txt_storeSummary);
 		ll_InvoiceLastVisit=(LinearLayout) findViewById(R.id.ll_InvoiceLastVisit);
 		ll_inflateInvoiceData=(LinearLayout) findViewById(R.id.ll_inflateInvoiceData);
-		    
+
 		    /*LinkedHashMap<String, String> hmapListQuoteISOfUnmappedWithProducts= dbengine.fnGetListQuoteISOfUnmappedWithProducts(storeID);
 		    if(hmapListQuoteISOfUnmappedWithProducts.size()>0)
 		    {
@@ -453,13 +422,17 @@ public class LastVisitDetails extends BaseActivity
 				}
 		    }
 		    */
-		    dbengine.open();
-		    
-		    
-			selStoreName=dbengine.FetchStoreName(storeID);
-			
-			dbengine.close();
-			storeName.setText(selStoreName+" "+getText(R.string.Summary));
+		/*int StoreCurrentOutsStat=dbengine.fnGetStoreCurrentOutsStat(storeID);
+
+			if(StoreCurrentOutsStat!=1)
+			{
+				StoreVisitCode=genStoreVisitCode();
+			}
+			else {
+				StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+			}*/
+
+
 			Button quotationBtn=	(Button) findViewById(R.id.quotationBtn);
 		quotationBtn.setVisibility(View.GONE);
 			/*chkIfStoreFasQuote=dbengine.fnchkIfStoreFasQuote(storeID);
@@ -478,17 +451,17 @@ public class LastVisitDetails extends BaseActivity
 		TextView tvBalAmt = (TextView)findViewById(R.id.pre_balance_amount_value);
 		
 	
-		dbengine.open();
+		////dbengine.open();
 		Double PreCreditAmt =dbengine.fnGetLastCreditAmountFromLastInvoiceTable(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 			Double.parseDouble(decimalFormat.format(PreCreditAmt));//Double.parseDouble(new DecimalFormat("##.##").format(PreCreditAmt));
 		
 		
 			tvPreCreditAmt.setText(""+PreCreditAmt);
-			dbengine.open();
+			////dbengine.open();
 		String BalAmt =dbengine.fnGetPDALastInvoiceDetDueAmt(storeID);
-		dbengine.close();
+		//dbengine.close();
 		Double BalAmtNew=0.00;
 		if(BalAmt.equals(""))
 		{
@@ -502,19 +475,19 @@ public class LastVisitDetails extends BaseActivity
 		Double.parseDouble(decimalFormat.format(BalAmtNew));
 		tvBalAmt.setText(""+ BalAmtNew);*/
 		
-		/*dbengine.open();
+		/*////dbengine.open();
 		String lastVisitDate=dbengine.fnGettblFirstOrderDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();*/
+		//dbengine.close();*/
 		
-		dbengine.open();
+		////dbengine.open();
 	    checkdataForVisit=dbengine.counttblForPDAGetLastVisitDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		 TextView txt_visitDate_Value = (TextView)findViewById(R.id.txt_visitDate_Value);
 		
 		if(checkdataForVisit==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastVisitDateAndFlgOrder=dbengine.fnGetVisitDateAndflgOrderFromtblForPDAGetLastVisitDate(storeID);
 		StringTokenizer tokens = new StringTokenizer(String.valueOf(lastVisitDateAndFlgOrder), "^");
 		
@@ -530,7 +503,7 @@ public class LastVisitDetails extends BaseActivity
 			txt_visitDate_Value.setBackgroundColor(Color.RED);
 		}
 		
-		dbengine.close();
+		//dbengine.close();
 		}
 		
 		if(lastVisitDate.equals(""))
@@ -557,9 +530,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		int valSstatValueAgainstStore=0;
 		 try
 		 {
-		dbengine.open();
+		////dbengine.open();
 		valSstatValueAgainstStore=dbengine.fnGetStatValueagainstStore(storeID);
-		dbengine.close();
+		//dbengine.close();
 		if(valSstatValueAgainstStore==0)
 		{
 			btn_Cancel.setVisibility(View.VISIBLE);
@@ -587,53 +560,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		    	  
 		    	  
 		    	  
-		    	/*   long StartClickTime = System.currentTimeMillis();
-					Date dateobj1 = new Date(StartClickTime);
-					SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
-					String StartClickTimeFinal = df1.format(dateobj1);
-					
-					
-					
-					
-					String fileName=imei+"_"+storeID;
-					
-					File file = new File("/sdcard/MeijiIndirectTextFile/"+fileName);
-					
-					if (!file.exists()) 
-					{
-						try  
-						{
-							file.createNewFile();
-						} 
-						catch (IOException e1)
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}*/
-					
-					/*CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Cancel Button Click on Product List"+StartClickTimeFinal;
-					
-					
-					FileWriter fw;
-					try 
-					{
-						fw = new FileWriter(file.getAbsoluteFile());
-						BufferedWriter bw = new BufferedWriter(fw);
-						bw.write(CommonInfo.fileContent);
-						bw.close();
-						
-						dbengine.open();
-						dbengine.savetblMessageTextFileContainer(fileName,0);
-						dbengine.close();
-						
-						
-					}
-					catch (IOException e1)
-					{
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}*/
+
 		     
 		     AlertDialog.Builder alertDialogSyncError = new AlertDialog.Builder(LastVisitDetails.this);
 		     alertDialogSyncError.setTitle(getText(R.string.genTermInformation));
@@ -645,38 +572,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		        {
 		        
 		        	int flag=0;
-		    		/*String[] imageToBeDeletedFromSdCard=dbengine.deletFromSDcCardPhotoValidation(storeID.trim());
-		    		if(!imageToBeDeletedFromSdCard[0].equals("No Data"))
-		    		{
-			    			for(int i=0;i<imageToBeDeletedFromSdCard.length;i++)
-			    		     {
-			    				flag=1;
-			    				String file_dj_path = Environment.getExternalStorageDirectory() + "/GRLIndirectSKUImages/"+imageToBeDeletedFromSdCard[i].toString().trim();
-						        File fdelete = new File(file_dj_path);
-						        if (fdelete.exists()) {
-						            if (fdelete.delete()) {
-						                Log.e("-->", "file Deleted :" + file_dj_path);
-						                callBroadCast();
-						            } else {
-						                Log.e("-->", "file not Deleted :" + file_dj_path);
-						            }
-						        }
-			    			}
-		    		
-		    			
-		    		}*/
-		    		
-		    		/*dbengine.deleteProductBenifitSlabApplieddeleteProductBenifitSlabApplied(storeID,"0");
-		    		dbengine.deleteAllStoreAlertValueProduct(storeID,"0");
-		    		dbengine.fndeleteStoreSalesOrderPaymentDetailsOnStoreIDBasis(storeID);
-		    		
-		    		dbengi*//*ne.fndeleteStoreOrderBillAddressDetailsOnStoreIDBasis(storeID);
-		    		dbengine.open();
-		    		dbengine.UpdateStoreFlag(storeID.trim(), 0);
-		    		dbengine.UpdateStoreOtherMainTablesFlag(storeID.trim(), 0,"0");
-		    		dbengine.deleteStoreTblsRecordsInCaseCancelOrderInOrderBooking(storeID.trim(),flag,"0");
-		    		dbengine.close();*/
-		    		
+					//getStoreVisitCode();
+					String passdLevel = battLevel + "%";
+					dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
 		    		
 		    		
 		        	Intent storeSaveIntent = new Intent(LastVisitDetails.this, LauncherActivity.class);
@@ -711,12 +609,15 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
-				dbengine.open();
+
+
+				//getStoreVisitCode();
+				////dbengine.open();
 				int checkDataForVisitDetails=dbengine.counttblForPDAGetLastVisitDetails(storeID);
 				int checkDataForOrderDetails=dbengine.counttblForPDAGetLastOrderDetails(storeID);
-				dbengine.close();
-				
+				//dbengine.close();
+				String passdLevel = battLevel + "%";
+				dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
 				if(checkDataForVisitDetails!=0 || checkDataForOrderDetails!=0) 
 				{
 					Intent nxtP4 = new Intent(LastVisitDetails.this,LastVisitDetailsSecondPart.class);
@@ -756,15 +657,15 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
 		TextView orderDate_Value = (TextView)findViewById(R.id.txt_orderDate_Value);
 		
-		dbengine.open();
+		////dbengine.open();
 	    int checkdataForOrder=dbengine.counttblForPDAGetLastOrderDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(checkdataForOrder==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastOrderDateAndflgExecutionSummary=dbengine.fnGettblForPDAGetLastOrderDate(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		
 		StringTokenizer tokens = new StringTokenizer(String.valueOf(lastOrderDateAndflgExecutionSummary), "^");
@@ -839,7 +740,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 
 				
 				
-				dbengine.open();
+				////dbengine.open();
 				
 				String DateResult[]=dbengine.fetchOrderDateFromtblForPDAGetExecutionSummary(storeID);
 				String LastexecutionDetail[]=dbengine.fetchAllDataFromtbltblForPDAGetExecutionSummary(storeID);
@@ -849,7 +750,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 				String ProductIDDetail[]=dbengine.fetchProductIDFromtblForPDAGetExecutionSummary(storeID);
 				
 				System.out.println("Ashish and Anuj LastexecutionDetail : "+LastexecutionDetail.length);
-				dbengine.close();
+				//dbengine.close();
 				
 				if(DateResult.length>0)
 				{
@@ -945,9 +846,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 							tv5.setVisibility(View.GONE);
 							tv6.setVisibility(View.GONE);
 							tv7.setVisibility(View.GONE);
-								dbengine.open();
+								////dbengine.open();
 								String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number "+abc.length);
 								//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -968,9 +869,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 							tv6.setVisibility(View.GONE);
 							tv7.setVisibility(View.GONE);
 							
-							dbengine.open();
+							////dbengine.open();
 							String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-							dbengine.close();
+							//dbengine.close();
 							
 							//System.out.println("Check Value Number "+abc.length);
 							//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -986,9 +887,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 									tv3.setText("0");
 								}
 								
-								dbengine.open();
+								////dbengine.open();
 								String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number NEw "+abc1.length);
 								//System.out.println("Check Value Number12 NEw "+DateResult[1]);
@@ -1011,9 +912,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 						}
 						else if(DateResult.length==3)
 						{
-							dbengine.open();
+							////dbengine.open();
 							String abc[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[0],ProductIDDetail[current]);
-							dbengine.close();
+							//dbengine.close();
 							
 							//System.out.println("Check Value Number "+abc.length);
 							//System.out.println("Check Value Number12 "+DateResult[0]);
@@ -1029,9 +930,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 									tv3.setText("0");
 								}
 								
-								dbengine.open();
+								////dbengine.open();
 								String abc1[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[1],ProductIDDetail[current]);
-								dbengine.close();
+								//dbengine.close();
 								
 								//System.out.println("Check Value Number NEw "+abc1.length);
 								//System.out.println("Check Value Number12 NEw "+DateResult[1]);
@@ -1047,9 +948,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 										tv5.setText("0");
 									}
 									
-									dbengine.open();
+									////dbengine.open();
 									String abc2[]=dbengine.fetchAllDataNewFromtbltblForPDAGetExecutionSummary(storeID,DateResult[2],ProductIDDetail[current]);
-									dbengine.close();
+									//dbengine.close();
 									
 									//System.out.println("Check Value Number NEw "+abc2.length);
 									//System.out.println("Check Value Number12 NEw "+DateResult[2]);
@@ -1130,22 +1031,22 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
 		
 		/*
-		dbengine.open();
+		////dbengine.open();
 		int checkdata=dbengine.counttblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(checkdata==1)
 		{
-		dbengine.open();
+		////dbengine.open();
 		String lastVisitDate=dbengine.fnGettblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
 		LastVisitDateValue.setText(lastVisitDate);
-		dbengine.close();
+		//dbengine.close();
 		
 		tbl2_dyntable_For_LastVisitDate = (TableLayout) findViewById(R.id.dyntable_For_LastVisitDate);
 		
-		dbengine.open();
+		////dbengine.open();
 		String LastVisitDetails[] = dbengine.fetchtblSecondVisitDetailsOnLastVisitDetailsActivity(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		LayoutInflater inflater3 = getLayoutInflater();
 		for (int current2 = 0; current2 <= (LastVisitDetails.length - 1); current2++) 
@@ -1192,9 +1093,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
       tbl3_dyntable_SchemeApplicable = (TableLayout) findViewById(R.id.dyntable_SchemeApplicable);
 		
-		dbengine.open();
+		////dbengine.open();
 		String LTschApp[] = dbengine.PrevPDASchemeApplicableSecondPage(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(LTschApp.length>0)
 		{
@@ -1202,14 +1103,17 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			txt_GeneralScheme_Value.setVisibility(View.GONE);
 			RelativeLayout relLayout_for_generalScheme = (RelativeLayout)findViewById(R.id.relLayout_for_generalScheme);
 			relLayout_for_generalScheme.setVisibility(View.VISIBLE);
-			
+
 		}
 		else
 		{
 			TextView txt_GeneralScheme_Value = (TextView)findViewById(R.id.txt_GeneralScheme_Value);
-			txt_GeneralScheme_Value.setVisibility(View.VISIBLE);
+
 			RelativeLayout relLayout_for_generalScheme = (RelativeLayout)findViewById(R.id.relLayout_for_generalScheme);
 			relLayout_for_generalScheme.setVisibility(View.GONE);
+            // set Visibility gone for Godrej Project Acc. to Avinash Sir
+			//txt_GeneralScheme_Value.setVisibility(View.VISIBLE);
+			txt_GeneralScheme_Value.setVisibility(View.GONE);
 		}
 		
 		
@@ -1261,9 +1165,9 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
     tbl3_dyntable_SpecialSchemeApplicable = (TableLayout) findViewById(R.id.dyntable_SpecialSchemeApplicable);
 		
-		dbengine.open();
+		////dbengine.open();
 		String SpecialScheme[] = dbengine.PrevPDASchemeApplicableSecondPageSpecialScheme(storeID);
-		dbengine.close();
+		//dbengine.close();
 		
 		if(SpecialScheme.length>0)
 		{
@@ -1279,7 +1183,11 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			RelativeLayout relLayout_for_specialScheme = (RelativeLayout)findViewById(R.id.relLayout_for_specialScheme);
 			relLayout_for_specialScheme.setVisibility(View.GONE);
 			TextView txt_specialScheme_Value = (TextView)findViewById(R.id.txt_specialScheme_Value);
-			txt_specialScheme_Value.setVisibility(View.VISIBLE);
+
+			// set Visibility gone for Godrej Project Acc. to Avinash Sir
+			//txt_specialScheme_Value.setVisibility(View.VISIBLE);
+			txt_specialScheme_Value.setVisibility(View.GONE);
+
 		}
 		
 		LayoutInflater inflater2_SpecialScheme = getLayoutInflater();
@@ -1315,11 +1223,14 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				//accuracyUpdatMethod();
-				
-				dbengine.open();
+
+
+			//	getStoreVisitCode();
+				String passdLevel = battLevel + "%";
+				dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
+				////dbengine.open();
 				String rID=dbengine.GetActiveRouteID();
-				dbengine.close();
+				//dbengine.close();
 				
 				Intent prevP2 = new Intent(LastVisitDetails.this, StoreSelection.class);
 				
@@ -1335,89 +1246,92 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 				
 			}
 		});
-
+		
 		nxtP4.setOnClickListener(new OnClickListener() {
-
+			
 			@Override
 			public void onClick(View arg0)
 			{
-
+				
 				if (validate())
 				{
-
-					String flgGSTCompliance="NA";
-					// String flgGSTCapture="NA";
-					String GSTNumber="NA";
-
-
-
-					if(ll_gstDetails.getVisibility()==View.VISIBLE)
-					{
-						flgGSTCapture="1";
-					}
-					else if(ll_gstDetails.getVisibility()==View.GONE)
-					{
-						flgGSTCapture="0";
-					}
-
-					if(rb_gst_yes.isChecked())
-					{
-						flgGSTCompliance="1";
-						if(!edit_gstYes.getText().toString().trim().equals(null) ||!edit_gstYes.getText().toString().trim().equals(""))
-						{
-							GSTNumber=edit_gstYes.getText().toString().trim();
-						}
-					}
-					else if(rb_gst_no.isChecked())
-					{
-						flgGSTCompliance="0";
-					}
-					else if(rb_pending.isChecked())
-					{
-						flgGSTCompliance="2";
-					}
-					dbengine.UpdateStoreInfoGST(storeID,flgGSTCapture,flgGSTCompliance,GSTNumber);
-
-					long syncTIMESTAMP = System.currentTimeMillis();
-					Date dateobjNew = new Date(syncTIMESTAMP);
-					SimpleDateFormat dfnew = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-					String startTS = dfnew.format(dateobjNew);
+					getStoreVisitCode();
+					 String flgGSTCompliance="NA";
+						// String flgGSTCapture="NA";
+						 String GSTNumber="NA";
 
 
-					long StartClickTime = System.currentTimeMillis();
-					Date dateobj1 = new Date(StartClickTime);
-					SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-					String StartClickTimeFinal = df1.format(dateobj1);
+					String passdLevel = battLevel + "%";
+					dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
 
-
-					CommonInfo.fileContent=CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Next Button Click on last Visit Details"+StartClickTimeFinal;
-
-
-
-					dbengine.open();
-					dbengine.UpdateStoreEndVisit(storeID,startTS);
-					dbengine.close();
-					//Intent nxtP4 = new Intent(LastVisitDetails.this,ActualVisitStock.class);
-					Intent nxtP4 = new Intent(LastVisitDetails.this,ActualVisitStock.class);
-					nxtP4.putExtra("storeID", storeID);
-					nxtP4.putExtra("SN", selStoreName);
-					nxtP4.putExtra("imei", imei);
-					nxtP4.putExtra("userdate", date);
-					nxtP4.putExtra("pickerDate", pickerDate);
-
-					startActivity(nxtP4);
-					finish();
-						/*Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch.class);
-						//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+						 if(ll_gstDetails.getVisibility()==View.VISIBLE)
+						 {
+							 flgGSTCapture="1";
+						 }
+						 else if(ll_gstDetails.getVisibility()==View.GONE)
+						 {
+							 flgGSTCapture="0";
+						 }
+						 
+						 if(rb_gst_yes.isChecked())
+						 {
+							 flgGSTCompliance="1";
+							 if(!edit_gstYes.getText().toString().trim().equals(null) ||!edit_gstYes.getText().toString().trim().equals(""))
+							 {
+								 GSTNumber=edit_gstYes.getText().toString().trim();
+							 }
+						 }
+						 else if(rb_gst_no.isChecked())
+						 {
+							 flgGSTCompliance="0"; 
+						 }
+						 else if(rb_pending.isChecked())
+						 {
+							 flgGSTCompliance="2";
+						 }
+						dbengine.UpdateStoreInfoGST(storeID,flgGSTCapture,flgGSTCompliance,GSTNumber);
+						
+						long syncTIMESTAMP = System.currentTimeMillis();
+						Date dateobjNew = new Date(syncTIMESTAMP);
+						SimpleDateFormat dfnew = new SimpleDateFormat(
+								"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+						String startTS = dfnew.format(dateobjNew);
+						
+						
+						long StartClickTime = System.currentTimeMillis();
+						Date dateobj1 = new Date(StartClickTime);
+						SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+						String StartClickTimeFinal = df1.format(dateobj1);
+						
+						
+						CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Next Button Click on last Visit Details"+StartClickTimeFinal;
+						
+						
+						
+						////dbengine.open();
+						dbengine.UpdateStoreEndVisit(storeID,startTS);
+						//dbengine.close();
+						Intent nxtP4 = new Intent(LastVisitDetails.this,ActualVisitStock.class);
 						nxtP4.putExtra("storeID", storeID);
 						nxtP4.putExtra("SN", selStoreName);
 						nxtP4.putExtra("imei", imei);
 						nxtP4.putExtra("userdate", date);
 						nxtP4.putExtra("pickerDate", pickerDate);
 						startActivity(nxtP4);
-						finish();*/
-				}
+						finish();
 
+					/*Intent nxtP4 = new Intent(LastVisitDetails.this,ProductEntryForm.class);
+					//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+					nxtP4.putExtra("storeID", storeID);
+					nxtP4.putExtra("SN", selStoreName);
+					nxtP4.putExtra("imei", imei);
+					nxtP4.putExtra("userdate", date);
+					nxtP4.putExtra("pickerDate", pickerDate);
+					nxtP4.putExtra("flgOrderType", 1);
+					startActivity(nxtP4);
+					finish();*/
+				}
+				
 			}
 		});
 		
@@ -1464,11 +1378,25 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 			 rb_gst_no=(RadioButton) findViewById(R.id.rb_gst_no);
 		     rb_pending=(RadioButton) findViewById(R.id.rb_pending);
 			 RadioBtnGSTFunctionality();
-
 		btn_CloseStore= (Button) findViewById(R.id.btn_CloseStore);
+
+		int checkVisitType=dbengine.checkVisitTypeStatus(storeID,StoreVisitCode);
+		if(checkVisitType==0)
+		{
+			btn_CloseStore.setVisibility(View.VISIBLE);
+		}
+		else
+		{
+			btn_CloseStore.setVisibility(View.GONE);
+		}
+
 		btn_CloseStore.setOnClickListener(new OnClickListener() {
 			@Override
-			public void onClick(View v) {
+			public void onClick(View v)
+			{
+				getStoreVisitCode();
+				String passdLevel = battLevel + "%";
+				dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
 				Intent nxtP4=new Intent(LastVisitDetails.this,StoreClosedActivity.class);
 				nxtP4.putExtra("storeID", storeID);
 				nxtP4.putExtra("SN", selStoreName);
@@ -1479,69 +1407,150 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 				finish();
 			}
 		});
-
 		tv_outstandingvalue=(TextView) findViewById(R.id.tv_outstandingvalue);
-		tv_overdueVal=(TextView) findViewById(R.id.tv_overdueVal);
-		Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
-		Double overdueBal=dbengine.fnGetStoretblLastOverDue(storeID);
-		tv_outstandingvalue.setText(""+outstandingvalue);
-		tv_overdueVal.setText(""+overdueBal);
+	/*	Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
+		tv_outstandingvalue.setText(""+outstandingvalue);*/
+
+		Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
+		cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
+
+
+		Double cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(storeID);
+		cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotCollectionAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+
+		Double cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(storeID);
+		cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit));
+
+
+
+		Double totOutstandingValue=cntAllOustandings+cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit-cntTotCollectionAmtAgainstStoreIrespectiveOfVisit;
+		totOutstandingValue=Double.parseDouble(new DecimalFormat("##.##").format(totOutstandingValue));
+		tv_outstandingvalue.setText(" : "+String.format("%.2f", totOutstandingValue));
 
 
 		setInvoiceData();
 
+		int flgOrderType=dbengine.fnGetflgOrderTypeAgainstStore(storeID);
+		if(flgOrderType==1)
+		{
+			RedirectPageToPRoductEntryDirectly();
+		}
+		//getStoreVisitCode();
+
 	}
 
-	public void showAlertForEveryOne(String msg)
+public  void RedirectPageToPRoductEntryDirectly()
+{
+	if (validate())
 	{
-		android.support.v7.app.AlertDialog.Builder alertDialogNoConn = new android.support.v7.app.AlertDialog.Builder(LastVisitDetails.this);
-		alertDialogNoConn.setTitle(R.string.AlertDialogHeaderMsg);
-		alertDialogNoConn.setMessage(msg);
-		alertDialogNoConn.setCancelable(false);
-		alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,new DialogInterface.OnClickListener()
+		getStoreVisitCode();
+		String flgGSTCompliance="NA";
+		// String flgGSTCapture="NA";
+		String GSTNumber="NA";
+
+
+		String passdLevel = battLevel + "%";
+		dbengine.UpdateStoreVisitBattVisitWise(storeID,passdLevel,StoreVisitCode);
+
+		if(ll_gstDetails.getVisibility()==View.VISIBLE)
 		{
-			public void onClick(DialogInterface dialog, int which)
+			flgGSTCapture="1";
+		}
+		else if(ll_gstDetails.getVisibility()==View.GONE)
+		{
+			flgGSTCapture="0";
+		}
+
+		if(rb_gst_yes.isChecked())
+		{
+			flgGSTCompliance="1";
+			if(!edit_gstYes.getText().toString().trim().equals(null) ||!edit_gstYes.getText().toString().trim().equals(""))
 			{
-				dialog.dismiss();
-				//finish();
+				GSTNumber=edit_gstYes.getText().toString().trim();
 			}
-		});
-		alertDialogNoConn.setIcon(R.drawable.info_ico);
-		android.support.v7.app.AlertDialog alert = alertDialogNoConn.create();
-		alert.show();
+		}
+		else if(rb_gst_no.isChecked())
+		{
+			flgGSTCompliance="0";
+		}
+		else if(rb_pending.isChecked())
+		{
+			flgGSTCompliance="2";
+		}
+		dbengine.UpdateStoreInfoGST(storeID,flgGSTCapture,flgGSTCompliance,GSTNumber);
+
+		long syncTIMESTAMP = System.currentTimeMillis();
+		Date dateobjNew = new Date(syncTIMESTAMP);
+		SimpleDateFormat dfnew = new SimpleDateFormat(
+				"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+		String startTS = dfnew.format(dateobjNew);
+
+
+		long StartClickTime = System.currentTimeMillis();
+		Date dateobj1 = new Date(StartClickTime);
+		SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+		String StartClickTimeFinal = df1.format(dateobj1);
+
+
+		CommonInfo.fileContent= CommonInfo.fileContent+"     "+imei+"_"+storeID+"_"+"Next Button Click on last Visit Details"+StartClickTimeFinal;
+
+
+
+		////dbengine.open();
+		dbengine.UpdateStoreEndVisit(storeID,startTS);
+		//dbengine.close();
+					/*	Intent nxtP4 = new Intent(LastVisitDetails.this,ActualVisitStock.class);
+						//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+						nxtP4.putExtra("storeID", storeID);
+						nxtP4.putExtra("SN", selStoreName);
+						nxtP4.putExtra("imei", imei);
+						nxtP4.putExtra("userdate", date);
+						nxtP4.putExtra("pickerDate", pickerDate);
+						startActivity(nxtP4);
+						finish();*/
+
+		Intent nxtP4 = new Intent(LastVisitDetails.this,ProductEntryForm.class);
+		//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+		nxtP4.putExtra("storeID", storeID);
+		nxtP4.putExtra("SN", selStoreName);
+		nxtP4.putExtra("imei", imei);
+		nxtP4.putExtra("userdate", date);
+		nxtP4.putExtra("pickerDate", pickerDate);
+		nxtP4.putExtra("flgOrderType", 1);
+		startActivity(nxtP4);
+		finish();
 	}
+}
 	
 	private boolean validate()
 	{ 
 		 if(flgGSTCapture.equals("1") && rb_gst_no.isChecked()== false && rb_gst_yes.isChecked()== false && rb_pending.isChecked()== false)
 		 {
-			 showAlertForEveryOne(LastVisitDetails.this.getResources().getString(R.string.SelectGst));
-			 //CommonFunction.alertDialogSingleForError(LastVisitDetails.this,"Alert","Please Select Gst Compliance.");
-			  return false; 
+			 showAlertSingleButtonError(LastVisitDetails.this.getResources().getString(R.string.SelectGst));
+			  return false;
 		 }
 		else if(rb_gst_yes.isChecked()== true && edit_gstYes.getText().toString().trim().equals(null))
 		{
-			showAlertForEveryOne(LastVisitDetails.this.getResources().getString(R.string.FillGst));
-			//CommonFunction.alertDialogSingleForError(LastVisitDetails.this,"Alert","Please Fill Gst Compliance Value.");
-			  return false; 
+			showAlertSingleButtonError(LastVisitDetails.this.getResources().getString(R.string.FillGst));
+			  return false;
 		}
 		else if(rb_gst_yes.isChecked()== true && edit_gstYes.getText().toString().trim().equals("NA"))
 		{
-			showAlertForEveryOne(LastVisitDetails.this.getResources().getString(R.string.FillGst));
-			//CommonFunction.alertDialogSingleForError(LastVisitDetails.this,"Alert","Please Fill Gst Compliance Value.");
-			  return false; 
+			showAlertSingleButtonError(LastVisitDetails.this.getResources().getString(R.string.FillGst));
+			  return false;
 		}
 		else if(rb_gst_yes.isChecked()== true && edit_gstYes.getText().toString().trim().equals("0"))
 		{
-			showAlertForEveryOne(LastVisitDetails.this.getResources().getString(R.string.FillGst));
-			//CommonFunction.alertDialogSingleForError(LastVisitDetails.this,"Alert","Please Fill Gst Compliance Value.");
-			  return false; 
+			showAlertSingleButtonError(LastVisitDetails.this.getResources().getString(R.string.FillGst));
+			  return false;
 		}
 		else if(rb_gst_yes.isChecked()== true && edit_gstYes.getText().toString().trim().equals(""))
 		{
-			showAlertForEveryOne(LastVisitDetails.this.getResources().getString(R.string.FillGst));
-			//CommonFunction.alertDialogSingleForError(LastVisitDetails.this,"Alert","Please Fill Gst Compliance Value.");
-			  return false; 
+			showAlertSingleButtonError(LastVisitDetails.this.getResources().getString(R.string.FillGst));
+			  return false;
 		}
 	
 		else
@@ -1701,7 +1710,10 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		
 		if(flgGSTCapture.equals("1")) 
 		  {
-			ll_gstDetails.setVisibility(View.VISIBLE);
+			 //set Visibility gone for Godrej acc. to Avinash Sir
+			//ll_gstDetails.setVisibility(View.VISIBLE);
+			  ll_gstDetails.setVisibility(View.GONE);
+
 			     if(flgGSTCompliance.equals("0"))
 			     {
 				      rb_gst_no.setEnabled(true);
@@ -1886,7 +1898,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 	
 	 public void CustomAlertBoxForSchemeDetails(String TagValue)
 	 {
-		// dbengine.open();
+		// ////dbengine.open();
 		 String SchemeId=(TagValue.split(Pattern.quote("_")))[0];
 		 String SchemeDesc=(TagValue.split(Pattern.quote("_")))[1];
 		 
@@ -2017,7 +2029,7 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 	        alertDialogBuilder.setPositiveButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
 	            public void onClick(DialogInterface dialog, int which) {
 	            	 dialog.cancel();
-	            	// dbengine.close();
+	            	// //dbengine.close();
 	              }
 	        });
 
@@ -2043,58 +2055,107 @@ final Button btn_Cancel=(Button) findViewById(R.id.btn_Cancel);
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		
-		this.unregisterReceiver(this.KillME);
+
 		
 		this.unregisterReceiver(this.mBatInfoReceiver);
 	}
 
 
+	
+	
+public void setInvoiceData(){
+
+	strInvoiceData=dbengine.fetch_Store_tblInvoiceLastVisitDetails(storeID);
+
+	String val[]=new String[strInvoiceData.length];
+
+	if(strInvoiceData.length>0)
+	{
+		for(int i=0;i<strInvoiceData.length;i++){
+			LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View view = inflater.inflate(R.layout.inflate_row_invoice_lastvisit, null);
+
+			TextView InvCode= (TextView) view.findViewById(R.id.InvCode);
+			TextView InvDate= (TextView) view.findViewById(R.id.InvDate);
+			TextView OutStandingAmnt= (TextView) view.findViewById(R.id.OutStandingAmnt);
+			TextView AmntOverDue= (TextView) view.findViewById(R.id.AmntOverDue);
 
 
-	public void setInvoiceData(){
-
-		strInvoiceData=dbengine.fetch_Store_tblInvoiceLastVisitDetails(storeID);
-
-		String val[]=new String[strInvoiceData.length];
-
-		if(strInvoiceData.length>0)
-		{
-			for(int i=0;i<strInvoiceData.length;i++){
-				LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				View view = inflater.inflate(R.layout.inflate_row_invoice_lastvisit, null);
-
-				TextView InvCode= (TextView) view.findViewById(R.id.InvCode);
-				TextView InvDate= (TextView) view.findViewById(R.id.InvDate);
-				TextView OutStandingAmnt= (TextView) view.findViewById(R.id.OutStandingAmnt);
-				TextView AmntOverDue= (TextView) view.findViewById(R.id.AmntOverDue);
+			StringTokenizer tokens = new StringTokenizer(String.valueOf(strInvoiceData[i]), "^");
 
 
-				StringTokenizer tokens = new StringTokenizer(String.valueOf(strInvoiceData[i]), "^");
+			String strInvCode=tokens.nextToken().toString().trim();
+			String strInvDate=tokens.nextToken().toString().trim();
+			String strOutstandingAmt=tokens.nextToken().toString().trim();
+			String strAmtOverdue=tokens.nextToken().toString().trim();
+			Double AmtOverdue=Double.parseDouble(strAmtOverdue);
+
+			InvCode.setText(strInvCode);
+			InvDate.setText(strInvDate);
+			OutStandingAmnt.setText(String.format("%.2f",Double.parseDouble(strOutstandingAmt) ));
+			AmntOverDue.setText( String.format("%.2f", AmtOverdue));
 
 
-				String strInvCode=tokens.nextToken().toString().trim();
-				String strInvDate=tokens.nextToken().toString().trim();
-				String strOutstandingAmt=tokens.nextToken().toString().trim();
-				String strAmtOverdue=tokens.nextToken().toString().trim();
-
-
-				InvCode.setText(strInvCode);
-				InvDate.setText(strInvDate);
-				OutStandingAmnt.setText(strOutstandingAmt);
-				AmntOverDue.setText(strAmtOverdue);
-
-
-				ll_inflateInvoiceData.addView(view);
-
-			}
+			ll_inflateInvoiceData.addView(view);
 
 		}
-		else {
-			ll_InvoiceLastVisit.setVisibility(View.GONE);
-		}
+
+	}
+	else {
+		ll_InvoiceLastVisit.setVisibility(View.GONE);
+	}
+}
+
+	public String genStoreVisitCode()
+	{
+		long syncTIMESTAMP = System.currentTimeMillis();
+		Date dateobj = new Date(syncTIMESTAMP);
+		SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+		String VisitStartTS = df.format(dateobj);
+		String cxz;
+		cxz = UUID.randomUUID().toString();
+
+
+		StringTokenizer tokens = new StringTokenizer(String.valueOf(cxz), "-");
+
+		String val1 = tokens.nextToken().trim();
+		String val2 = tokens.nextToken().trim();
+		String val3 = tokens.nextToken().trim();
+		String val4 = tokens.nextToken().trim();
+		cxz = tokens.nextToken().trim();
+
+		String IMEIid =  CommonInfo.imei.substring(9);
+		cxz = "StoreVisitCode" + "-" +IMEIid +"-"+cxz+"-"+VisitStartTS.replace(" ", "").replace(":", "").trim();
+
+
+		return cxz;
+
 	}
 
 
+	public String genStoreTempVisitCode()
+	{
+		long syncTIMESTAMP = System.currentTimeMillis();
+		Date dateobj = new Date(syncTIMESTAMP);
+		SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+		String VisitStartTS = df.format(dateobj);
+		String cxz;
+		cxz = UUID.randomUUID().toString();
 
 
+		StringTokenizer tokens = new StringTokenizer(String.valueOf(cxz), "-");
+
+		String val1 = tokens.nextToken().trim();
+		String val2 = tokens.nextToken().trim();
+		String val3 = tokens.nextToken().trim();
+		String val4 = tokens.nextToken().trim();
+		cxz = tokens.nextToken().trim();
+
+		String IMEIid =  CommonInfo.imei.substring(9);
+		cxz = "StoreVisitCode" + "-" +IMEIid +"-"+cxz+"-"+VisitStartTS.replace(" ", "").replace(":", "").trim();
+
+
+		return cxz;
+
+	}
 }

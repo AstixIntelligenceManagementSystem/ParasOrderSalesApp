@@ -32,7 +32,7 @@
    android:visibility="gone"
     android:shadowColor="#80FFFFFF" 
     android:textSize="16sp"
-    android:text="Order Detail"/>
+    android:text="Invoice Detail"/>
 
 </RelativeLayout>
 
@@ -64,14 +64,16 @@
    android:paddingBottom="1dp"
     android:gravity="center_vertical"
     android:weightSum="11"
-    android:layout_below="@+id/ll_schm_applcbl"
     android:background="@drawable/table_cell_header_bg"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:layout_alignParentTop="true"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentStart="true">
 
     <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="5"
         android:text="@string/prodlstProduct"
         android:gravity="center"
         android:textSize="10sp"
@@ -93,12 +95,14 @@
       <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+          android:visibility="gone"/>
       <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/Rate"
+          android:visibility="gone"
          android:gravity="center"
         android:textSize="10sp"
         android:textStyle="bold"
@@ -106,13 +110,15 @@
        <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+           android:visibility="gone"/>
        <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
          android:gravity="center"
         android:text="@string/Stock"
+           android:visibility="gone"
         android:textSize="10sp"
         android:textStyle="bold"
         android:textColor="#ffffff"/> 
@@ -161,12 +167,14 @@
               <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+                  android:visibility="gone"/>
        <TextView 
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/txtValBeforeTax"
+           android:visibility="gone"
          android:gravity="center"
          android:textSize="10sp"
         android:textStyle="bold"
@@ -231,7 +239,7 @@
     <TextView 
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="7"
+        android:layout_weight="8"
         android:text="@string/txtTotal"
         android:gravity="left|center_vertical"
         android:textSize="10sp"
@@ -259,10 +267,12 @@
          android:gravity="right|center_vertical"
          android:textSize="10sp"
         android:textStyle="bold"
+
         android:textColor="#000000"/>
               <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
+                  android:visibility="gone"
         android:background="#000000"/>
        <TextView 
            android:id="@+id/total_ValBeforeTax"
@@ -271,6 +281,7 @@
         android:layout_weight="1"
         android:paddingRight="2dp"
         android:text=""
+           android:visibility="gone"
          android:gravity="right|center_vertical"
          android:textSize="10sp"
         android:textStyle="bold"
@@ -280,19 +291,20 @@
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:background="#000000"/>
-          <TextView 
-               android:id="@+id/total_ValTax"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:text=""
-         android:gravity="right|center_vertical"
-         android:textSize="10sp"
-        android:textStyle="bold"
-        android:paddingRight="2dp"
-        android:textColor="#000000"/> 
-        
-           <View 
+
+        <TextView
+            android:id="@+id/total_ValTax"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right|center_vertical"
+            android:paddingRight="2dp"
+            android:text=""
+            android:textColor="#000000"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <View
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:background="#000000"/>

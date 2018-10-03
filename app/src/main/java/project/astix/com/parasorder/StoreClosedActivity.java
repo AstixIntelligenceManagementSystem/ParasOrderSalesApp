@@ -20,7 +20,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -31,7 +30,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.*;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -81,17 +80,81 @@ import java.util.regex.Pattern;
 
 public class StoreClosedActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,DeletePic{
 
+    DatabaseAssistant DA = new DatabaseAssistant(this);
+    private static final String TAG = "LocationActivity";
+    private static final long INTERVAL = 1000 * 10;
+    private static final long FASTEST_INTERVAL = 1000 * 5;
+    public static int flgLocationServicesOnOff=0;
+    public static int flgGPSOnOff=0;
+    public static int flgNetworkOnOff=0;
+    public static int flgFusedOnOff=0;
+    public static int flgInternetOnOffWhileLocationTracking=0;
+    public static String address,pincode,city,state;
+    private final LinkedHashMap<String ,ArrayList<String>> hmapCtgryPhotoSection=new LinkedHashMap<>();
+    private final LinkedHashMap<String ,Integer> hmapCtgry_Imageposition=new LinkedHashMap<>();
+    private final LinkedHashMap<String ,ImageAdapter> hmapImageAdapter=new LinkedHashMap<>();
+    private final LinkedHashMap<String ,String> hmapPhotoDetailsForSaving=new LinkedHashMap<>();
+    private final ArrayList<Object> arrImageData=new ArrayList<>();
+    private final long startTime = 15000;
+    private final long interval = 200;
+    public String StoreVisitCode="NA";
+    public LocationManager locationManager;
+    public AppLocationService appLocationService;
+    public PowerManager pm;
+    public	 PowerManager.WakeLock wl;
+    public ProgressDialog pDialog2STANDBY;
+    public CoundownClass countDownTimer;
+    public Location location;
+    public String FusedLocationLatitudeWithFirstAttempt="0";
+    public String FusedLocationLongitudeWithFirstAttempt="0";
+    public String FusedLocationAccuracyWithFirstAttempt="0";
+    public String AllProvidersLocation="";
+    public String FusedLocationLatitude="0";
+    public String FusedLocationLongitude="0";
+    public String FusedLocationProvider="";
+    public String FusedLocationAccuracy="0";
+    public String GPSLocationLatitude="0";
+    public String GPSLocationLongitude="0";
+    public String GPSLocationProvider="";
+    public String GPSLocationAccuracy="0";
+    public String NetworkLocationLatitude="0";
+    public String NetworkLocationLongitude="0";
+    public String NetworkLocationProvider="";
+    public String NetworkLocationAccuracy="0";
+    public boolean isGPSEnabled = false;
+    public   boolean isNetworkEnabled = false;
+    public String fnAccurateProvider="";
+    public String fnLati="0";
+    public String fnLongi="0";
+    public Double fnAccuracy=0.0;
+    public String AccuracyFromLauncher="NA";
+    public String ProviderFromLauncher="NA";
+    public String storeID;
+    public String selStoreName;
+    public String imei;
+    public String date;
+    public String pickerDate;
     TextView drpdwn_closeReason;
     EditText et_OtherReason;
     ImageView btn_bck;
     Button btn_clickPic,btn_save;
     ExpandableHeightGridView expnd_GridView;
-
-    private final LinkedHashMap<String ,ArrayList<String>> hmapCtgryPhotoSection=new LinkedHashMap<>();
-    private final LinkedHashMap<String ,Integer> hmapCtgry_Imageposition=new LinkedHashMap<>();
-    private final LinkedHashMap<String ,ImageAdapter> hmapImageAdapter=new LinkedHashMap<>();
-    private final LinkedHashMap<String ,String> hmapPhotoDetailsForSaving=new LinkedHashMap<>();
-
+    LinkedHashMap<String,String> hmap_StoreCloseReasons;
+    LinkedHashMap<String,String> hmap_ReasonsDescID = new LinkedHashMap<>();
+    ArrayList<String> list_Reasons=new ArrayList<>();
+    AlertDialog GPSONOFFAlert=null;
+    GoogleApiClient mGoogleApiClient;
+    Location mCurrentLocation;
+    String mLastUpdateTime;
+    LocationRequest mLocationRequest;
+    String fusedData;
+    int countSubmitClicked=0;
+    String LattitudeFromLauncher="NA";
+    String LongitudeFromLauncher="NA";
+    PRJDatabase helperDb=new PRJDatabase(StoreClosedActivity.this);
+    ImageAdapter adapterImage=null;
+    boolean flgListEmpty=false;
+    ArrayList<String> list_ImgName;
     private Dialog dialog;
     private Uri uriSavedImage;
     private ImageView flashImage;
@@ -101,92 +164,90 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
     private Camera.PictureCallback mPicture;
     private Button capture,cancelCam, switchCamera;
     private boolean isLighOn = false;
-    private final ArrayList<Object> arrImageData=new ArrayList<>();
     private String imageName;
     private LinearLayout cameraPreview;
+    private final View.OnClickListener captrureListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            v.setEnabled(false);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            cancelCam.setEnabled(false);
+            flashImage.setEnabled(false);
+            if(cameraPreview!=null)
+            {
+                cameraPreview.setEnabled(false);
+            }
+
+            if(mCamera!=null)
+            {
+                mCamera.takePicture(null, null, mPicture);
+            }
+            else
+            {
+                dialog.dismiss();
+            }
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        }
+    };
     private boolean cameraFront = false;
     private int picAddPosition=0;
     private int removePicPositin=0;
-
-    LinkedHashMap<String,String> hmap_StoreCloseReasons;
-    LinkedHashMap<String,String> hmap_ReasonsDescID = new LinkedHashMap<>();
-    ArrayList<String> list_Reasons=new ArrayList<>();
-
-    AlertDialog GPSONOFFAlert=null;
-    public LocationManager locationManager;
-    public AppLocationService appLocationService;
-    public PowerManager pm;
-
-    public ProgressDialog pDialog2STANDBY;
-    public CoundownClass countDownTimer;
-
-    private final long startTime = 15000;
-    private final long interval = 200;
-
-    private static final String TAG = "LocationActivity";
-    private static final long INTERVAL = 1000 * 10;
-    private static final long FASTEST_INTERVAL = 1000 * 5;
-    GoogleApiClient mGoogleApiClient;
-    Location mCurrentLocation;
-    String mLastUpdateTime;
-
-    LocationRequest mLocationRequest;
-    public Location location;
-
-    public String FusedLocationLatitudeWithFirstAttempt="0";
-    public String FusedLocationLongitudeWithFirstAttempt="0";
-    public String FusedLocationAccuracyWithFirstAttempt="0";
-    public String AllProvidersLocation="";
-    public String FusedLocationLatitude="0";
-    public String FusedLocationLongitude="0";
-    public String FusedLocationProvider="";
-    public String FusedLocationAccuracy="0";
-
-    public String GPSLocationLatitude="0";
-    public String GPSLocationLongitude="0";
-    public String GPSLocationProvider="";
-    public String GPSLocationAccuracy="0";
-
-    public String NetworkLocationLatitude="0";
-    public String NetworkLocationLongitude="0";
-    public String NetworkLocationProvider="";
-    public String NetworkLocationAccuracy="0";
-
-    String fusedData;
-    public boolean isGPSEnabled = false;
-    public   boolean isNetworkEnabled = false;
-    public String newfullFileName;
-    DatabaseAssistant DA = new DatabaseAssistant(this);
-    public String fnAccurateProvider="";
-    public String fnLati="0";
-    public String fnLongi="0";
-    public Double fnAccuracy=0.0;
-    int countSubmitClicked=0;
-    String LattitudeFromLauncher="NA";
-    String LongitudeFromLauncher="NA";
-    public String AccuracyFromLauncher="NA";
-    public String ProviderFromLauncher="NA";
-
-    public static int flgLocationServicesOnOff=0;
-    public static int flgGPSOnOff=0;
-    public static int flgNetworkOnOff=0;
-    public static int flgFusedOnOff=0;
-    public static int flgInternetOnOffWhileLocationTracking=0;
-    public static String address,pincode,city,state;
-
-    public String storeID;
     private String clickedTagPhoto="";
 
-    DBAdapterKenya helperDb=new DBAdapterKenya(StoreClosedActivity.this);
-    ImageAdapter adapterImage=null;
-    boolean flgListEmpty=false;
+    private static File getOutputMediaFile()
+    {
+        //make a new file directory inside the "sdcard" folder
+        String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder;
+        File mediaStorageDir = new File(file_dj_path);
+        //if this "JCGCamera folder does not exist
+        if (!mediaStorageDir.exists()) {
+            //if you cannot make this folder return
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
 
-    public String selStoreName;
-    public String imei;
-    public String date;
-    public String pickerDate;
+        //take the current timeStamp
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",Locale.ENGLISH).format(new Date());
+        File mediaFile;
+        //and make a media file:
+       // mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+"$"+ timeStamp + ".jpg");
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + CommonInfo.imei+timeStamp + ".jpg");
+        return mediaFile;
+    }
 
-    ArrayList<String> list_ImgName;
+    private static Bitmap decodeSampledBitmapFromFile(String path, int reqWidth, int reqHeight)
+    {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+
+        // Calculate inSampleSize, Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        int inSampleSize = 1;
+
+        if (height > reqHeight)
+        {
+            inSampleSize = Math.round((float)height / (float)reqHeight);
+        }
+        int expectedWidth = width / inSampleSize;
+
+        if (expectedWidth > reqWidth)
+        {
+            //if(Math.round((float)width / (float)reqWidth) > inSampleSize) // If bigger SampSize..
+            inSampleSize = Math.round((float)width / (float)reqWidth);
+        }
+
+        options.inSampleSize = inSampleSize;
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+
+        return BitmapFactory.decodeFile(path, options);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,17 +271,21 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         }
         else
         {
-            imei=CommonInfo.imei.trim();
+            imei= CommonInfo.imei.trim();
         }
-
+        pm = (PowerManager) getSystemService(POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                | PowerManager.ON_AFTER_RELEASE, "INFO");
 
         long syncTIMESTAMP = System.currentTimeMillis();
         Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
         String startTS = df.format(dateobj);
-        helperDb.open();
+        StoreVisitCode=helperDb.fnGetStoreVisitCode(storeID);
+        //helperDb.open();
         helperDb.UpdateStoreStartVisit(storeID,startTS);
-        helperDb.close();
+        //helperDb.close();
 
 
         btn_clickPic= (Button) findViewById(R.id.btn_clickPic);
@@ -266,14 +331,17 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
     void getDataFromDatabase()
     {
         hmap_StoreCloseReasons=helperDb.getStoreClosedReasons();
-        list_ImgName = helperDb.getStoreClosedImgNameByStoreId(storeID);
+        list_ImgName = helperDb.getStoreClosedImgNameByStoreId(storeID,StoreVisitCode);
 
-        for(Map.Entry<String,String> entry:hmap_StoreCloseReasons.entrySet())
+        if(hmap_StoreCloseReasons != null && hmap_StoreCloseReasons.size()>0)
         {
-            hmap_ReasonsDescID.put(entry.getValue(),entry.getKey());
+            for(Map.Entry<String,String> entry:hmap_StoreCloseReasons.entrySet())
+            {
+                hmap_ReasonsDescID.put(entry.getValue(),entry.getKey());
+            }
         }
 
-        String fetchedValue=helperDb.getOtherReason(storeID);
+        String fetchedValue=helperDb.getOtherReason(storeID,StoreVisitCode);
 
         String selectedDrpDwnValue="NA",selectedTextID="00";
         selectedTextID=fetchedValue.split(Pattern.quote("^"))[0];
@@ -304,10 +372,16 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.dismiss();
+                long  syncTIMESTAMP = System.currentTimeMillis();
+                Date dateobj = new Date(syncTIMESTAMP);
+                SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+                String StampEndsTime = df.format(dateobj);
+                //helperDb.open();
+                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
+                helperDb.UpdateStoreEndVisit(storeID, StampEndsTime);
+                helperDb.UpdateStoreFlag(storeID.trim(), 3);
+                //helperDb.close();
 
-                helperDb.open();
-                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID);
-                helperDb.close();
 
 
                 Intent nxtP4=new Intent(StoreClosedActivity.this,LastVisitDetails.class);
@@ -349,11 +423,12 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                     Date dateobj = new Date(syncTIMESTAMP);
                     SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
                     String startTS = df.format(dateobj);
-                    helperDb.open();
+                    //helperDb.open();
                     helperDb.UpdateStoreEndVisit(storeID,startTS);
-                    helperDb.UpdateStoreStoreClose(storeID,1);
-                    helperDb.UpdateStoreSstat(storeID,3);
-                    helperDb.close();
+                    helperDb.UpdateStoreStoreClose(storeID,1,StoreVisitCode);
+                    helperDb.UpdateStoreSstat(storeID,3,StoreVisitCode);
+                    helperDb.UpdatetblStoreOrderVisitDayActivitySstat(storeID,3,StoreVisitCode,LastVisitDetails.TempStoreVisitCode);
+                    //helperDb.close();
 
                     if (hmapPhotoDetailsForSaving != null && hmapPhotoDetailsForSaving.size() > 0)
                     {
@@ -379,7 +454,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                             drpdwnSelectedID="00";
                         }
 
-                        helperDb.inserttblStoreCloseReasonSaving(storeID,drpdwnSelectedID,drpdwnSelectedValue,3);
+                        helperDb.inserttblStoreCloseReasonSaving(storeID,drpdwnSelectedID,drpdwnSelectedValue,3,StoreVisitCode);
 
                         for (Map.Entry<String, String> entry : hmapPhotoDetailsForSaving.entrySet())
                         {
@@ -387,13 +462,44 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                             String photoPath = entry.getValue().split(Pattern.quote("~"))[1];
                             String clickedDateTime = entry.getValue().split(Pattern.quote("~"))[2];
 
-                            helperDb.inserttblStoreClosedPhotoDetail(storeID, clickedDateTime, photoName, photoPath, 3);
+                            helperDb.inserttblStoreClosedPhotoDetail(storeID, clickedDateTime, photoName, photoPath, 3,StoreVisitCode);
                             System.out.println("SAVING..."+storeID+"-"+clickedDateTime+"-"+photoName+"-"+photoPath);
                         }
 
-                        //nitishdubey
-                        new FullSyncDataNow(StoreClosedActivity.this).execute();
 
+
+
+                        String presentRoute=helperDb.GetActiveRouteID();
+
+                        SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+
+                       String newfullFileName=imei+"."+presentRoute+"."+df1.format(dateobj);
+                        try {
+                            File OrderXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+                            if (!OrderXMLFolder.exists())
+                            {
+                                OrderXMLFolder.mkdirs();
+
+                            }
+                            String routeID=helperDb.GetActiveRouteIDSunil();
+                            DA.open();
+                            DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
+                            DA.close();
+                            helperDb.savetbl_XMLfiles(newfullFileName, "3","1");
+                            helperDb.UpdateXMLCreatedFilesTablesFlag(5);
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+
+                        }
+
+                        Intent in = new Intent(StoreClosedActivity.this, StoreSelection.class);
+                        in.putExtra("imei", imei);
+                        in.putExtra("userDate", date);
+                        in.putExtra("pickerDate", pickerDate);
+                        startActivity(in);
+                        finish();
                     }
                     else
                     {
@@ -419,16 +525,42 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                             drpdwnSelectedID="00";
                         }
 
-                        helperDb.upDateCloseStoreReason(storeID,drpdwnSelectedID,drpdwnSelectedValue);
+                        helperDb.upDateCloseStoreReason(storeID,drpdwnSelectedID,drpdwnSelectedValue,StoreVisitCode);
                         System.out.println("SAVING UPDATE..."+storeID+"-"+drpdwnSelectedID+"-"+drpdwnSelectedValue);
-                        new FullSyncDataNow(StoreClosedActivity.this).execute();
-                       /* Intent in = new Intent(StoreClosedActivity.this, StoreSelection.class);
+
+
+                        String presentRoute=helperDb.GetActiveRouteID();
+
+                        SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+
+                        String newfullFileName=imei+"."+presentRoute+"."+df1.format(dateobj);
+                        try {
+                            File OrderXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+                            if (!OrderXMLFolder.exists())
+                            {
+                                OrderXMLFolder.mkdirs();
+
+                            }
+                            String routeID=helperDb.GetActiveRouteIDSunil();
+                            DA.open();
+                            DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
+                            DA.close();
+                            helperDb.savetbl_XMLfiles(newfullFileName, "3","1");
+                            helperDb.UpdateXMLCreatedFilesTablesFlag(5);
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+
+                        }
+
+                        Intent in = new Intent(StoreClosedActivity.this, StoreSelection.class);
                         in.putExtra("imei", imei);
                         in.putExtra("userDate", date);
                         in.putExtra("pickerDate", pickerDate);
 
                         startActivity(in);
-                        finish();*/
+                        finish();
                     }
                 }
             }
@@ -464,31 +596,34 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         TextView txtVwCncl = (TextView) listDialog.findViewById(R.id.txtVwCncl);
 
         final LinearLayout ll_parentRows = (LinearLayout) listDialog.findViewById(R.id.ll_parentRows);
-        for (Map.Entry<String,String> entry:hmap_StoreCloseReasons.entrySet())
+        if( hmap_StoreCloseReasons != null && hmap_StoreCloseReasons.size()>0)
         {
-            LayoutInflater inflater = getLayoutInflater();
-            View convertView = (View) inflater.inflate(R.layout.text_view_ques, null);
+            for (Map.Entry<String,String> entry:hmap_StoreCloseReasons.entrySet())
+            {
+                LayoutInflater inflater = getLayoutInflater();
+                View convertView = (View) inflater.inflate(R.layout.text_view_ques, null);
 
-            final TextView txtVw_ques = (TextView) convertView.findViewById(R.id.txtVw_ques);
-            txtVw_ques.setText(entry.getValue());
-            txtVw_ques.setTag(entry.getKey());
+                final TextView txtVw_ques = (TextView) convertView.findViewById(R.id.txtVw_ques);
+                txtVw_ques.setText(entry.getValue());
+                txtVw_ques.setTag(entry.getKey());
 
-            txtVw_ques.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listDialog.dismiss();
-                    if (hmap_ReasonsDescID.get(txtVw_ques.getText().toString()).equals("-99"))
-                    {
-                        drpdwn_closeReason.setText(txtVw_ques.getText());
-                        et_OtherReason.setVisibility(View.VISIBLE);
-                    } else {
-                        drpdwn_closeReason.setText(txtVw_ques.getText());
-                        et_OtherReason.setVisibility(View.GONE);
+                txtVw_ques.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listDialog.dismiss();
+                        if (hmap_ReasonsDescID.get(txtVw_ques.getText().toString()).equals("-99"))
+                        {
+                            drpdwn_closeReason.setText(txtVw_ques.getText());
+                            et_OtherReason.setVisibility(View.VISIBLE);
+                        } else {
+                            drpdwn_closeReason.setText(txtVw_ques.getText());
+                            et_OtherReason.setVisibility(View.GONE);
+                        }
                     }
-                }
-            });
+                });
 
-            ll_parentRows.addView(convertView);
+                ll_parentRows.addView(convertView);
+            }
         }
 
         txtVwCncl.setOnClickListener(new View.OnClickListener() {
@@ -547,14 +682,12 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         GPSONOFFAlert.show();
     }
 
-
-
     public void locationRetrievingAndDistanceCalculating()
     {
         appLocationService = new AppLocationService();
 
-        pm = (PowerManager) getSystemService(POWER_SERVICE);
 
+        wl.acquire();
 
         pDialog2STANDBY = ProgressDialog.show(StoreClosedActivity.this, getText(R.string.genTermPleaseWaitNew), getText(R.string.rtrvng_loc), true);
         pDialog2STANDBY.setIndeterminate(true);
@@ -588,7 +721,10 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         {
             GPSONOFFAlert.dismiss();
         }
-
+        if(wl!=null)
+        {
+            wl.release();
+        }
         if(mCamera!=null)
         {
             mCamera.release();
@@ -656,8 +792,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 
     }
 
@@ -682,325 +817,6 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         }
     }
 
-    public class CoundownClass extends CountDownTimer
-    {
-        public CoundownClass(long startTime, long interval) {
-            super(startTime, interval);
-        }
-
-        @Override
-        public void onFinish()
-        {
-            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            String GpsLat="0";
-            String GpsLong="0";
-            String GpsAccuracy="0";
-            String GpsAddress="0";
-            if(isGPSEnabled)
-            {
-                Location nwLocation=appLocationService.getLocation(locationManager, LocationManager.GPS_PROVIDER,location);
-
-                if(nwLocation!=null){
-                    double lattitude=nwLocation.getLatitude();
-                    double longitude=nwLocation.getLongitude();
-                    double accuracy= nwLocation.getAccuracy();
-                    GpsLat=""+lattitude;
-                    GpsLong=""+longitude;
-                    GpsAccuracy=""+accuracy;
-                    if(isOnline())
-                    {
-                        GpsAddress=getAddressOfProviders(GpsLat, GpsLong);
-                    }
-                    else
-                    {
-                        GpsAddress="NA";
-                    }
-
-                    GPSLocationLatitude=""+lattitude;
-                    GPSLocationLongitude=""+longitude;
-                    GPSLocationProvider="GPS";
-                    GPSLocationAccuracy=""+accuracy;
-                    AllProvidersLocation="GPS=Lat:"+lattitude+"Long:"+longitude+"Acc:"+accuracy;
-
-                }
-            }
-
-            Location gpsLocation=appLocationService.getLocation(locationManager, LocationManager.NETWORK_PROVIDER,location);
-            String NetwLat="0";
-            String NetwLong="0";
-            String NetwAccuracy="0";
-            String NetwAddress="0";
-            if(gpsLocation!=null){
-                double lattitude1=gpsLocation.getLatitude();
-                double longitude1=gpsLocation.getLongitude();
-                double accuracy1= gpsLocation.getAccuracy();
-
-                NetwLat=""+lattitude1;
-                NetwLong=""+longitude1;
-                NetwAccuracy=""+accuracy1;
-                if(isOnline())
-                {
-                    NetwAddress=getAddressOfProviders(NetwLat, NetwLong);
-                }
-                else
-                {
-                    NetwAddress="NA";
-                }
-
-                NetworkLocationLatitude=""+lattitude1;
-                NetworkLocationLongitude=""+longitude1;
-                NetworkLocationProvider="Network";
-                NetworkLocationAccuracy=""+accuracy1;
-                if(!AllProvidersLocation.equals(""))
-                {
-                    AllProvidersLocation=AllProvidersLocation+"$Network=Lat:"+lattitude1+"Long:"+longitude1+"Acc:"+accuracy1;
-                }
-                else
-                {
-                    AllProvidersLocation="Network=Lat:"+lattitude1+"Long:"+longitude1+"Acc:"+accuracy1;
-                }
-
-
-            }
-									 /* TextView accurcy=(TextView) findViewById(R.id.Acuracy);
-									  accurcy.setText("GPS:"+GPSLocationAccuracy+"\n"+"NETWORK"+NetworkLocationAccuracy+"\n"+"FUSED"+fusedData);*/
-
-            System.out.println("LOCATION Fused"+fusedData);
-
-            String FusedLat="0";
-            String FusedLong="0";
-            String FusedAccuracy="0";
-            String FusedAddress="0";
-
-            if(!FusedLocationProvider.equals(""))
-            {
-                fnAccurateProvider="Fused";
-                fnLati=FusedLocationLatitude;
-                fnLongi=FusedLocationLongitude;
-                fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
-
-                FusedLat=FusedLocationLatitude;
-                FusedLong=FusedLocationLongitude;
-                FusedAccuracy=FusedLocationAccuracy;
-                FusedLocationLatitudeWithFirstAttempt=FusedLocationLatitude;
-                FusedLocationLongitudeWithFirstAttempt=FusedLocationLongitude;
-                FusedLocationAccuracyWithFirstAttempt=FusedLocationAccuracy;
-
-
-                if(isOnline())
-                {
-                    FusedAddress=getAddressOfProviders(FusedLat, FusedLong);
-                }
-                else
-                {
-                    FusedAddress="NA";
-                }
-
-                if(!AllProvidersLocation.equals(""))
-                {
-                    AllProvidersLocation=AllProvidersLocation+"$Fused=Lat:"+FusedLocationLatitude+"Long:"+FusedLocationLongitude+"Acc:"+fnAccuracy;
-                }
-                else
-                {
-                    AllProvidersLocation="Fused=Lat:"+FusedLocationLatitude+"Long:"+FusedLocationLongitude+"Acc:"+fnAccuracy;
-                }
-            }
-
-
-            appLocationService.KillServiceLoc(appLocationService, locationManager);
-            try {
-                if(mGoogleApiClient!=null && mGoogleApiClient.isConnected())
-                {
-                    stopLocationUpdates();
-                    mGoogleApiClient.disconnect();
-                }
-            }
-            catch (Exception e){
-
-            }
-
-            fnAccurateProvider="";
-            fnLati="0";
-            fnLongi="0";
-            fnAccuracy=0.0;
-
-            if(!FusedLocationProvider.equals(""))
-            {
-                fnAccurateProvider="Fused";
-                fnLati=FusedLocationLatitude;
-                fnLongi=FusedLocationLongitude;
-                fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
-            }
-
-            if(!fnAccurateProvider.equals(""))
-            {
-                if(!GPSLocationProvider.equals(""))
-                {
-                    if(Double.parseDouble(GPSLocationAccuracy)<fnAccuracy)
-                    {
-                        fnAccurateProvider="Gps";
-                        fnLati=GPSLocationLatitude;
-                        fnLongi=GPSLocationLongitude;
-                        fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
-                    }
-                }
-            }
-            else
-            {
-                if(!GPSLocationProvider.equals(""))
-                {
-                    fnAccurateProvider="Gps";
-                    fnLati=GPSLocationLatitude;
-                    fnLongi=GPSLocationLongitude;
-                    fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
-                }
-            }
-
-            if(!fnAccurateProvider.equals(""))
-            {
-                if(!NetworkLocationProvider.equals(""))
-                {
-                    if(Double.parseDouble(NetworkLocationAccuracy)<fnAccuracy)
-                    {
-                        fnAccurateProvider="Network";
-                        fnLati=NetworkLocationLatitude;
-                        fnLongi=NetworkLocationLongitude;
-                        fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
-                    }
-                }
-            }
-            else
-            {
-                if(!NetworkLocationProvider.equals(""))
-                {
-                    fnAccurateProvider="Network";
-                    fnLati=NetworkLocationLatitude;
-                    fnLongi=NetworkLocationLongitude;
-                    fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
-                }
-            }
-            checkHighAccuracyLocationMode(StoreClosedActivity.this);
-            // fnAccurateProvider="";
-            if(fnAccurateProvider.equals(""))
-            {
-                helperDb.open();
-                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID);
-                helperDb.saveTblStorecloseLocationDetails(storeID,"NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA",3);
-                System.out.println("LOCATION NA....");
-                helperDb.close();
-
-                if(pDialog2STANDBY.isShowing())
-                {
-                    pDialog2STANDBY.dismiss();
-                }
-
-                countSubmitClicked=2;
-            }
-            else
-            {
-                String FullAddress="0";
-                if(isOnline())
-                {
-                    FullAddress=   getAddressForDynamic(fnLati, fnLongi);
-                }
-                else
-                {
-                    FullAddress="NA";
-                }
-                String addr="NA";
-                String zipcode="NA";
-                String city="NA";
-                String state="NA";
-
-                if(!FullAddress.equals("NA"))
-                {
-                    addr = FullAddress.split(Pattern.quote("^"))[0];
-                    zipcode = FullAddress.split(Pattern.quote("^"))[1];
-                    city = FullAddress.split(Pattern.quote("^"))[2];
-                    state = FullAddress.split(Pattern.quote("^"))[3];
-                }
-
-                if(pDialog2STANDBY.isShowing())
-                {
-                    pDialog2STANDBY.dismiss();
-                }
-                if(!GpsLat.equals("0") )
-                {
-                    fnCreateLastKnownGPSLoction(GpsLat,GpsLong,GpsAccuracy);
-                }
-
-                LattitudeFromLauncher=fnLati;
-                LongitudeFromLauncher=fnLongi;
-                AccuracyFromLauncher= String.valueOf(fnAccuracy);
-                ProviderFromLauncher = fnAccurateProvider;
-
-                helperDb.open();
-                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID);
-                helperDb.saveTblStorecloseLocationDetails(storeID,fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt,3);
-                System.out.println("LOCATION..."+fnLati+"--"+fnLongi+"--"+String.valueOf(fnAccuracy)+"--"+addr+"--"+city+"--"+zipcode+"--"+state+"--"+fnAccurateProvider+"--"+GpsLat+"--"+GpsLong+"--"+GpsAccuracy+"--"+NetwLat+"--"+NetwLong+"--"+NetwAccuracy+"--"+FusedLat+"--"+FusedLong+"--"+FusedAccuracy+"--"+AllProvidersLocation+"--"+GpsAddress+"--"+NetwAddress+"--"+FusedAddress+"--"+FusedLocationLatitudeWithFirstAttempt+"--"+FusedLocationLongitudeWithFirstAttempt+"--"+FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
-                //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
-                if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
-                {
-                    fnCreateLastKnownFinalLocation(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher);
-                    countSubmitClicked=2;
-                }
-                else
-                {
-                    if(countSubmitClicked == 1)
-                    {
-                        countSubmitClicked=2;
-                    }
-                    if(countSubmitClicked == 0)
-                    {
-                        AlertDialog.Builder alertDialog = new AlertDialog.Builder(StoreClosedActivity.this);
-
-                        // Setting Dialog Title
-                        alertDialog.setTitle(getText(R.string.genTermInformation));
-                        alertDialog.setIcon(R.drawable.error_info_ico);
-                        alertDialog.setCancelable(false);
-                        // Setting Dialog Message
-                        alertDialog.setMessage(getText(R.string.AlertSameLoc));
-
-                        // On pressing Settings button
-                        alertDialog.setPositiveButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                countSubmitClicked++;
-                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                startActivity(intent);
-                            }
-                        });
-
-                        // Showing Alert Message
-                        alertDialog.show();
-
-                    }
-                }
-
-                GpsLat="0";
-                GpsLong="0";
-                GpsAccuracy="0";
-                GpsAddress="0";
-                NetwLat="0";
-                NetwLong="0";
-                NetwAccuracy="0";
-                NetwAddress="0";
-                FusedLat="0";
-                FusedLong="0";
-                FusedAccuracy="0";
-                FusedAddress="0";
-
-                //code here
-            }
-        }
-
-        @Override
-        public void onTick(long arg0) {
-            // TODO Auto-generated method stub
-
-        }
-    }
-
     public boolean checkLastFinalLoctionIsRepeated(String currentLat, String currentLong, String currentAccuracy){
         boolean repeatedLoction=false;
 
@@ -1017,7 +833,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
             // If file does not exists, then create it
             if (file.exists()) {
@@ -1071,6 +887,60 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
 
     }
 
+    /*public String getAddressOfProviders(String latti, String longi){
+
+        StringBuilder FULLADDRESS2 =new StringBuilder();
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(StoreClosedActivity.this, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
+
+            if (addresses == null || addresses.size()  == 0)
+            {
+                FULLADDRESS2=  FULLADDRESS2.append("NA");
+            }
+            else
+            {
+                for(Address address : addresses) {
+                    //  String outputAddress = "";
+                    for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+                        if(i==1)
+                        {
+                            FULLADDRESS2.append(address.getAddressLine(i));
+                        }
+                        else if(i==2)
+                        {
+                            FULLADDRESS2.append(",").append(address.getAddressLine(i));
+                        }
+                    }
+                }
+		      *//* //String address = addresses.get(0).getAddressLine(0);
+		       String address = addresses.get(0).getAddressLine(1); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+		       String city = addresses.get(0).getLocality();
+		       String state = addresses.get(0).getAdminArea();
+		       String country = addresses.get(0).getCountryName();
+		       String postalCode = addresses.get(0).getPostalCode();
+		       String knownName = addresses.get(0).getFeatureName();
+		       FULLADDRESS=address+","+city+","+state+","+country+","+postalCode;
+		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*//*
+
+            }
+
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+
+
+        return FULLADDRESS2.toString();
+
+    }*/
+
     public void fnCreateLastKnownGPSLoction(String chekLastGPSLat, String chekLastGPSLong, String chekLastGpsAccuracy)
     {
 
@@ -1097,7 +967,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             }
             String txtFileNamenew="GPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1163,7 +1033,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1202,60 +1072,6 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
 
         }
     }
-
-    /*public String getAddressOfProviders(String latti, String longi){
-
-        StringBuilder FULLADDRESS2 =new StringBuilder();
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(StoreClosedActivity.this, Locale.getDefault());
-
-        try {
-            addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
-
-            if (addresses == null || addresses.size()  == 0)
-            {
-                FULLADDRESS2=  FULLADDRESS2.append("NA");
-            }
-            else
-            {
-                for(Address address : addresses) {
-                    //  String outputAddress = "";
-                    for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
-                        if(i==1)
-                        {
-                            FULLADDRESS2.append(address.getAddressLine(i));
-                        }
-                        else if(i==2)
-                        {
-                            FULLADDRESS2.append(",").append(address.getAddressLine(i));
-                        }
-                    }
-                }
-		      *//* //String address = addresses.get(0).getAddressLine(0);
-		       String address = addresses.get(0).getAddressLine(1); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-		       String city = addresses.get(0).getLocality();
-		       String state = addresses.get(0).getAdminArea();
-		       String country = addresses.get(0).getCountryName();
-		       String postalCode = addresses.get(0).getPostalCode();
-		       String knownName = addresses.get(0).getFeatureName();
-		       FULLADDRESS=address+","+city+","+state+","+country+","+postalCode;
-		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*//*
-
-            }
-
-        } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-
-
-        return FULLADDRESS2.toString();
-
-    }*/
 
     public String getAddressOfProviders(String latti, String longi){
 
@@ -1495,12 +1311,12 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             showAlertSingleButtonInfo(getResources().getString(R.string.alertClickPic));
             return false;
         }
-        /* else if(flgListEmpty)
+       /* else if(flgListEmpty)
         {
             showAlertSingleButtonInfo("Please click atleast one pic of the store");
             return false;
         }*/
-        else if(hmap_ReasonsDescID.get(drpdwn_closeReason.getText().toString()).equals("-99") && TextUtils.isEmpty(et_OtherReason.getText()))
+        else if((hmap_ReasonsDescID != null && hmap_ReasonsDescID.size()>0) && hmap_ReasonsDescID.get(drpdwn_closeReason.getText().toString()).equals("-99") && TextUtils.isEmpty(et_OtherReason.getText()))
         {
             showAlertSingleButtonInfo(getResources().getString(R.string.alertOtherReason));
             return false;
@@ -1669,7 +1485,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
                         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
                         String clkdTime = df.format(dateobj);
 
-                        String valueOfKey=clickedTagPhoto+"~"+storeID+"~"+uriSavedImage.toString()+"~"+clkdTime+"~"+"1";
+                        String valueOfKey=clickedTagPhoto+"~"+AddNewStore_DynamicSectionWise.selStoreID+"~"+uriSavedImage.toString()+"~"+clkdTime+"~"+"1";
 
                         Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
@@ -1695,30 +1511,6 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         };
         return picture;
     }
-
-    private final View.OnClickListener captrureListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            v.setEnabled(false);
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-            cancelCam.setEnabled(false);
-            flashImage.setEnabled(false);
-            if(cameraPreview!=null)
-            {
-                cameraPreview.setEnabled(false);
-            }
-
-            if(mCamera!=null)
-            {
-                mCamera.takePicture(null, null, mPicture);
-            }
-            else
-            {
-                dialog.dismiss();
-            }
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        }
-    };
 
     private boolean hasCamera(Context context) {
         //check if the device has camera
@@ -1761,29 +1553,6 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
             }
         }
         return cameraId;
-    }
-
-    private static File getOutputMediaFile()
-    {
-        //make a new file directory inside the "sdcard" folder
-        String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder;
-        File mediaStorageDir = new File(file_dj_path);
-        //if this "JCGCamera folder does not exist
-        if (!mediaStorageDir.exists()) {
-            //if you cannot make this folder return
-            if (!mediaStorageDir.mkdirs()) {
-                return null;
-            }
-        }
-
-        //take the current timeStamp
-        String timeStamp = new SimpleDateFormat("yyyyMMMdd_HHmmss",Locale.ENGLISH).format(new Date());
-        File mediaFile;
-        //and make a media file:
-       // mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
-        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+"$"+ timeStamp + ".jpg");
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+timeStamp + ".jpg");
-        return mediaFile;
     }
 
     private void openCamera()
@@ -1994,38 +1763,6 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
 
     }
 
-    private static Bitmap decodeSampledBitmapFromFile(String path, int reqWidth, int reqHeight)
-    {
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-
-        // Calculate inSampleSize, Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        int inSampleSize = 1;
-
-        if (height > reqHeight)
-        {
-            inSampleSize = Math.round((float)height / (float)reqHeight);
-        }
-        int expectedWidth = width / inSampleSize;
-
-        if (expectedWidth > reqWidth)
-        {
-            //if(Math.round((float)width / (float)reqWidth) > inSampleSize) // If bigger SampSize..
-            inSampleSize = Math.round((float)width / (float)reqWidth);
-        }
-
-        options.inSampleSize = inSampleSize;
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-
-        return BitmapFactory.decodeFile(path, options);
-    }
-
     private void setSavedImageToScrollView(Bitmap bitmap, String imageName, String valueOfKey, String clickedTagPhoto)
     {
         if(hmapCtgry_Imageposition!=null && hmapCtgry_Imageposition.size()>0)
@@ -2096,9 +1833,9 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         picAddPosition=picAddPosition-1;
         System.out.println("REMOVE AND PIC ADD DEL..."+removePicPositin+"__"+picAddPosition);
         hmapCtgry_Imageposition.put(tagPhoto,picAddPosition);
-        //	String photoToBeDletedFromPath=helperDb.getPdaPhotoPath(imageNameToDel);
+        //	String photoToBeDletedFromPath=dbengine.getPdaPhotoPath(imageNameToDel);
 
-        // helperDb.updatePhotoValidation("0", imageNameToDel);
+        // dbengine.updatePhotoValidation("0", imageNameToDel);
 
         ArrayList<String> listClkdPic=new ArrayList<String>();
         if(hmapCtgryPhotoSection!=null && hmapCtgryPhotoSection.containsKey(tagPhoto))
@@ -2127,7 +1864,7 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         }
         //  String file_dj_path = Environment.getExternalStorageDirectory() + "/RSPLSFAImages/"+imageNameToDel;
         String file_dj_path = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolder + "/" +imageNameToDelVal;
-        helperDb.validateAndDelStoreClosePic(storeID,imageNameToDelVal);
+        helperDb.validateAndDelStoreClosePic(storeID,imageNameToDelVal,StoreVisitCode);
         File fdelete = new File(file_dj_path);
         if (fdelete.exists())
         {
@@ -2161,135 +1898,321 @@ public class StoreClosedActivity extends BaseActivity implements LocationListene
         }
     }
 
-    private class FullSyncDataNow extends AsyncTask<Void, Void, Void> {
+    public class CoundownClass extends CountDownTimer
+    {
+        public CoundownClass(long startTime, long interval) {
+            super(startTime, interval);
+        }
 
-
-        ProgressDialog pDialogGetStores;
-        public FullSyncDataNow(StoreClosedActivity activity)
+        @Override
+        public void onFinish()
         {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            String GpsLat="0";
+            String GpsLong="0";
+            String GpsAccuracy="0";
+            String GpsAddress="0";
+            if(isGPSEnabled)
+            {
+                Location nwLocation=appLocationService.getLocation(locationManager, LocationManager.GPS_PROVIDER,location);
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+                if(nwLocation!=null){
+                    double lattitude=nwLocation.getLatitude();
+                    double longitude=nwLocation.getLongitude();
+                    double accuracy= nwLocation.getAccuracy();
+                    GpsLat=""+lattitude;
+                    GpsLong=""+longitude;
+                    GpsAccuracy=""+accuracy;
+                    if(isOnline())
+                    {
+                        GpsAddress=getAddressOfProviders(GpsLat, GpsLong);
+                    }
+                    else
+                    {
+                        GpsAddress="NA";
+                    }
+
+                    GPSLocationLatitude=""+lattitude;
+                    GPSLocationLongitude=""+longitude;
+                    GPSLocationProvider="GPS";
+                    GPSLocationAccuracy=""+accuracy;
+                    AllProvidersLocation="GPS=Lat:"+lattitude+"Long:"+longitude+"Acc:"+accuracy;
+
+                }
+            }
+
+            Location gpsLocation=appLocationService.getLocation(locationManager, LocationManager.NETWORK_PROVIDER,location);
+            String NetwLat="0";
+            String NetwLong="0";
+            String NetwAccuracy="0";
+            String NetwAddress="0";
+            if(gpsLocation!=null){
+                double lattitude1=gpsLocation.getLatitude();
+                double longitude1=gpsLocation.getLongitude();
+                double accuracy1= gpsLocation.getAccuracy();
+
+                NetwLat=""+lattitude1;
+                NetwLong=""+longitude1;
+                NetwAccuracy=""+accuracy1;
+                if(isOnline())
+                {
+                    NetwAddress=getAddressOfProviders(NetwLat, NetwLong);
+                }
+                else
+                {
+                    NetwAddress="NA";
+                }
+
+                NetworkLocationLatitude=""+lattitude1;
+                NetworkLocationLongitude=""+longitude1;
+                NetworkLocationProvider="Network";
+                NetworkLocationAccuracy=""+accuracy1;
+                if(!AllProvidersLocation.equals(""))
+                {
+                    AllProvidersLocation=AllProvidersLocation+"$Network=Lat:"+lattitude1+"Long:"+longitude1+"Acc:"+accuracy1;
+                }
+                else
+                {
+                    AllProvidersLocation="Network=Lat:"+lattitude1+"Long:"+longitude1+"Acc:"+accuracy1;
+                }
 
 
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-           // pDialogGetStores.setMessage(StoreClosedActivity.this.getResources().getString(R.string.SubmittingOrderDetails));
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
+            }
+									 /* TextView accurcy=(TextView) findViewById(R.id.Acuracy);
+									  accurcy.setText("GPS:"+GPSLocationAccuracy+"\n"+"NETWORK"+NetworkLocationAccuracy+"\n"+"FUSED"+fusedData);*/
+
+            System.out.println("LOCATION Fused"+fusedData);
+
+            String FusedLat="0";
+            String FusedLong="0";
+            String FusedAccuracy="0";
+            String FusedAddress="0";
+
+            if(!FusedLocationProvider.equals(""))
+            {
+                fnAccurateProvider="Fused";
+                fnLati=FusedLocationLatitude;
+                fnLongi=FusedLocationLongitude;
+                fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
+
+                FusedLat=FusedLocationLatitude;
+                FusedLong=FusedLocationLongitude;
+                FusedAccuracy=FusedLocationAccuracy;
+                FusedLocationLatitudeWithFirstAttempt=FusedLocationLatitude;
+                FusedLocationLongitudeWithFirstAttempt=FusedLocationLongitude;
+                FusedLocationAccuracyWithFirstAttempt=FusedLocationAccuracy;
 
 
-        }
+                if(isOnline())
+                {
+                    FusedAddress=getAddressOfProviders(FusedLat, FusedLong);
+                }
+                else
+                {
+                    FusedAddress="NA";
+                }
 
-        @Override
-
-        protected Void doInBackground(Void... params) {
-
-            int Outstat=3;
-           
-
-            long  syncTIMESTAMP = System.currentTimeMillis();
-            Date dateobj = new Date(syncTIMESTAMP);
-            SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-            String StampEndsTime = df.format(dateobj);
-
-
-            helperDb.open();
-            helperDb.UpdateStoreEndVisit(storeID, StampEndsTime);
-
-            helperDb.UpdateStoreFlag(storeID.trim(), 3);
-
-
-            //helperDb.UpdateStoreReturnphotoFlag(storeID.trim(), 5);
-
-            helperDb.close();
-
-            helperDb.open();
-            String presentRoute=helperDb.GetActiveRouteID();
-            helperDb.close();
-			
-			
-			/*long syncTIMESTAMP = System.currentTimeMillis();
-			Date dateobj = new Date(syncTIMESTAMP);*/
-            SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
-
-            newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
+                if(!AllProvidersLocation.equals(""))
+                {
+                    AllProvidersLocation=AllProvidersLocation+"$Fused=Lat:"+FusedLocationLatitude+"Long:"+FusedLocationLongitude+"Acc:"+fnAccuracy;
+                }
+                else
+                {
+                    AllProvidersLocation="Fused=Lat:"+FusedLocationLatitude+"Long:"+FusedLocationLongitude+"Acc:"+fnAccuracy;
+                }
+            }
 
 
-
-
+            appLocationService.KillServiceLoc(appLocationService, locationManager);
             try {
-
-
-                File OrderXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
-
-                if (!OrderXMLFolder.exists())
+                if(mGoogleApiClient!=null && mGoogleApiClient.isConnected())
                 {
-                    OrderXMLFolder.mkdirs();
-
-                }
-                String routeID=helperDb.GetActiveRouteIDSunil();
-
-                DA.open();
-                DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
-                DA.close();
-
-
-                //helperDb.deleteAllXmlDataTable( "4");
-                helperDb.savetbl_XMLfiles(newfullFileName, "3","1");
-                helperDb.open();
-                helperDb.UpdateStoreFlag(storeID.trim(), 5);
-
-                helperDb.UpdateNewAddedStorephotoFlag(storeID.trim(), 5);
-                helperDb.UpdateStoreClosephotoWithOutFlag(storeID.trim(), 5);
-
-                helperDb.close();
-
-
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-                if(pDialogGetStores.isShowing())
-                {
-                    pDialogGetStores.dismiss();
+                    stopLocationUpdates();
+                    mGoogleApiClient.disconnect();
                 }
             }
-            return null;
+            catch (Exception e){
+
+            }
+
+            fnAccurateProvider="";
+            fnLati="0";
+            fnLongi="0";
+            fnAccuracy=0.0;
+
+            if(!FusedLocationProvider.equals(""))
+            {
+                fnAccurateProvider="Fused";
+                fnLati=FusedLocationLatitude;
+                fnLongi=FusedLocationLongitude;
+                fnAccuracy= Double.parseDouble(FusedLocationAccuracy);
+            }
+
+            if(!fnAccurateProvider.equals(""))
+            {
+                if(!GPSLocationProvider.equals(""))
+                {
+                    if(Double.parseDouble(GPSLocationAccuracy)<fnAccuracy)
+                    {
+                        fnAccurateProvider="Gps";
+                        fnLati=GPSLocationLatitude;
+                        fnLongi=GPSLocationLongitude;
+                        fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
+                    }
+                }
+            }
+            else
+            {
+                if(!GPSLocationProvider.equals(""))
+                {
+                    fnAccurateProvider="Gps";
+                    fnLati=GPSLocationLatitude;
+                    fnLongi=GPSLocationLongitude;
+                    fnAccuracy= Double.parseDouble(GPSLocationAccuracy);
+                }
+            }
+
+            if(!fnAccurateProvider.equals(""))
+            {
+                if(!NetworkLocationProvider.equals(""))
+                {
+                    if(Double.parseDouble(NetworkLocationAccuracy)<fnAccuracy)
+                    {
+                        fnAccurateProvider="Network";
+                        fnLati=NetworkLocationLatitude;
+                        fnLongi=NetworkLocationLongitude;
+                        fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
+                    }
+                }
+            }
+            else
+            {
+                if(!NetworkLocationProvider.equals(""))
+                {
+                    fnAccurateProvider="Network";
+                    fnLati=NetworkLocationLatitude;
+                    fnLongi=NetworkLocationLongitude;
+                    fnAccuracy= Double.parseDouble(NetworkLocationAccuracy);
+                }
+            }
+            checkHighAccuracyLocationMode(StoreClosedActivity.this);
+            // fnAccurateProvider="";
+            if(fnAccurateProvider.equals(""))
+            {
+                //helperDb.open();
+                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
+                helperDb.saveTblStorecloseLocationDetails(storeID,"NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA",3,StoreVisitCode);
+                System.out.println("LOCATION NA....");
+                //helperDb.close();
+
+                if(pDialog2STANDBY.isShowing())
+                {
+                    pDialog2STANDBY.dismiss();
+                }
+
+                countSubmitClicked=2;
+            }
+            else
+            {
+                String FullAddress="0";
+                if(isOnline())
+                {
+                    FullAddress=   getAddressForDynamic(fnLati, fnLongi);
+                }
+                else
+                {
+                    FullAddress="NA";
+                }
+                String addr="NA";
+                String zipcode="NA";
+                String city="NA";
+                String state="NA";
+
+                if(!FullAddress.equals("NA"))
+                {
+                    addr = FullAddress.split(Pattern.quote("^"))[0];
+                    zipcode = FullAddress.split(Pattern.quote("^"))[1];
+                    city = FullAddress.split(Pattern.quote("^"))[2];
+                    state = FullAddress.split(Pattern.quote("^"))[3];
+                }
+
+                if(pDialog2STANDBY.isShowing())
+                {
+                    pDialog2STANDBY.dismiss();
+                }
+                if(!GpsLat.equals("0") )
+                {
+                    fnCreateLastKnownGPSLoction(GpsLat,GpsLong,GpsAccuracy);
+                }
+
+                LattitudeFromLauncher=fnLati;
+                LongitudeFromLauncher=fnLongi;
+                AccuracyFromLauncher= String.valueOf(fnAccuracy);
+                ProviderFromLauncher = fnAccurateProvider;
+
+                //helperDb.open();
+                helperDb.deleteStorecloseLocationTableBasedOnStoreID(storeID,StoreVisitCode);
+                helperDb.saveTblStorecloseLocationDetails(storeID,fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt,3,StoreVisitCode);
+                System.out.println("LOCATION..."+fnLati+"--"+fnLongi+"--"+String.valueOf(fnAccuracy)+"--"+addr+"--"+city+"--"+zipcode+"--"+state+"--"+fnAccurateProvider+"--"+GpsLat+"--"+GpsLong+"--"+GpsAccuracy+"--"+NetwLat+"--"+NetwLong+"--"+NetwAccuracy+"--"+FusedLat+"--"+FusedLong+"--"+FusedAccuracy+"--"+AllProvidersLocation+"--"+GpsAddress+"--"+NetwAddress+"--"+FusedAddress+"--"+FusedLocationLatitudeWithFirstAttempt+"--"+FusedLocationLongitudeWithFirstAttempt+"--"+FusedLocationAccuracyWithFirstAttempt);
+                //helperDb.close();
+                //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
+                if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
+                {
+                    fnCreateLastKnownFinalLocation(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher);
+                    countSubmitClicked=2;
+                }
+                else
+                {
+                    if(countSubmitClicked == 1)
+                    {
+                        countSubmitClicked=2;
+                    }
+                    if(countSubmitClicked == 0)
+                    {
+                        AlertDialog.Builder alertDialog = new AlertDialog.Builder(StoreClosedActivity.this);
+
+                        // Setting Dialog Title
+                        alertDialog.setTitle(getText(R.string.genTermInformation));
+                        alertDialog.setIcon(R.drawable.error_info_ico);
+                        alertDialog.setCancelable(false);
+                        // Setting Dialog Message
+                        alertDialog.setMessage(getText(R.string.AlertSameLoc));
+
+                        // On pressing Settings button
+                        alertDialog.setPositiveButton(getText(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                countSubmitClicked++;
+                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(intent);
+                            }
+                        });
+
+                        // Showing Alert Message
+                        alertDialog.show();
+
+                    }
+                }
+
+                GpsLat="0";
+                GpsLong="0";
+                GpsAccuracy="0";
+                GpsAddress="0";
+                NetwLat="0";
+                NetwLong="0";
+                NetwAccuracy="0";
+                NetwAddress="0";
+                FusedLat="0";
+                FusedLong="0";
+                FusedAccuracy="0";
+                FusedAddress="0";
+
+                //code here
+            }
         }
 
         @Override
-        protected void onCancelled() {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            if(pDialogGetStores.isShowing())
-            {
-                pDialogGetStores.dismiss();
-            }
-
-            try
-            {
-
-                Intent in = new Intent(StoreClosedActivity.this, StoreSelection.class);
-                in.putExtra("imei", imei);
-                in.putExtra("userDate", date);
-                in.putExtra("pickerDate", pickerDate);
-                startActivity(in);
-                finish();
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-
+        public void onTick(long arg0) {
+            // TODO Auto-generated method stub
 
         }
     }

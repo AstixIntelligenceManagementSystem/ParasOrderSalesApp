@@ -1,5 +1,90 @@
 package project.astix.com.parasorder;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Environment;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.text.format.DateUtils;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.astix.Common.CommonFunction;
+import com.astix.Common.CommonInfo;
+import com.example.gcm.NotificationActivity;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -32,104 +117,15 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
-import android.os.Build;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import com.astix.Common.CommonInfo;
-
-import com.example.gcm.NotificationActivity;
-
-
 //import com.astix.sfatju.R;
 
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-
-import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Environment;
-import android.os.PowerManager;
-import android.provider.Settings;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.telephony.TelephonyManager;
-import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.Window;
-import android.view.View.OnClickListener;
-import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.TableRow.LayoutParams;
-
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-public class StoreSelection extends BaseActivity implements com.google.android.gms.location.LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener
+public class StoreSelection extends BaseActivity implements com.google.android.gms.location.LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,InterfaceRetrofit
 {
+	//public static HashMap<String, String> hmapStoreIdSstat=new HashMap<String, String>();
 	public String[] xmlForWeb = new String[1];
 	int serverResponseCode = 0;
 	public int syncFLAG = 0;
 	InputStream inputStream;
-	public boolean addStoreBtnClick=false;
 	public String currSysDate;
 	public int chkFlgForErrorToCloseApp=0;
 	Spinner spinner_manager;
@@ -170,10 +166,10 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 	public TableLayout tl2;
 	RelativeLayout relativeLayout1;
 	int battLevel=0;
-	
-	public static HashMap<String, String> hmapStoreIdSstat=new HashMap<String, String>();
-	public static HashMap<String, String> hmapStoreIdForDate=new HashMap<String, String>();
-	public static HashMap<String, String> hmapStoreIdflgOrderType=new HashMap<String, String>();
+	public TextView txtview_selectstoretext;
+
+
+
 	public int flgDayEndOrChangeRoutenew=0;
 	LinkedHashMap<String, String> hmapOutletListForNear=new LinkedHashMap<String, String>();
 	LinkedHashMap<String, String> hmapOutletListForNearUpdated=new LinkedHashMap<String, String>();
@@ -222,7 +218,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 	public String[] storeNextDayStatus;
     public ListView listView;
 	public ProgressDialog pDialog2STANDBY;
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
+    PRJDatabase dbengine = new PRJDatabase(this);
 	
 
 	public TableRow tr;
@@ -347,8 +343,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 	
 	
 	
-	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver()
-	{
+	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
 
@@ -367,14 +362,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		wl.acquire();
 
 
-		if(addStoreBtnClick)
-		{
-			pDialog2STANDBY = ProgressDialog.show(StoreSelection.this, getText(R.string.genTermPleaseWaitNew), getText(R.string.rtrvng_loc), true);
-
-		}
-		else {
-			pDialog2STANDBY = ProgressDialog.show(StoreSelection.this, getText(R.string.genTermPleaseWaitNew), getText(R.string.searchingnearbystores), true);
-		}
+		pDialog2STANDBY = ProgressDialog.show(StoreSelection.this, getText(R.string.genTermPleaseWaitNew), getText(R.string.searchingnearbystores), true);
 		pDialog2STANDBY.setIndeterminate(true);
 
 		pDialog2STANDBY.setCancelable(false);
@@ -390,6 +378,8 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 					.build();
 			mGoogleApiClient.connect();
 		}
+		//startService(new Intent(DynamicActivity.this, AppLocationService.class));
+
 
 		startService(new Intent(StoreSelection.this, AppLocationService.class));
 		Location nwLocation = appLocationService.getLocation(locationManager, LocationManager.GPS_PROVIDER, location);
@@ -398,8 +388,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		countDownTimer.start();
 
 	}
-	private boolean isGooglePlayServicesAvailable()
-	{
+	private boolean isGooglePlayServicesAvailable() {
 		int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 		if (ConnectionResult.SUCCESS == status) {
 			return true;
@@ -442,8 +431,14 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		Location loc =mCurrentLocation;
 		if (null != mCurrentLocation) {
 			String lat = String.valueOf(mCurrentLocation.getLatitude());
-			String lng = String.valueOf(mCurrentLocation.getLongitude());
+			if(lat.contains("E") || lat.contains("e")){
+				lat=convertExponential(mCurrentLocation.getLatitude());
+			}
 
+			String lng = String.valueOf(mCurrentLocation.getLongitude());
+			if(lng.contains("E") || lng.contains("e")){
+				lng=convertExponential(mCurrentLocation.getLongitude());
+			}
 			FusedLocationLatitude=lat;
 			FusedLocationLongitude=lng;
 			FusedLocationProvider=mCurrentLocation.getProvider();
@@ -481,6 +476,19 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		updateUI();
 	}
 
+	@Override
+	public void success() {
+		Intent i=new Intent(StoreSelection.this,LauncherActivity.class);
+		i.putExtra("imei", imei);
+		startActivity(i);
+		finish();
+	}
+
+	@Override
+	public void failure() {
+		showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrRetrieving));
+	}
+
 	public class standBYtask extends AsyncTask<Void, Void, Void> 
 	{
 
@@ -511,79 +519,151 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 
 	// *****SYNC******
 
-	public void SyncNow() 
+	public void SyncNow()
 	{
 
 		syncTIMESTAMP = System.currentTimeMillis();
 		Date dateobj = new Date(syncTIMESTAMP);
-		
-		
-		dbengine.open();
+
+
+		//dbengine.open();
 		String presentRoute=dbengine.GetActiveRouteID();
-		dbengine.close();
-		//syncTIMESTAMP = System.currentTimeMillis();
-		//Date dateobj = new Date(syncTIMESTAMP);
-		SimpleDateFormat df = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
-		//fullFileName1 = df.format(dateobj);
+		//dbengine.close();
+		SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+
 		String newfullFileName=imei+"."+presentRoute+"."+ df.format(dateobj);
 
-		
+		LinkedHashMap<String,String>    hmapStoreListToProcessWithoutAlret=dbengine.fnGetStoreListToProcessWithoutAlret();
 
-		 try 
-		   {
-			 
-			 File OrderXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
-				
-			 if (!OrderXMLFolder.exists())
+		if(hmapStoreListToProcessWithoutAlret!=null)
+		{
+
+			Set set2 = hmapStoreListToProcessWithoutAlret.entrySet();
+			Iterator iterator = set2.iterator();
+			//dbengine.open();
+			while(iterator.hasNext())
+			{
+				Map.Entry me2 = (Map.Entry)iterator.next();
+				String StoreIDToProcessWithoutAlret=me2.getKey().toString();
+				dbengine.UpdateStoreFlagAtDayEndOrChangeRouteWithOnlyVistOrCollection(StoreIDToProcessWithoutAlret,3);
+
+			}
+			//dbengine.close();;
+
+			Set set3 = hmapStoreListToProcessWithoutAlret.entrySet();
+			Iterator iterator1 = set3.iterator();
+
+			while(iterator1.hasNext())
+			{
+				Map.Entry me2 = (Map.Entry)iterator1.next();
+				String StoreIDToProcessWithoutAlret=me2.getKey().toString();
+				String  StoreVisitCode=dbengine.fnGetStoreVisitCode(StoreIDToProcessWithoutAlret);
+				String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAWhileSync(StoreIDToProcessWithoutAlret,StoreVisitCode);
+				dbengine.UpdateStoreVisitWiseTables(StoreIDToProcessWithoutAlret, 4,StoreVisitCode,TmpInvoiceCodePDA);
+				dbengine.updateflgFromWhereSubmitStatusAgainstStore(StoreIDToProcessWithoutAlret, 1,StoreVisitCode);
+			}
+		}
+
+		try
+		{
+
+			File OrderXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+			if (!OrderXMLFolder.exists())
+			{
+				OrderXMLFolder.mkdirs();
+			}
+
+			String routeID=dbengine.GetActiveRouteIDSunil();
+
+			DA.open();
+			DA.export(dbengine.DATABASE_NAME, newfullFileName,routeID);
+			DA.close();
+
+
+			if(hmapStoreListToProcessWithoutAlret!=null)
+			{
+
+				Set set2 = hmapStoreListToProcessWithoutAlret.entrySet();
+				Iterator iterator = set2.iterator();
+				//dbengine.open();
+				while(iterator.hasNext())
 				{
-					OrderXMLFolder.mkdirs();
+					Map.Entry me2 = (Map.Entry)iterator.next();
+					String StoreIDToProcessWithoutAlret=me2.getKey().toString();
+					dbengine.UpdateStoreFlagAtDayEndOrChangeRouteWithOnlyVistOrCollection(StoreIDToProcessWithoutAlret,4);
+                   /* String  StoreVisitCode=dbengine.fnGetStoreVisitCode(StoreIDToProcessWithoutAlret);
+                    String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAWhileSync(StoreIDToProcessWithoutAlret,StoreVisitCode);
+                    dbengine.UpdateStoreVisitWiseTables(StoreIDToProcessWithoutAlret, 4,StoreVisitCode,TmpInvoiceCodePDA);*/
 				}
-			 
-			 	String routeID=dbengine.GetActiveRouteIDSunil();
-			 
-				DA.open();
-				DA.export(dbengine.DATABASE_NAME, newfullFileName,routeID);
-				
-				
-				DA.close();
-				
-				dbengine.savetbl_XMLfiles(newfullFileName, "3","1");
-				dbengine.open();
-				for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++) 
+				//dbengine.close();;
+
+				Set set3 = hmapStoreListToProcessWithoutAlret.entrySet();
+				Iterator iterator1 = set3.iterator();
+
+				while(iterator1.hasNext())
 				{
-					String valSN = (String) mSelectedItems.get(nosSelected);
-					int valID = stNames.indexOf(valSN);
-					String stIDneeded = stIDs.get(valID);
-
-					dbengine.UpdateStoreFlagAtDayEndOrChangeRoute(stIDneeded, 4);
-					dbengine.UpdateStoreMaterialphotoFlag(stIDneeded.trim(), 5);
-					dbengine.UpdateStoreReturnphotoFlag(stIDneeded.trim(), 5);
-					dbengine.UpdateNewAddedStorephotoFlag(stIDneeded.trim(), 5);
-					dbengine.updateflgFromWhereSubmitStatusAgainstStore(stIDneeded, 1);
-					
-					if(dbengine.fnchkIfStoreHasInvoiceEntry(stIDneeded)==1)
-					{
-						dbengine.updateStoreQuoteSubmitFlgInStoreMstrInChangeRouteCase(stIDneeded, 0);
-					}
-
-					
+					Map.Entry me2 = (Map.Entry)iterator1.next();
+					String StoreIDToProcessWithoutAlret=me2.getKey().toString();
+					String  StoreVisitCode=dbengine.fnGetStoreVisitCode(StoreIDToProcessWithoutAlret);
+					String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAWhileSync(StoreIDToProcessWithoutAlret,StoreVisitCode);
+					dbengine.UpdateStoreVisitWiseTables(StoreIDToProcessWithoutAlret, 4,StoreVisitCode,TmpInvoiceCodePDA);
 				}
-				dbengine.close();
-	
-				flgChangeRouteOrDayEnd=valDayEndOrChangeRoute;
-				
-				Intent syncIntent = new Intent(StoreSelection.this, SyncMaster.class);
-				//syncIntent.putExtra("xmlPathForSync",Environment.getExternalStorageDirectory() + "/TJUKIndirectSFAxml/" + newfullFileName + ".xml");
-			    syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
-				syncIntent.putExtra("OrigZipFileName", newfullFileName);
-				syncIntent.putExtra("whereTo", whereTo);
-	            startActivity(syncIntent);
-				finish();
-		   } 
-		 catch (IOException e) 
-		   {
-                e.printStackTrace();
-		   }
+
+			}
+
+
+			dbengine.savetbl_XMLfiles(newfullFileName, "3","1");
+			//dbengine.open();
+			dbengine.UpdateStoreImage("0", 5);
+			for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
+			{
+				String valSN = (String) mSelectedItems.get(nosSelected);
+				int valID = stNames.indexOf(valSN);
+				String stIDneeded = stIDs.get(valID);
+
+				dbengine.UpdateStoreFlagAtDayEndOrChangeRoute(stIDneeded, 4);
+				dbengine.UpdateStoreImage(stIDneeded, 5);
+
+				dbengine.UpdateStoreMaterialphotoFlag(stIDneeded.trim(), 5);
+				dbengine.UpdateStoreReturnphotoFlag(stIDneeded.trim(), 5);
+				dbengine.UpdateStoreClosephotoFlag(stIDneeded.trim(), 5);
+
+				dbengine.UpdateNewAddedStorephotoFlag(stIDneeded.trim(), 5);
+
+
+				if(dbengine.fnchkIfStoreHasInvoiceEntry(stIDneeded)==1)
+				{
+					dbengine.updateStoreQuoteSubmitFlgInStoreMstrInChangeRouteCase(stIDneeded, 0);
+				}
+
+
+			}
+
+			//dbengine.close();
+			for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
+			{
+				String valSN = (String) mSelectedItems.get(nosSelected);
+				int valID = stNames.indexOf(valSN);
+				String stIDneeded = stIDs.get(valID);
+				String  StoreVisitCode=dbengine.fnGetStoreVisitCode(stIDneeded);
+				String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAWhileSync(stIDneeded,StoreVisitCode);
+				dbengine.UpdateStoreVisitWiseTables(stIDneeded, 4,StoreVisitCode,TmpInvoiceCodePDA);
+				dbengine.updateflgFromWhereSubmitStatusAgainstStore(stIDneeded, 1,StoreVisitCode);
+			}
+			flgChangeRouteOrDayEnd=valDayEndOrChangeRoute;
+
+			Intent syncIntent = new Intent(StoreSelection.this, SyncMaster.class);
+			syncIntent.putExtra("xmlPathForSync", Environment.getExternalStorageDirectory() + "/" + CommonInfo.OrderXMLFolder + "/" + newfullFileName + ".xml");
+			syncIntent.putExtra("OrigZipFileName", newfullFileName);
+			syncIntent.putExtra("whereTo", whereTo);
+			startActivity(syncIntent);
+			finish();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 
 	}
 
@@ -625,110 +705,80 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 
 	// *****SYNC******
 
-	
+
 	private class bgTasker extends AsyncTask<Void, Void, Void> {
 
-		// obj(s) for services/sync..blah..blah
+
 
 		@Override
 		protected Void doInBackground(Void... params) {
 
 			try {
-				//System.out.println("starting bgTasker Exec().....: ");
-				
-				
+				//dbengine.open();
+				String rID=dbengine.GetActiveRouteID();
 
-				
-					dbengine.open();
-					String rID=dbengine.GetActiveRouteID();
-					dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
-					//System.out.println("TblDayStartEndDetails Background: "+ rID);
-					//System.out.println("TblDayStartEndDetails Background valDayEndOrChangeRoute: "+ valDayEndOrChangeRoute);
-					dbengine.close();
-				
-				//System.out.println("Induwati   whatTask :"+whatTask);
-				
-				if (whatTask == 2) 
+			//	dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
+				//dbengine.close();
+
+
+				if (whatTask == 2)
 				{
 					whatTask = 0;
-					// stores with Sstat = 1 !
-					dbengine.open();
-					// dbengine.fnTruncateTblSelectedStoreIDinChangeRouteCase();
-					for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++) 
+
+					//dbengine.open();
+
+					for (int nosSelected = 0; nosSelected <= mSelectedItems.size() - 1; nosSelected++)
 					{
 						String valSN = (String) mSelectedItems.get(nosSelected);
 						int valID = stNames.indexOf(valSN);
 						String stIDneeded = stIDs.get(valID);
 
-						// String[] stIDs;
-						// String[] stNames;
 
 						dbengine.UpdateStoreFlagAtDayEndOrChangeRoute(stIDneeded, 3);
+						dbengine.UpdateStoreImage(stIDneeded, 3);
 
-						//System.out.println("stIDneeded : " + stIDneeded);
+						dbengine.UpdateNewAddedStorephotoFlag(stIDneeded.trim(), 3);
 						dbengine.insertTblSelectedStoreIDinChangeRouteCase(stIDneeded);
-						dbengine.updateflgFromWhereSubmitStatusAgainstStore(stIDneeded, 1);
+
+                      /*  String  StoreVisitCode=dbengine.fnGetStoreVisitCode(stIDneeded);
+                        String TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(stIDneeded,StoreVisitCode);
+                        dbengine.UpdateStoreVisitWiseTables(stIDneeded, 3,StoreVisitCode,TmpInvoiceCodePDA);*/
 						if(dbengine.fnchkIfStoreHasInvoiceEntry(stIDneeded)==1)
 						{
 							dbengine.updateStoreQuoteSubmitFlgInStoreMstrInChangeRouteCase(stIDneeded, 0);
 						}
 					}
-					// dbengine.ProcessStoreReq();
-					dbengine.close();
+
+					//dbengine.close();
 
 					pDialog2.dismiss();
-					dbengine.open();
-					
-					//dbengine.updateActiveRoute(rID, 0);
-					dbengine.close();
-					// sync here
-				
-						
-						SyncNow();
-				
+
+
+					SyncNow();
+
 
 				}else if (whatTask == 3) {
 					// sync rest
 					whatTask = 0;
 
 					pDialog2.dismiss();
-					//dbengine.open();
-					//String rID=dbengine.GetActiveRouteID();
-					//dbengine.updateActiveRoute(rID, 0);
-					//dbengine.close();
-					// sync here
-					
-						SyncNow();
-				
 
-					/*
-					 * dbengine.open(); dbengine.reCreateDB(); dbengine.close();
-					 */
+					SyncNow();
+
 				}else if (whatTask == 1) {
 					// clear all
 					whatTask = 0;
-				
-						SyncNow();
-					
-					dbengine.open();
+
+					SyncNow();
+
+					//dbengine.open();
 					//String rID=dbengine.GetActiveRouteID();
 					//dbengine.updateActiveRoute(rID, 0);
 					dbengine.reCreateDB();
-					
-					dbengine.close();
-				}/*else if (whatTask == 0)
-				{
-					try {
-						new FullSyncDataNow().execute().get();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ExecutionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}	
-				}*/
-				
+
+					//dbengine.close();
+				}
+
 
 			} catch (Exception e) {
 				Log.i("bgTasker", "bgTasker Execution Failed!", e);
@@ -749,7 +799,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		{
 			super.onPreExecute();
 
-			pDialog2 = ProgressDialog.show(StoreSelection.this,getText(R.string.genTermPleaseWaitNew),getText(R.string.genTermProcessingRequest), true);
+			pDialog2 = ProgressDialog.show(StoreSelection.this,getText(R.string.PleaseWaitMsg),getText(R.string.genTermProcessingRequest), true);
 			pDialog2.setIndeterminate(true);
 			pDialog2.setCancelable(false);
 			pDialog2.show();
@@ -772,7 +822,7 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 		}
 	}
 
-	
+
 
 	public void showSettingsAlert() 
 	{
@@ -808,116 +858,86 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 				isGPSok = false;
 			  } 
 		}
-	
-	
 
-	
+
+
+
 	public void DayEnd()
 	{
 
-		
+
 		AlertDialog.Builder alertDialogSubmitConfirm = new AlertDialog.Builder(StoreSelection.this);
-		
-		LayoutInflater inflater = getLayoutInflater();    
-	     View view=inflater.inflate(R.layout.titlebar, null);
-	     alertDialogSubmitConfirm.setCustomTitle(view);
-	     TextView title_txt = (TextView) view.findViewById(R.id.title_txt);
-	     title_txt.setText(getText(R.string.PleaseConformMsg));
-	     
+
+		LayoutInflater inflater = getLayoutInflater();
+		View view=inflater.inflate(R.layout.titlebar, null);
+		alertDialogSubmitConfirm.setCustomTitle(view);
+		TextView title_txt = (TextView) view.findViewById(R.id.title_txt);
+		title_txt.setText(getText(R.string.PleaseConformMsg));
+
 
 		View view1=inflater.inflate(R.layout.custom_alert_dialog, null);
-		 view1.setBackgroundColor(Color.parseColor("#1D2E3C"));
-		 TextView msg_txt = (TextView) view1.findViewById(R.id.msg_txt);
-		 msg_txt.setText(getText(R.string.genTermDayEndAlert));
-	     alertDialogSubmitConfirm.setView(view1);
-	     alertDialogSubmitConfirm.setInverseBackgroundForced(true);
-	    
-	    
+		view1.setBackgroundColor(Color.parseColor("#1D2E3C"));
+		TextView msg_txt = (TextView) view1.findViewById(R.id.msg_txt);
+		msg_txt.setText(getText(R.string.genTermDayEndAlert));
+		alertDialogSubmitConfirm.setView(view1);
+		alertDialogSubmitConfirm.setInverseBackgroundForced(true);
+
+
 
 		alertDialogSubmitConfirm.setNeutralButton(R.string.AlertDialogYesButton,new DialogInterface.OnClickListener()
-		      {
-					public void onClick(DialogInterface dialog, int which) 
-					    {
-						//System.out.println("Abhinav store Selection  Step 9");
-						// Location_Getting_Service.closeFlag = 1;
-						//enableGPSifNot();
+		{
+			public void onClick(DialogInterface dialog, int which)
+			{
 
-						// run bgTasker()!
+				//dbengine.open();
 
-						// if(!scheduler.isTerminated()){
-						// scheduler.shutdownNow();
-						// }
-						dbengine.open();
-						//System.out.println("Day end before");
-						if (dbengine.GetLeftStoresChk() == true) {
-							//System.out.println("Abhinav store Selection  Step 10");
-							//System.out.println("Day end after");
-							// run bgTasker()!
+				if (dbengine.GetLeftStoresChk() == true) {
 
-							// Location_Getting_Service.closeFlag = 1;
-							// scheduler.shutdownNow();
+					//dbengine.close();
 
-							//enableGPSifNot();
-							// scheduler.shutdownNow();
+					whatTask = 3;
 
-							dbengine.close();
+					try {
 
-							whatTask = 3;
-							// -- Route Info Exec()
-							try {
-
-								new bgTasker().execute().get();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-								//System.out.println(e);
-							} catch (ExecutionException e) {
-								e.printStackTrace();
-								//System.out.println(e);
-							}
-							// --
-						} 
-						else {
-							//System.out.println("Abhinav store Selection  Step 11");
-							// show dialog for clear..clear + tranx to launcher
-
-							// -- Route Info Exec()
-							try {
-								dbengine.close();
-								//System.out.println("Day end before whatTask");
-								whatTask = 1;
-								new bgTasker().execute().get();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-								//System.out.println(e);
-							} catch (ExecutionException e) {
-								e.printStackTrace();
-								//System.out.println(e);
-							}
-							// --
-
-							/*dbengine.open();
-							String rID=dbengine.GetActiveRouteID();
-							//dbengine.updateActiveRoute(rID, 0);
-							dbengine.close();
-							 Intent revupOldFriend = new Intent(StoreSelection.this,LauncherActivity.class);
-							 revupOldFriend.putExtra("imei", imei);
-							  startActivity(revupOldFriend);
-							  finish();*/
-							 
-						}
+						new bgTasker().execute().get();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						//System.out.println(e);
+					} catch (ExecutionException e) {
+						e.printStackTrace();
 
 					}
-				});
+
+				}
+				else {
+
+					try {
+						//dbengine.close();
+						whatTask = 1;
+						new bgTasker().execute().get();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						//System.out.println(e);
+					} catch (ExecutionException e) {
+						e.printStackTrace();
+
+					}
+
+
+				}
+
+			}
+		});
 
 		alertDialogSubmitConfirm.setNegativeButton(R.string.AlertDialogNoButton,new DialogInterface.OnClickListener()
-		         {
+		{
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) 
-					  {
-						dialog.dismiss();
-					  }
-				});
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				dialog.dismiss();
+			}
+		});
 
 		alertDialogSubmitConfirm.setIcon(R.drawable.info_ico);
 		AlertDialog alert = alertDialogSubmitConfirm.create();
@@ -929,11 +949,11 @@ public class StoreSelection extends BaseActivity implements com.google.android.g
 public void DayEndWithoutalert()
     {
 	
-		dbengine.open();
+		//dbengine.open();
 		String rID=dbengine.GetActiveRouteID();
 
-		dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
-		dbengine.close();
+	//	dbengine.UpdateTblDayStartEndDetails(Integer.parseInt(rID), valDayEndOrChangeRoute);
+		//dbengine.close();
 		
 		SyncNow();
 	
@@ -970,7 +990,7 @@ public void DayEndWithoutalert()
 						// if(!scheduler.isTerminated()){
 						// scheduler.shutdownNow();
 						// }
-						dbengine.open();
+						//dbengine.open();
 
 						if (dbengine.GetLeftStoresChk() == true) {
 							// run bgTasker()!
@@ -981,7 +1001,7 @@ public void DayEndWithoutalert()
 							//enableGPSifNot();
 							// scheduler.shutdownNow();
 
-							dbengine.close();
+							//dbengine.close();
 
 							whatTask = 3;
 							// -- Route Info Exec()
@@ -1001,7 +1021,7 @@ public void DayEndWithoutalert()
 
 							// -- Route Info Exec()
 							try {
-								dbengine.close();
+								//dbengine.close();
 
 								whatTask = 1;
 								new bgTasker().execute().get();
@@ -1063,7 +1083,7 @@ public void DayEndWithoutalert()
 						// if(!scheduler.isTerminated()){
 						// scheduler.shutdownNow();
 						// }
-						dbengine.open();
+						//dbengine.open();
 
 						if (dbengine.GetLeftStoresChk() == true) {
 							// run bgTasker()!
@@ -1074,7 +1094,7 @@ public void DayEndWithoutalert()
 							//enableGPSifNot();
 							// scheduler.shutdownNow();
 
-							dbengine.close();
+							//dbengine.close();
 
 							whatTask = 3;
 							// -- Route Info Exec()
@@ -1094,7 +1114,7 @@ public void DayEndWithoutalert()
 
 							// -- Route Info Exec()
 							try {
-								dbengine.close();
+								//dbengine.close();
 
 								whatTask = 1;
 								new bgTasker().execute().get();
@@ -1249,7 +1269,7 @@ public void DayEndWithoutalert()
 						// TODO Auto-generated method stub
 						closeList = 1;
 						// showChangeRouteConfirm();
-						dbengine.open();
+						//dbengine.open();
 
 						if (dbengine.GetLeftStoresChk() == true) 
 						  {
@@ -1277,12 +1297,12 @@ public void DayEndWithoutalert()
 								e.printStackTrace();
 							   }
 							
-							dbengine.close();
+							//dbengine.close();
 
 						 } 
 						else 
 						 {
-							dbengine.close();
+							//dbengine.close();
                             // show dialog for clear..clear + tranx to launcher
 							showChangeRouteConfirm();
 						 }
@@ -1313,15 +1333,15 @@ public void DayEndWithoutalert()
 		}
 	}
 
-	public void midPart() 
+	public void midPart()
 	{
 		String tempSID;
 		String tempSNAME;
 
 		stIDs = new ArrayList<String>(StoreList2Procs.length);
 		stNames = new ArrayList<String>(StoreList2Procs.length);
-		
-		for (int x = 0; x < (StoreList2Procs.length); x++) 
+
+		for (int x = 0; x < (StoreList2Procs.length); x++)
 		{
 			StringTokenizer tokens = new StringTokenizer(String.valueOf(StoreList2Procs[x]), "%");
 			tempSID = tokens.nextToken().trim();
@@ -1331,6 +1351,7 @@ public void DayEndWithoutalert()
 			stNames.add(x, tempSNAME);
 		}
 	}
+
 
 
 
@@ -1446,17 +1467,17 @@ public void DayEndWithoutalert()
 
 		try {
 			String RouteType="0";
-			dbengine.open();
+			//dbengine.open();
 			String rID=dbengine.GetActiveRouteID();
 			RouteType=dbengine.FetchRouteType(rID);
-			dbengine.close();
-			for(int mm = 1; mm < 10  ; mm++)
+			//dbengine.close();
+			for(int mm = 1; mm < 12  ; mm++)
 			{
-				
+				System.out.println("Nitika find fault = "+mm);
 				if(mm==1)
 				{  
 					
-					if(isOnline())
+					/*if(isOnline())
 					{
 				        newservice = newservice.getallProduct(getApplicationContext(), fDate, imei, rID,RouteType);
 						if(newservice.flagExecutedServiceSuccesfully!=2)
@@ -1464,13 +1485,25 @@ public void DayEndWithoutalert()
 							   serviceException=true;
 								break;
 						}
-					}
+					}*/
+					/*newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
+					if (!newservice.director.toString().trim().equals("1")) {
+
+						serviceException = true;
+						break;*/
+
+				//	}
+
 					
 				}
 				
 				if(mm==2)
-				{  
-					if(isOnline())
+				{
+				/*	newservice = newservice.fnGetVanStockData(getApplicationContext(), CommonInfo.imei);
+					if (newservice.flagExecutedServiceSuccesfully != 39) {
+						serviceException = true;
+					}*/
+					/*if(isOnline())
 					{
 					
 						Date currDateNew = new Date();
@@ -1485,7 +1518,7 @@ public void DayEndWithoutalert()
 						}
 					
 					}
-					
+					*/
 				}
 				if(mm==3)
 				{
@@ -1501,7 +1534,7 @@ public void DayEndWithoutalert()
 				}
 				if(mm==4)
 				{
-						Date currDateNew = new Date();
+					/*	Date currDateNew = new Date();
 					    SimpleDateFormat currDateFormatNew = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 					
 					    String currSysDateNew = currDateFormatNew.format(currDateNew).toString();
@@ -1510,18 +1543,17 @@ public void DayEndWithoutalert()
 						{
 							    serviceException=true;
 								break;
-						}
+						}*/
 				}
 				
 				if(mm==5)
 				{
 
-						dbengine.open();
-						hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
-					    hmapStoreIdForDate=dbengine.checkForStoreIdForDate();
-					    hmapStoreIdflgOrderType=dbengine.checkForStoreIdFlgOrderType();
-						dbengine.close();
-						newservice = newservice.getallStores(getApplicationContext(), fDate, imei, rID,RouteType);
+				/*	//dbengine.open();
+					hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
+
+					//dbengine.close();*/
+						newservice = newservice.getallStores(getApplicationContext(), fDate, imei, rID,RouteType,2);
 						if(newservice.flagExecutedServiceSuccesfully!=1)
 						{
 							    serviceException=true;
@@ -1543,25 +1575,18 @@ public void DayEndWithoutalert()
 				}
 				if(mm==7)
 				{
-						newservice = newservice.gettblTradeChannelMstr(getApplicationContext(), fDate, imei);
+						/*newservice = newservice.gettblTradeChannelMstr(getApplicationContext(), fDate, imei);
 						if(newservice.flagExecutedServiceSuccesfully!=38)
 						{
 							    serviceException=true;
 								break;
-						}
+						}*/
 					
 				}
 				
 				
 				if(mm==8)
 				{
-					newservice = newservice.getProductListLastVisitStockOrOrderMstr(getApplicationContext(), fDate, imei, rID);
-					if(newservice.flagExecutedServiceSuccesfully!=1)
-					{
-						serviceException=true;
-						break;
-					}
-
 						/*newservice = newservice.getStoreProductClassificationTypeListMstr(getApplicationContext(), fDate, imei);
 						if(newservice.flagExecutedServiceSuccesfully!=39)
 						{
@@ -1574,17 +1599,36 @@ public void DayEndWithoutalert()
 				
 				if(mm==9)
 				{
-					newservice = newservice.fnGetPDACollectionMaster(getApplicationContext(), fDate, imei, rID);
-					if(newservice.flagExecutedServiceSuccesfully!=40)
+                    newservice = newservice.fnGetPDACollectionMaster(getApplicationContext(), fDate, imei, rID);
+                    if(newservice.flagExecutedServiceSuccesfully!=40)
+                    {
+                        System.out.println("GRLTyre = "+mm);
+                        serviceException=true;
+                        break;
+                    }
+				}
+
+
+				if(mm==10)
+				{
+					/*newservice=newservice.fnGetVanStockData(getApplicationContext(),imei);
+					if(newservice.flagExecutedServiceSuccesfully!=39)
 					{
-						System.out.println("GRLTyre = "+mm);
 						serviceException=true;
 						break;
-					}
+					}*/
+
 				}
-				
-				
-				
+				if(mm==11)
+				{
+
+					newservice = newservice.getStoreWiseOutStandings(getApplicationContext(), fDate, imei, rID,RouteType);
+					/*if(newservice.flagExecutedServiceSuccesfully!=1)
+					{
+						serviceException=true;
+						break;
+					}*/
+				}
 				
 			}
 			
@@ -1627,9 +1671,17 @@ public void DayEndWithoutalert()
 			{
 				showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrRetrieving));
 				serviceException=false;
+				tl2.removeAllViews();
+				setStoresList();
+
 			}
-			tl2.removeAllViews();
-			setStoresList();
+			else
+			{
+				Intent i=new Intent(StoreSelection.this,LauncherActivity.class);
+				i.putExtra("imei", imei);
+				startActivity(i);
+				finish();
+			}
 			
 		}
 	}
@@ -1638,6 +1690,17 @@ public void DayEndWithoutalert()
 	{
 
 
+		txtview_selectstoretext=(TextView) findViewById(R.id.txtview_selectstoretext);
+		String PersonNameAndFlgRegistered=  dbengine.fnGetPersonNameAndFlgRegistered();
+		String personName="";
+
+
+		if(!PersonNameAndFlgRegistered.equals("0")) {
+			personName = PersonNameAndFlgRegistered.split(Pattern.quote("^"))[0];
+			txtview_selectstoretext.setText(personName);
+   /*personName = PersonNameAndFlgRegistered.split(Pattern.quote("^"))[0];
+   FlgRegistered = PersonNameAndFlgRegistered.split(Pattern.quote("^"))[1];*/
+		}
 
 		Button btn_nearStores = (Button) findViewById(R.id.btn_nearStores);
 		btn_nearStores.setOnClickListener(new OnClickListener()
@@ -1709,17 +1772,17 @@ public void DayEndWithoutalert()
 
 		ImageView image_Notification = (ImageView) findViewById(R.id.image_Notification);
 		image_Notification.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				
-			
+
+
 			 Intent intent = new Intent(StoreSelection.this, NotificationActivity.class);
-			
+
 				StoreSelection.this.startActivity(intent);
 				finish();
-				
+
 			}
 		});
 		
@@ -1787,31 +1850,41 @@ public void DayEndWithoutalert()
 			}
 		});
 		 */
-		 
+
 		 Button add_new_store = (Button) findViewById(R.id.but_add_store);
-			add_new_store.setOnClickListener(new OnClickListener() 
+			add_new_store.setOnClickListener(new OnClickListener()
 			{
 
 				@Override
-				public void onClick(View v) 
+				public void onClick(View v)
 				{
 					// TODO Auto-generated method stub
-					if(true)
-					{
-						addStoreBtnClick=true;
-						firstTimeLocationTrack();
-					}
-				/*	Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
+
+					/*Intent intent =new Intent(StoreSelection.this,StorelistActivity.class);
+					intent.putExtra("activityFrom", "StoreSelection");
+					startActivity(intent);
+					finish();*/
+					//dbengine.open();
+					String slctdRouteName=dbengine.GetRouteNameBasedOnRouteID(rID);
+					//dbengine.close();
+
+					Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
+					//Intent intent = new Intent(StoreSelection.this, Add_New_Store_NewFormat.class);
+					//Intent intent = new Intent(StoreSelection.this, Add_New_Store.class);
 					intent.putExtra("storeID", "0");
+					intent.putExtra("StoreName", "NA");
 					intent.putExtra("activityFrom", "StoreSelection");
 					intent.putExtra("userdate", userDate);
 					intent.putExtra("pickerDate", pickerDate);
 					intent.putExtra("imei", imei);
 					intent.putExtra("rID", rID);
+					intent.putExtra("FLAG_NEW_UPDATE","NEW");
+					intent.putExtra("CurrntRouteName",slctdRouteName);
+					intent.putExtra("activityFrom", "StoreSelection");
 					StoreSelection.this.startActivity(intent);
-					finish();*/
-					
-					}
+					finish();
+
+						}
 			});
 			
 			/*Button but_SalesSummray = (Button) findViewById(R.id.btnSalesSummary);
@@ -1853,7 +1926,7 @@ public void DayEndWithoutalert()
 		
 					 }
 					
-					dbengine.open();
+					//dbengine.open();
 					whereTo = "11";
 					////System.out.println("Abhinav store Selection  Step 1");
 						////System.out.println("StoreList2Procs(before): " + StoreList2Procs.length);
@@ -1880,376 +1953,16 @@ public void DayEndWithoutalert()
 						DayEnd();
 					}
 
-					dbengine.close();
+					//dbengine.close();
 
 				}
 			});*/
 
 
-		Button btnActualVisit = (Button) findViewById(R.id.btnActualVisit);
 
-		btnActualVisit.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(View arg0)
-			{
 
-				if (!selStoreID.isEmpty())
-				{
-
-					long StartClickTime = System.currentTimeMillis();
-					Date dateobj1 = new Date(StartClickTime);
-					SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-					String StartClickTimeFinal = df1.format(dateobj1);
-
-					CommonInfo.fileContent=imei+"_"+selStoreID+"_"+"Start Button Click on Store Selection "+StartClickTimeFinal;
-
-					File dirORIGimg = new File(Environment.getExternalStorageDirectory(),DATASUBDIRECTORYForText);
-					if (!dirORIGimg.exists())
-					{
-						dirORIGimg.mkdirs();
-					}
-
-					dbengine.updateflgOrderTypeIntblStoreList(selStoreID,1);
-
-					if(Selected_manager_Id!=-99)
-					{
-						String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
-
-						StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
-						dbengine.open();
-						int chk=dbengine.counttblSelectedManagerDetails();
-						dbengine.close();
-						if(chk==1)
-						{
-							dbengine.deletetblSelectedManagerDetails();
-							dbengine.open();
-							dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
-									token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
-									,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
-							dbengine.close();
-						}
-						else
-						{
-							dbengine.open();
-							dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
-									token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
-									,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
-							dbengine.close();
-						}
-					}
-					else if(Selected_manager_Id==-99)
-					{
-
-						if(TextUtils.isEmpty(ed_Street.getText().toString().trim()))
-						{
-
-							AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(StoreSelection.this);
-							alertDialogBuilder.setTitle(getResources().getString(R.string.genTermNoDataConnection));
-							alertDialogBuilder.setCancelable(false);
-							alertDialogBuilder.setIcon(R.drawable.info_ico);
-
-							// set dialog message
-							alertDialogBuilder
-
-									.setMessage(getResources().getString(R.string.txtEnterManagerName))
-									.setCancelable(false)
-									.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton),new DialogInterface.OnClickListener()
-									{
-										public void onClick(DialogInterface dialog,int id)
-										{
-											dialog.cancel();
-										}
-									});
-
-
-							// create alert dialog
-							AlertDialog alertDialog = alertDialogBuilder.create();
-
-							alertDialog.show();
-							return;
-
-						}
-						else
-						{
-							String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
-
-							StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
-							dbengine.open();
-							int chk=dbengine.counttblSelectedManagerDetails();
-							dbengine.close();
-							if(chk==1)
-							{
-								dbengine.deletetblSelectedManagerDetails();
-								dbengine.open();
-								dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
-										token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
-										,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
-								dbengine.close();
-							}
-							else
-							{
-								dbengine.open();
-								dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
-										token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
-										,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
-								dbengine.close();
-							}
-						}
-
-					}
-
-					whereTo = "11";
-
-					syncTIMESTAMP = System.currentTimeMillis();
-					Date dateobj = new Date(syncTIMESTAMP);
-					SimpleDateFormat df = new SimpleDateFormat(
-							"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-					fullFileName1 = df.format(dateobj);
-
-					dbengine.open();
-					String checkClosrOrNext[] = dbengine.checkStoreCloseOrNextMethod(selStoreID);
-					dbengine.close();
-
-					StringTokenizer tokensInvoice = new StringTokenizer(String.valueOf(checkClosrOrNext[0]), "_");
-
-					int close = Integer.parseInt(tokensInvoice.nextToken().toString().trim());
-					int next = Integer.parseInt(tokensInvoice.nextToken().toString().trim());
-
-
-					if (close == 0 && next == 0)
-					{
-
-						if (!selStoreID.isEmpty())
-						{
-
-							/*if(isMyServiceRunning())
-		            		{
-
-		            		}
-							else
-							{
-								startService(new Intent(StoreSelection.this,GPSTrackerService.class));
-							}
-							*/
-							//startService(new Intent(StoreSelection.this,FusedTrackerService.class));
-							//System.out.println("Sun new Value 0");
-							int valSstatValueAgainstStore=0;
-							int ISNewStore=0;
-							int IsNewStoreDataCompleteSaved=0;
-							try
-							{
-								//dbengine.open();
-								ISNewStore =dbengine.fncheckStoreIsNewOrOld(selStoreID);
-								IsNewStoreDataCompleteSaved =dbengine.fncheckStoreIsNewStoreDataCompleteSaved(selStoreID);
-								valSstatValueAgainstStore=dbengine.fnGetStatValueagainstStore(selStoreID);
-							}catch(Exception e)
-							{
-
-							}finally
-							{
-								//dbengine.close();
-							}
-						/*	String chID = ((dbengine
-									.getChainIDBasedOnStoreID(selStoreID)) + "")
-									.toString().trim();
-
-							int pgFWDCLname2getID = dbengine
-									.getFwdPgIdonNextBtnClick(selStoreID, "2", chID);
-							FWDCLname = dbengine.getCustomPGid(pgFWDCLname2getID);
-
-							int pgBCKCLname2getID = dbengine
-									.getFwdPgIdonBackBtnClick(selStoreID, "2", chID);
-							BCKCLname = dbengine.getCustomPGid(pgBCKCLname2getID);*/
-
-							//System.out.println("PREV. LOC CHK sop: "+ dbengine.PrevLocChk(selStoreID.trim()));
-
-							/*if ((dbengine.PrevLocChk(selStoreID.trim()))
-									|| locStat == 1)
-							{*/
-							 	/*dbengine.open();
-							 	System.out.println("DtateTimeNitish3");
-						        dbengine.UpdateStoreStartVisit(selStoreID, fullFileName1);
-						        String passdLevel = battLevel+"%";
-								dbengine.UpdateStoreVisitBatt(selStoreID, passdLevel);
-						        dbengine.close();*/
-
-							if(ISNewStore==0)
-							{
-								//Code If Starts Here
-								/*if(valSstatValueAgainstStore==1)
-								{
-									//Intent nxtP4 = new Intent(StoreSelection.this,ProductList.class);
-									//ProductOrderSearch
-									Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-									nxtP4.putExtra("storeID", selStoreID);
-									nxtP4.putExtra("SN", selStoreName);
-									nxtP4.putExtra("imei", imei);
-									nxtP4.putExtra("userdate", userDate);
-									nxtP4.putExtra("pickerDate", pickerDate);
-									startActivity(nxtP4);
-									finish();
-								}
-								else
-								{*/
-
-								long syncTIMESTAMP = System.currentTimeMillis();
-								Date dateobjNew = new Date(syncTIMESTAMP);
-								SimpleDateFormat dfnew = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-								String startTS = dfnew.format(dateobjNew);
-								dbengine.open();
-
-								dbengine.UpdateStoreStartVisit(selStoreID,startTS);
-								// dbengine.UpdateStoreEndVisit(selStoreID,
-								// fullFileName1);
-
-								//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
-
-								String passdLevel = battLevel + "%";
-								dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
-
-								dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-								dbengine.close();
-
-
-
-
-
-
-								Intent ready4GetLoc = new Intent(StoreSelection.this,LastVisitDetails.class);
-
-								//enableGPSifNot();
-
-
-								ready4GetLoc.putExtra("storeID", selStoreID);
-								ready4GetLoc.putExtra("selStoreName", selStoreName);
-								ready4GetLoc.putExtra("imei", imei);
-								ready4GetLoc.putExtra("userDate", userDate);
-								ready4GetLoc.putExtra("pickerDate", pickerDate);
-								ready4GetLoc.putExtra("startTS", fullFileName1);
-								ready4GetLoc.putExtra("bck", 0);
-
-								ready4GetLoc.putExtra("fromPage","StoreSelection");
-
-								startActivity(ready4GetLoc);
-								finish();
-								//}
-								//Code If Ends Here
-							}
-							else
-							{
-								//Code Else Starts Here
-
-								if(IsNewStoreDataCompleteSaved==1)
-								{
-									// TODO Auto-generated method stub
-									Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
-									//Intent intent = new Intent(StoreSelection.this, Add_New_Store_NewFormat.class);
-									//Intent intent = new Intent(StoreSelection.this, Add_New_Store.class);
-									intent.putExtra("storeID",selStoreID);
-									intent.putExtra("activityFrom", "StoreSelection");
-									intent.putExtra("userdate", userDate);
-									intent.putExtra("pickerDate", pickerDate);
-									intent.putExtra("imei", imei);
-									intent.putExtra("rID", rID);
-									StoreSelection.this.startActivity(intent);
-									finish();
-								}
-								else if(IsNewStoreDataCompleteSaved==0)
-								{
-									/*if(valSstatValueAgainstStore==1)
-									{
-										//Intent nxtP4 = new Intent(StoreSelection.this,ProductList.class);
-										//ProductOrderSearch
-										Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-										nxtP4.putExtra("storeID", selStoreID);
-										nxtP4.putExtra("SN", selStoreName);
-										nxtP4.putExtra("imei", imei);
-										nxtP4.putExtra("userdate", userDate);
-										nxtP4.putExtra("pickerDate", pickerDate);
-										startActivity(nxtP4);
-										finish();
-									}
-									else
-									{*/
-
-									long syncTIMESTAMP = System.currentTimeMillis();
-									Date dateobjNew = new Date(syncTIMESTAMP);
-									SimpleDateFormat dfnew = new SimpleDateFormat(
-											"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-									String startTS = dfnew.format(dateobjNew);
-									dbengine.open();
-
-									dbengine.UpdateStoreStartVisit(selStoreID,startTS);
-									// dbengine.UpdateStoreEndVisit(selStoreID,
-									// fullFileName1);
-
-									//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
-
-									String passdLevel = battLevel + "%";
-									dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
-
-									dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-									dbengine.close();
-
-
-
-									Intent ready4GetLoc = new Intent(StoreSelection.this,LastVisitDetails.class);
-
-									//enableGPSifNot();
-
-
-									ready4GetLoc.putExtra("storeID", selStoreID);
-									ready4GetLoc.putExtra("selStoreName", selStoreName);
-									ready4GetLoc.putExtra("imei", imei);
-									ready4GetLoc.putExtra("userDate", userDate);
-									ready4GetLoc.putExtra("pickerDate", pickerDate);
-									ready4GetLoc.putExtra("startTS", fullFileName1);
-									ready4GetLoc.putExtra("bck", 0);
-
-									locStat = 0;
-
-
-									startActivity(ready4GetLoc);
-									finish();
-									//}
-								}
-
-								//Code Else Ends Here
-							}
-
-
-
-
-
-
-
-						}
-						else
-						{
-							Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectStore, Toast.LENGTH_SHORT).show();
-						}
-						// end else
-					}
-					else
-					{
-						//Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectDiffrentStore,Toast.LENGTH_SHORT).show();
-						showAlertSingleButtonInfo(getResources().getString(R.string.genTermPleaseSelectDiffrentStore));
-					}
-				}
-				else
-				{
-					Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectStore, Toast.LENGTH_SHORT).show();
-				}
-
-			}
-		});
-
-
-		//////////////////////////////////////////////nitishdubey
-
-		Button btnStart = (Button) findViewById(R.id.btn_telephonic);
-		btnStart.setOnClickListener(new OnClickListener()
+		Button btn_telephonic = (Button) findViewById(R.id.btn_telephonic);
+		btn_telephonic.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(View arg0)
@@ -2290,25 +2003,19 @@ public void DayEndWithoutalert()
 								String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
 
 								StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
-								dbengine.open();
 								int chk=dbengine.counttblSelectedManagerDetails();
-								dbengine.close();
 								if(chk==1)
 								{
 									dbengine.deletetblSelectedManagerDetails();
-									dbengine.open();
 									dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
 											token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
 											,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
-									dbengine.close();
 								}
 								else
 								{
-									dbengine.open();
 									dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
 											token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
 											,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
-									dbengine.close();
 								}
 							}
 							else if(Selected_manager_Id==-99)
@@ -2348,25 +2055,19 @@ public void DayEndWithoutalert()
 									String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
 
 									StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
-									dbengine.open();
 									int chk=dbengine.counttblSelectedManagerDetails();
-									dbengine.close();
 									if(chk==1)
 									{
 										dbengine.deletetblSelectedManagerDetails();
-										dbengine.open();
 										dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
 												token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
 												,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
-										dbengine.close();
 									}
 									else
 									{
-										dbengine.open();
 										dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
 												token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
 												,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
-										dbengine.close();
 									}
 								}
 
@@ -2380,9 +2081,7 @@ public void DayEndWithoutalert()
 									"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 							fullFileName1 = df.format(dateobj);
 
-							dbengine.open();
-							String checkClosrOrNext[] = dbengine.checkStoreCloseOrNextMethod(selStoreID);
-							dbengine.close();
+							/*String checkClosrOrNext[] = dbengine.checkStoreCloseOrNextMethod(selStoreID);
 
 							StringTokenizer tokensInvoice = new StringTokenizer(String.valueOf(checkClosrOrNext[0]), "_");
 
@@ -2391,22 +2090,27 @@ public void DayEndWithoutalert()
 
 
 							if (close == 0 && next == 0)
-							{
+							{*/
 
+
+							String checkClosrOrNext[] = dbengine.checkStoreCloseOrNextMethod(selStoreID);
+							//dbengine.close();
+							int close = 0;
+							int next = 0;
+
+							if(checkClosrOrNext.length>0) {
+								//StringTokenizer tokensInvoice = new StringTokenizer(String.valueOf(checkClosrOrNext[0]), "_");
+								close = Integer.parseInt(checkClosrOrNext[0]);
+								next = 0;//Integer.parseInt(tokensInvoice.nextToken().toString().trim());
+							}
+
+							close=0;
+							if (close == 0)
+							{
 								if (!selStoreID.isEmpty())
 								{
 
-							/*if(isMyServiceRunning())
-		            		{
 
-		            		}
-							else
-							{
-								startService(new Intent(StoreSelection.this,GPSTrackerService.class));
-							}
-							*/
-									//startService(new Intent(StoreSelection.this,FusedTrackerService.class));
-									//System.out.println("Sun new Value 0");
 									int valSstatValueAgainstStore=0;
 									int ISNewStore=0;
 									int IsNewStoreDataCompleteSaved=0;
@@ -2423,70 +2127,15 @@ public void DayEndWithoutalert()
 									{
 										//dbengine.close();
 									}
-						/*	String chID = ((dbengine
-									.getChainIDBasedOnStoreID(selStoreID)) + "")
-									.toString().trim();
-
-							int pgFWDCLname2getID = dbengine
-									.getFwdPgIdonNextBtnClick(selStoreID, "2", chID);
-							FWDCLname = dbengine.getCustomPGid(pgFWDCLname2getID);
-
-							int pgBCKCLname2getID = dbengine
-									.getFwdPgIdonBackBtnClick(selStoreID, "2", chID);
-							BCKCLname = dbengine.getCustomPGid(pgBCKCLname2getID);*/
-
-									//System.out.println("PREV. LOC CHK sop: "+ dbengine.PrevLocChk(selStoreID.trim()));
-
-							/*if ((dbengine.PrevLocChk(selStoreID.trim()))
-									|| locStat == 1)
-							{*/
-							 	/*dbengine.open();
-							 	System.out.println("DtateTimeNitish3");
-						        dbengine.UpdateStoreStartVisit(selStoreID, fullFileName1);
-						        String passdLevel = battLevel+"%";
-								dbengine.UpdateStoreVisitBatt(selStoreID, passdLevel);
-						        dbengine.close();*/
 
 									if(ISNewStore==0)
 									{
 										//Code If Starts Here
-								/*if(valSstatValueAgainstStore==1)
-								{
-									//Intent nxtP4 = new Intent(StoreSelection.this,ProductList.class);
-									//ProductOrderSearch
-									Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-									nxtP4.putExtra("storeID", selStoreID);
-									nxtP4.putExtra("SN", selStoreName);
-									nxtP4.putExtra("imei", imei);
-									nxtP4.putExtra("userdate", userDate);
-									nxtP4.putExtra("pickerDate", pickerDate);
-									startActivity(nxtP4);
-									finish();
-								}
-								else
-								{*/
 
-										long syncTIMESTAMP = System.currentTimeMillis();
-										Date dateobjNew = new Date(syncTIMESTAMP);
-										SimpleDateFormat dfnew = new SimpleDateFormat(
-												"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-										String startTS = dfnew.format(dateobjNew);
-										dbengine.open();
 
-										dbengine.UpdateStoreStartVisit(selStoreID,startTS);
-										// dbengine.UpdateStoreEndVisit(selStoreID,
-										// fullFileName1);
 
-										//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
-
-										String passdLevel = battLevel + "%";
-										dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
-
-										dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-										dbengine.close();
-
-										Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-										//Intent nxtP4 = new Intent(LastVisitDetails.this,ProductOrderFilterSearch_RecycleView.class);
+										//Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
+										Intent nxtP4 = new Intent(StoreSelection.this,ProductEntryForm.class);
 										nxtP4.putExtra("storeID", selStoreID);
 										nxtP4.putExtra("SN", selStoreName);
 										nxtP4.putExtra("imei", imei);
@@ -2498,26 +2147,7 @@ public void DayEndWithoutalert()
 										locStat = 0;
 										startActivity(nxtP4);
 										finish();
-									/*Intent ready4GetLoc = new Intent(StoreSelection.this,LastVisitDetails.class);
 
-									//enableGPSifNot();
-
-
-									ready4GetLoc.putExtra("storeID", selStoreID);
-									ready4GetLoc.putExtra("selStoreName", selStoreName);
-									ready4GetLoc.putExtra("imei", imei);
-									ready4GetLoc.putExtra("userDate", userDate);
-									ready4GetLoc.putExtra("pickerDate", pickerDate);
-									ready4GetLoc.putExtra("startTS", fullFileName1);
-									ready4GetLoc.putExtra("bck", 0);
-
-									locStat = 0;
-
-
-									startActivity(ready4GetLoc);
-									finish();*/
-										//}
-										//Code If Ends Here
 									}
 									else
 									{
@@ -2527,8 +2157,6 @@ public void DayEndWithoutalert()
 										{
 											// TODO Auto-generated method stub
 											Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
-											//Intent intent = new Intent(StoreSelection.this, Add_New_Store_NewFormat.class);
-											//Intent intent = new Intent(StoreSelection.this, Add_New_Store.class);
 											intent.putExtra("storeID",selStoreID);
 											intent.putExtra("activityFrom", "StoreSelection");
 											intent.putExtra("userdate", userDate);
@@ -2540,45 +2168,8 @@ public void DayEndWithoutalert()
 										}
 										else if(IsNewStoreDataCompleteSaved==0)
 										{
-									/*if(valSstatValueAgainstStore==1)
-									{
-										//Intent nxtP4 = new Intent(StoreSelection.this,ProductList.class);
-										//ProductOrderSearch
-										Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-										nxtP4.putExtra("storeID", selStoreID);
-										nxtP4.putExtra("SN", selStoreName);
-										nxtP4.putExtra("imei", imei);
-										nxtP4.putExtra("userdate", userDate);
-										nxtP4.putExtra("pickerDate", pickerDate);
-										startActivity(nxtP4);
-										finish();
-									}
-									else
-									{*/
 
-											long syncTIMESTAMP = System.currentTimeMillis();
-											Date dateobjNew = new Date(syncTIMESTAMP);
-											SimpleDateFormat dfnew = new SimpleDateFormat(
-													"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-											String startTS = dfnew.format(dateobjNew);
-											dbengine.open();
-
-											dbengine.UpdateStoreStartVisit(selStoreID,startTS);
-											// dbengine.UpdateStoreEndVisit(selStoreID,
-											// fullFileName1);
-
-											//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
-
-											String passdLevel = battLevel + "%";
-											dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
-
-											dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-											dbengine.close();
-											Intent ready4GetLoc = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
-
-											//enableGPSifNot();
-
-
+											Intent ready4GetLoc = new Intent(StoreSelection.this,ProductEntryForm.class);
 											ready4GetLoc.putExtra("storeID", selStoreID);
 											ready4GetLoc.putExtra("selStoreName", selStoreName);
 											ready4GetLoc.putExtra("imei", imei);
@@ -2644,8 +2235,343 @@ public void DayEndWithoutalert()
 
 			}
 		});
+
+
+
+		Button btnActualVisit = (Button) findViewById(R.id.btnActualVisit);
+		btnActualVisit.setOnClickListener(new OnClickListener()
+			  {
+                 @Override
+				 public void onClick(View arg0)
+                   {
+
+					if (!selStoreID.isEmpty())
+					  {
+
+						long StartClickTime = System.currentTimeMillis();
+						Date dateobj1 = new Date(StartClickTime);
+						SimpleDateFormat df1 = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+						String StartClickTimeFinal = df1.format(dateobj1);
+
+						CommonInfo.fileContent=imei+"_"+selStoreID+"_"+"Start Button Click on Store Selection "+StartClickTimeFinal;
+
+						File dirORIGimg = new File(Environment.getExternalStorageDirectory(),DATASUBDIRECTORYForText);
+						if (!dirORIGimg.exists())
+						{
+							dirORIGimg.mkdirs();
+						}
+								/*if(Selected_manager_Id!=0)
+								{*/
+									if(Selected_manager_Id!=-99)
+									{
+										String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
+
+										StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
+										//dbengine.open();
+										int chk=dbengine.counttblSelectedManagerDetails();
+										//dbengine.close();
+										if(chk==1)
+										{
+											dbengine.deletetblSelectedManagerDetails();
+											//dbengine.open();
+											dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
+													token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
+													,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
+											//dbengine.close();
+										}
+										else
+										{
+											//dbengine.open();
+											dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
+													token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
+													,token.nextToken().toString().trim(),token.nextToken().toString().trim(),"NA");
+											//dbengine.close();
+										}
+									}
+									else if(Selected_manager_Id==-99)
+									{
+
+										if(TextUtils.isEmpty(ed_Street.getText().toString().trim()))
+										{
+
+											AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(StoreSelection.this);
+											alertDialogBuilder.setTitle(getResources().getString(R.string.genTermNoDataConnection));
+											alertDialogBuilder.setCancelable(false);
+											alertDialogBuilder.setIcon(R.drawable.info_ico);
+
+											// set dialog message
+											alertDialogBuilder
+
+													.setMessage(getResources().getString(R.string.txtEnterManagerName))
+													.setCancelable(false)
+													.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton),new DialogInterface.OnClickListener()
+													{
+														public void onClick(DialogInterface dialog,int id)
+														{
+															dialog.cancel();
+														}
+													});
+
+
+											// create alert dialog
+											AlertDialog alertDialog = alertDialogBuilder.create();
+
+											alertDialog.show();
+											return;
+
+										}
+										else
+										{
+											String allData=dbengine.fetchtblManagerMstr(""+Selected_manager_Id);
+
+											StringTokenizer token = new StringTokenizer(String.valueOf(allData), "^");
+											//dbengine.open();
+											int chk=dbengine.counttblSelectedManagerDetails();
+											//dbengine.close();
+											if(chk==1)
+											{
+												dbengine.deletetblSelectedManagerDetails();
+												//dbengine.open();
+												dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
+														token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
+														,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
+												//dbengine.close();
+											}
+											else
+											{
+												//dbengine.open();
+												dbengine.savetblSelectedManagerDetails(imei,StartClickTimeFinal,token.nextToken().toString().trim(),
+														token.nextToken().toString().trim(),token.nextToken().toString().trim(),token.nextToken().toString().trim()
+														,token.nextToken().toString().trim(),token.nextToken().toString().trim(),ed_Street.getText().toString().trim());
+												//dbengine.close();
+											}
+										}
+
+									}
+								//}
+
+
+							whereTo = "11";
+
+							syncTIMESTAMP = System.currentTimeMillis();
+							Date dateobj = new Date(syncTIMESTAMP);
+							SimpleDateFormat df = new SimpleDateFormat(
+									"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+							fullFileName1 = df.format(dateobj);
+
+							//dbengine.open();
+							String checkClosrOrNext[] = dbengine.checkStoreCloseOrNextMethod(selStoreID);
+					        //dbengine.close();
+						  int close = 0;
+						  int next = 0;
+
+						if(checkClosrOrNext.length>0) {
+							//StringTokenizer tokensInvoice = new StringTokenizer(String.valueOf(checkClosrOrNext[0]), "_");
+							 close = Integer.parseInt(checkClosrOrNext[0]);
+							 next = 0;//Integer.parseInt(tokensInvoice.nextToken().toString().trim());
+						}
+
+						  close=0;
+					if (close == 0)
+					{
+
+						if (!selStoreID.isEmpty())
+						{
+							
+							/*if(isMyServiceRunning())
+		            		{
+							
+		            		}
+							else
+							{
+								startService(new Intent(StoreSelection.this,GPSTrackerService.class));
+							}
+							*/
+							//startService(new Intent(StoreSelection.this,FusedTrackerService.class));
+							 //System.out.println("Sun new Value 0");
+							 int valSstatValueAgainstStore=0;
+							 int ISNewStore=0;
+							 int IsNewStoreDataCompleteSaved=0;
+							 try
+							 {
+							////dbengine.open();
+								 ISNewStore =dbengine.fncheckStoreIsNewOrOld(selStoreID);
+								 IsNewStoreDataCompleteSaved =dbengine.fncheckStoreIsNewStoreDataCompleteSaved(selStoreID);
+							valSstatValueAgainstStore=dbengine.fnGetStatValueagainstStore(selStoreID);
+							 }catch(Exception e)
+							 {
+
+							 }finally
+							 {
+							////dbengine.close();
+							 }
+						/*	String chID = ((dbengine
+									.getChainIDBasedOnStoreID(selStoreID)) + "")
+									.toString().trim();
+
+							int pgFWDCLname2getID = dbengine
+									.getFwdPgIdonNextBtnClick(selStoreID, "2", chID);
+							FWDCLname = dbengine.getCustomPGid(pgFWDCLname2getID);
+
+							int pgBCKCLname2getID = dbengine
+									.getFwdPgIdonBackBtnClick(selStoreID, "2", chID);
+							BCKCLname = dbengine.getCustomPGid(pgBCKCLname2getID);*/
+
+							//System.out.println("PREV. LOC CHK sop: "+ dbengine.PrevLocChk(selStoreID.trim()));
+
+							/*if ((dbengine.PrevLocChk(selStoreID.trim()))
+									|| locStat == 1)
+							{*/
+							 	/*//dbengine.open();
+							 	System.out.println("DtateTimeNitish3");
+						        dbengine.UpdateStoreStartVisit(selStoreID, fullFileName1);
+						        String passdLevel = battLevel+"%";
+								dbengine.UpdateStoreVisitBatt(selStoreID, passdLevel);
+						        //dbengine.close();*/
+
+							if(ISNewStore==0)
+							{
+
+
+									long syncTIMESTAMP = System.currentTimeMillis();
+									Date dateobjNew = new Date(syncTIMESTAMP);
+									SimpleDateFormat dfnew = new SimpleDateFormat(
+											"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+									String startTS = dfnew.format(dateobjNew);
+								 	//dbengine.open();
+
+									dbengine.UpdateStoreStartVisit(selStoreID,startTS);
+
+									String passdLevel = battLevel + "%";
+									dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
+
+									dbengine.UpdateStoreEndVisit(selStoreID,startTS);
+									//dbengine.close();
+									Intent ready4GetLoc = new Intent(StoreSelection.this,LastVisitDetails.class);
+
+									ready4GetLoc.putExtra("storeID", selStoreID);
+									ready4GetLoc.putExtra("selStoreName", selStoreName);
+									ready4GetLoc.putExtra("imei", imei);
+									ready4GetLoc.putExtra("userDate", userDate);
+									ready4GetLoc.putExtra("pickerDate", pickerDate);
+									ready4GetLoc.putExtra("startTS", fullFileName1);
+									ready4GetLoc.putExtra("bck", 0);
+
+									locStat = 0;
+
+
+									startActivity(ready4GetLoc);
+									finish();
+								//}
+								//Code If Ends Here
+							}
+							else
+							{
+								//Code Else Starts Here
+
+								if(IsNewStoreDataCompleteSaved==1)
+								{
+									// TODO Auto-generated method stub
+									Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
+									//Intent intent = new Intent(StoreSelection.this, Add_New_Store_NewFormat.class);
+									//Intent intent = new Intent(StoreSelection.this, Add_New_Store.class);
+									intent.putExtra("storeID",selStoreID);
+									intent.putExtra("activityFrom", "StoreSelection");
+									intent.putExtra("userdate", userDate);
+									intent.putExtra("pickerDate", pickerDate);
+									intent.putExtra("imei", imei);
+									intent.putExtra("rID", rID);
+									StoreSelection.this.startActivity(intent);
+									finish();
+								}
+								else if(IsNewStoreDataCompleteSaved==0)
+								{
+									/*if(valSstatValueAgainstStore==1)
+									{
+										//Intent nxtP4 = new Intent(StoreSelection.this,ProductList.class);
+										//ProductOrderSearch
+										Intent nxtP4 = new Intent(StoreSelection.this,ProductOrderFilterSearch.class);
+										nxtP4.putExtra("storeID", selStoreID);
+										nxtP4.putExtra("SN", selStoreName);
+										nxtP4.putExtra("imei", imei);
+										nxtP4.putExtra("userdate", userDate);
+										nxtP4.putExtra("pickerDate", pickerDate);
+										startActivity(nxtP4);
+										finish();
+									}
+									else
+									{*/
+
+										long syncTIMESTAMP = System.currentTimeMillis();
+										Date dateobjNew = new Date(syncTIMESTAMP);
+										SimpleDateFormat dfnew = new SimpleDateFormat(
+												"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+										String startTS = dfnew.format(dateobjNew);
+									 	//dbengine.open();
+
+										dbengine.UpdateStoreStartVisit(selStoreID,startTS);
+										// dbengine.UpdateStoreEndVisit(selStoreID,
+										// fullFileName1);
+
+										//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
+
+										String passdLevel = battLevel + "%";
+										dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
+
+										dbengine.UpdateStoreEndVisit(selStoreID,startTS);
+										//dbengine.close();
+										Intent ready4GetLoc = new Intent(StoreSelection.this,LastVisitDetails.class);
+
+										//enableGPSifNot();
+
+
+										ready4GetLoc.putExtra("storeID", selStoreID);
+										ready4GetLoc.putExtra("selStoreName", selStoreName);
+										ready4GetLoc.putExtra("imei", imei);
+										ready4GetLoc.putExtra("userDate", userDate);
+										ready4GetLoc.putExtra("pickerDate", pickerDate);
+										ready4GetLoc.putExtra("startTS", fullFileName1);
+										ready4GetLoc.putExtra("bck", 0);
+
+										locStat = 0;
+
+
+										startActivity(ready4GetLoc);
+										finish();
+									//}
+								}
+
+								//Code Else Ends Here
+							}
+
+
+
+
+
+
+
+						}
+						else
+						  {
+							Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectStore, Toast.LENGTH_SHORT).show();
+						  }
+						// end else
+					 }
+					else
+					   {
+						//Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectDiffrentStore,Toast.LENGTH_SHORT).show();
+						   showAlertSingleButtonInfo(getResources().getString(R.string.genTermPleaseSelectDiffrentStore));
+					   }
+					}
+					else
+					  {
+						Toast.makeText(getApplicationContext(),R.string.genTermPleaseSelectStore, Toast.LENGTH_SHORT).show();
+					  }
+
+				}
+			});
 			
-			
+
 
 	}
 	
@@ -2655,38 +2581,35 @@ public void DayEndWithoutalert()
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_store_selection);
 		tl2 = (TableLayout) findViewById(R.id.dynprodtable);
-		Intent getStorei = getIntent();
+		imei=getIMEI();
+		pickerDate=getDateInMonthTextFormat();
+		userDate=getDateInMonthTextFormat();
+		/*Intent getStorei = getIntent();
 		if(getStorei !=null)
 		{
 		imei = getStorei.getStringExtra("imei").trim();
-        pickerDate = getStorei.getStringExtra("pickerDate").trim();
+			if(getStorei.hasExtra("pickerDate")){
+				pickerDate = getStorei.getStringExtra("pickerDate").trim();
+			}else{
+				pickerDate = getStorei.getStringExtra("fDateNew").trim();
+			}
+       // pickerDate = getStorei.getStringExtra("pickerDate").trim();
+			//fDateNew
         userDate = getStorei.getStringExtra("userDate");
-		}
+		//rID = getStorei.getStringExtra("rID");
+		}*/
 
+		CommonInfo.ActiveRouteSM="0";
 		locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
-		
+
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-		
+
 
 		relativeLayout1=(RelativeLayout) findViewById(R.id.relativeLayout1);
 
-		dbengine.open();
-		rID=dbengine.GetActiveRouteID();
-		if(rID.equals("0"))
-		{
-			rID=dbengine.GetNotActiveRouteID();
-		}
-		dbengine.close();
-		mProgressDialog = new ProgressDialog(StoreSelection.this);
-		mProgressDialog.setTitle(getResources().getString(R.string.genTermPleaseWaitNew));
-		mProgressDialog.setMessage(getResources().getString(R.string.txtRefreshingData));
-
-		mProgressDialog.setIndeterminate(true);
-		mProgressDialog.setCancelable(false);
-		
 		TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		imei = tManager.getDeviceId();
-		
+
 		if(CommonInfo.imei.trim().equals(null) || CommonInfo.imei.trim().equals(""))
 		{
 			imei = tManager.getDeviceId();
@@ -2694,215 +2617,256 @@ public void DayEndWithoutalert()
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
-		
-		Date date1=new Date();
-		sdf = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
-		passDate = sdf.format(date1).toString();
-		
-		//System.out.println("Selctd Date: "+ passDate);
-		
-		fDate = passDate.trim().toString();
-		
-		img_side_popUp=(ImageView) findViewById(R.id.img_side_popUp);
-		img_side_popUp.setOnClickListener(new OnClickListener() 
-		  {
-				@Override
-				public void onClick(View v)
-				{
-					 open_pop_up();
-				}
-		  });
+
+if(CommonInfo.VanLoadedUnloaded==1)
+{
+	showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
+
+}
+else
+{
 
 
+	//dbengine.open();
+	rID=dbengine.GetActiveRouteID();
+	if(rID.equals("0"))
+	{
+		rID=dbengine.GetNotActiveRouteID();
+	}
+
+		if(CommonInfo.hmapAppMasterFlags!=null && CommonInfo.hmapAppMasterFlags.size()==0) {
+			CommonInfo.hmapAppMasterFlags = dbengine.fnGetAppMasterFlags();
+		}
+	//dbengine.close();
+	mProgressDialog = new ProgressDialog(StoreSelection.this);
+	mProgressDialog.setTitle(getResources().getString(R.string.genTermPleaseWaitNew));
+	mProgressDialog.setMessage(getResources().getString(R.string.txtRefreshingData));
+
+	mProgressDialog.setIndeterminate(true);
+	mProgressDialog.setCancelable(false);
+
+	Date date1=new Date();
+	sdf = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+	passDate = sdf.format(date1).toString();
+
+	//System.out.println("Selctd Date: "+ passDate);
+
+	fDate = passDate.trim().toString();
+
+	img_side_popUp=(ImageView) findViewById(R.id.img_side_popUp);
+	img_side_popUp.setOnClickListener(new OnClickListener()
+	{
+		@Override
+		public void onClick(View v)
+		{
+			open_pop_up();
+		}
+	});
 
 
-		getManagersDetail();
-		getRouteDetail();
+	getManagersDetail();
+	getRouteDetail();
 
-		spinner_manager = (Spinner)findViewById(R.id.spinner_manager);
-		ArrayAdapter adapterCategory=new ArrayAdapter(this, android.R.layout.simple_spinner_item,Manager_names);
-		adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner_manager.setAdapter(adapterCategory);
+	spinner_manager = (Spinner)findViewById(R.id.spinner_manager);
+	ArrayAdapter adapterCategory=new ArrayAdapter(this, android.R.layout.simple_spinner_item,Manager_names);
+	adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+	spinner_manager.setAdapter(adapterCategory);
 
-		spinner_RouteList = (Spinner)findViewById(R.id.spinner_RouteList);
-		ArrayAdapter adapterRouteList=new ArrayAdapter(this, android.R.layout.simple_spinner_item,Route_names);
-		adapterRouteList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner_RouteList.setAdapter(adapterRouteList);
+	spinner_RouteList = (Spinner)findViewById(R.id.spinner_RouteList);
+	ArrayAdapter adapterRouteList=new ArrayAdapter(this, android.R.layout.simple_spinner_item,Route_names);
+	adapterRouteList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+	spinner_RouteList.setAdapter(adapterRouteList);
 
-		spinner_RouteList.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-									   int arg2, long arg3) {
-				seleted_routeIDType=hmapRouteIdNameDetails.get(arg0.getItemAtPosition(arg2).toString());
-				dbengine.open();
+	spinner_RouteList.setOnItemSelectedListener(new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(AdapterView<?> arg0, View arg1,int arg2, long arg3)
+		{
+				/*seleted_routeIDType=hmapRouteIdNameDetails.get(arg0.getItemAtPosition(arg2).toString());
+				//dbengine.open();
 				dbengine.fnSetAllRouteActiveStatus();
 				dbengine.updateActiveRoute(seleted_routeIDType.split(Pattern.quote("_"))[0], 1);
-				dbengine.close();
+				//dbengine.close();
 
-				try
-				{
-					//fnCreateStoreListOnLoad();
-					rID=seleted_routeIDType.split(Pattern.quote("_"))[0];
-					setStoresList();
-
+				try {
+					fnCreateStoreListOnLoad();
 				}
 				catch (Exception e)
 				{
 
-				}
-			}
+				}*/
+			seleted_routeIDType = hmapRouteIdNameDetails.get(arg0.getItemAtPosition(arg2).toString());
+			//dbengine.open();
+			dbengine.fnSetAllRouteActiveStatus();
+			dbengine.updateActiveRoute(seleted_routeIDType.split(Pattern.quote("_"))[0], 1);
+			//dbengine.close();
+			rID=seleted_routeIDType.split(Pattern.quote("_"))[0];
 
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
+			//fnCreateStoreListOnLoad();
+			setStoresList();
+		}
 
-			}
-		});
+		@Override
+		public void onNothingSelected(AdapterView<?> parent) {
 
-
-		rl_for_other = (RelativeLayout) findViewById(R.id.rl_for_other);
-		rl_for_other.setVisibility(RelativeLayout.GONE);
-
-		ed_Street=(EditText)findViewById(R.id.streetid);
-
-		spinner_manager.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-									   int arg2, long arg3)
-			{
-
-				selected_manager=arg0.getItemAtPosition(arg2).toString();
-
-				String ManagerID=hmapManagerNameManagerIdDetails.get(selected_manager);
+		}
+	});
 
 
-				if(ManagerID.equals("0"))
-				{
-					rl_for_other.setVisibility(RelativeLayout.GONE);
-					ed_Street.setText("");
-					Selected_manager_Id=0;
+	rl_for_other = (RelativeLayout) findViewById(R.id.rl_for_other);
+	rl_for_other.setVisibility(RelativeLayout.GONE);
 
-				}
-				else if(ManagerID.equals("-99"))
-				{
-					Selected_manager_Id=-99;
-					rl_for_other.setVisibility(RelativeLayout.VISIBLE);
-				}
-				else
-				{
-					Selected_manager_Id=Integer.parseInt(ManagerID);
+	ed_Street=(EditText)findViewById(R.id.streetid);
 
-					ed_Street.setText("");
-
-					rl_for_other.setVisibility(RelativeLayout.GONE);
-
-				}
+	spinner_manager.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 
-
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
-
-				//selected_location=arg0.getItemAtPosition(0).toString();
-				//System.out.println("selected_location in resume1111111111 "+selected_location);
-			}
-		});
-
-
-		dbengine.open();
-		int chk=dbengine.counttblSelectedManagerDetails();
-		dbengine.close();
-		if(chk==1)
+		@Override
+		public void onItemSelected(AdapterView<?> arg0, View arg1,
+								   int arg2, long arg3)
 		{
-			String abcd=dbengine.Fetch_tblSelectedManagerDetails();
 
-			StringTokenizer tokens = new StringTokenizer(String.valueOf(abcd), "_");
+			selected_manager=arg0.getItemAtPosition(arg2).toString();
 
-			String as=tokens.nextToken().toString().trim();
+			String ManagerID=hmapManagerNameManagerIdDetails.get(selected_manager);
 
 
-			String ManagerName = tokens.nextToken().toString().trim();
-
-			int ManagerID =  Integer.parseInt(as);
-
-			int selected_choice_index=0;
-
-			if(ManagerID==0)
+			if(ManagerID.equals("0"))
 			{
-				spinner_manager.setSelection(0);
+				rl_for_other.setVisibility(RelativeLayout.GONE);
+				ed_Street.setText("");
+				Selected_manager_Id=0;
 
 			}
-			else if(ManagerID!=-99)
+			else if(ManagerID.equals("-99"))
 			{
-				for(int i1=0;i1<Manager_names.length;i1++)
-				{
-					if(Manager_names[i1].equals(ManagerName))
-					{
-						selected_choice_index=i1;
-					}
-				}
-				spinner_manager.setSelection(selected_choice_index);
-
+				Selected_manager_Id=-99;
+				rl_for_other.setVisibility(RelativeLayout.VISIBLE);
 			}
-
 			else
 			{
-				for(int i1=0;i1<Manager_names.length;i1++)
-				{
-					if(Manager_names[i1].equals(ManagerName))
-					{
-						selected_choice_index=i1;
-					}
-				}
-				spinner_manager.setSelection(selected_choice_index);
+				Selected_manager_Id=Integer.parseInt(ManagerID);
 
-				dbengine.open();
-				String OtherName=dbengine.fetchOtherNameBasicOfManagerID(ManagerID);
-				dbengine.close();
-				rl_for_other.setVisibility(RelativeLayout.VISIBLE);
-				ed_Street.setText(OtherName);
+				ed_Street.setText("");
 
-
+				rl_for_other.setVisibility(RelativeLayout.GONE);
 
 			}
+
+
+
 		}
 
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {
+			// TODO Auto-generated method stub
+
+			//selected_location=arg0.getItemAtPosition(0).toString();
+			//System.out.println("selected_location in resume1111111111 "+selected_location);
+		}
+	});
 
 
-			
-		setUpVariable();
+	//dbengine.open();
+	int chk=dbengine.counttblSelectedManagerDetails();
+	//dbengine.close();
+	if(chk==1)
+	{
+		String abcd=dbengine.Fetch_tblSelectedManagerDetails();
+
+		StringTokenizer tokens = new StringTokenizer(String.valueOf(abcd), "_");
+
+		String as=tokens.nextToken().toString().trim();
 
 
-		//
-		String routeNametobeSelectedInSpinner=dbengine.GetActiveRouteDescr();
-		int index=0;
-		if(hmapRouteIdNameDetails!=null)
+		String ManagerName = tokens.nextToken().toString().trim();
+
+		int ManagerID =  Integer.parseInt(as);
+
+		int selected_choice_index=0;
+
+		if(ManagerID==0)
 		{
+			spinner_manager.setSelection(0);
 
-
-			Set set2 = hmapRouteIdNameDetails.entrySet();
-			Iterator iterator = set2.iterator();
-
-			while(iterator.hasNext())
+		}
+		else if(ManagerID!=-99)
+		{
+			for(int i1=0;i1<Manager_names.length;i1++)
 			{
-				Map.Entry me2 = (Map.Entry)iterator.next();
-				if(routeNametobeSelectedInSpinner.equals(me2.getKey()))
+				if(Manager_names[i1].equals(ManagerName))
 				{
-					//Do Nothing
-					break;
+					selected_choice_index=i1;
 				}
-				index=index+1;
 			}
+			spinner_manager.setSelection(selected_choice_index);
+
+		}
+
+		else
+		{
+			for(int i1=0;i1<Manager_names.length;i1++)
+			{
+				if(Manager_names[i1].equals(ManagerName))
+				{
+					selected_choice_index=i1;
+				}
+			}
+			spinner_manager.setSelection(selected_choice_index);
+
+			//dbengine.open();
+			String OtherName=dbengine.fetchOtherNameBasicOfManagerID(ManagerID);
+			//dbengine.close();
+			rl_for_other.setVisibility(RelativeLayout.VISIBLE);
+			ed_Street.setText(OtherName);
+
+
+
+		}
+	}
+
+
+
+
+	setUpVariable();
+
+
+	//
+	String routeNametobeSelectedInSpinner=dbengine.GetActiveRouteDescr();
+	int index=0;
+	if(hmapRouteIdNameDetails!=null)
+	{
+
+
+		Set set2 = hmapRouteIdNameDetails.entrySet();
+		Iterator iterator = set2.iterator();
+		boolean isRouteSelected=false;
+		while(iterator.hasNext())
+		{
+			Map.Entry me2 = (Map.Entry)iterator.next();
+			if(routeNametobeSelectedInSpinner.equals(me2.getKey()))
+			{
+				isRouteSelected=true;
+				//Do Nothing
+				break;
+			}
+			index=index+1;
+		}
+		if(isRouteSelected)
+		{
 			spinner_RouteList.setSelection(index);
 		}
+		else
+		{
+			spinner_RouteList.setSelection(0);
+		}
+	}
+	setStoresList();
 
-		setStoresList();
+
+}
+
 
 	}
 
@@ -2972,24 +2936,20 @@ public void DayEndWithoutalert()
 	
 	public void setStoresList()
 	{
-		if(tl2!=null)
-		{
-			tl2.removeAllViews();
-		}
-		dbengine.open();
+        if(tl2!=null)
+        {
+            tl2.removeAllViews();
+        }
+		//dbengine.open();
 		
-
+		//System.out.println("Arjun has rID :"+rID);
 
 		storeList = dbengine.FetchStoreList(rID);
 		storeRouteIdType=dbengine.FetchStoreRouteIdType(rID);
 		storeStatus = dbengine.FetchStoreStatus(rID);
 
-		storeCloseStatus = dbengine.FetchStoreStoreCloseStatus(rID);
-
-		storeNextDayStatus = dbengine.FetchStoreStoreNextDayStatus();
-		StoreflgSubmitFromQuotation= dbengine.FetchStoreStatusflgSubmitFromQuotation();
 		hmapStoreLatLongDistanceFlgRemap=dbengine.fnGeStoreList(CommonInfo.DistanceRange);
-		dbengine.close();
+		//dbengine.close();
 
 		storeCode = new String[storeList.length];
 		storeName = new String[storeList.length];
@@ -3011,7 +2971,6 @@ public void DayEndWithoutalert()
 
 
 		LayoutInflater inflater = getLayoutInflater();
-
 		for (int current = 0; current < storeList.length; current++) 
 		{
 
@@ -3036,31 +2995,8 @@ public void DayEndWithoutalert()
 			check2.setEnabled(false);
 			row.setTag(storeRouteIdType[current]);
 
-			if ((storeCloseStatus[current].equals("1")))
-			{
-				check1.setChecked(true);
-			}
-
-			if ((storeNextDayStatus[current].equals("1"))) 
-			{
-				check2.setChecked(true);
-			}
-
-		/*	if ((((storeStatus[current].split(Pattern.quote("~"))[0]).equals("3")) || ((storeStatus[current].split(Pattern.quote("~"))[0]).equals("4"))) && (StoreflgSubmitFromQuotation[current]).equals("0") || ((storeStatus[current].split(Pattern.quote("~"))[0]).equals("5")) || ((storeStatus[current].split(Pattern.quote("~"))[0]).equals("6")))
-			{
-				//StoreflgSubmitFromQuotation
-				rb1.setEnabled(false);
-				rb1.setTypeface(null, Typeface.BOLD);
-				rb1.setTextColor(this.getResources().getColor(R.color.green_submitted));
-			} 
-			else
-			{
-			}*/
-
-
 			if ((storeStatus[current].split(Pattern.quote("~"))[0]).equals("4"))
 			{
-				//StoreflgSubmitFromQuotation
 				rb1.setEnabled(false);
 				rb1.setTypeface(null, Typeface.BOLD);
 				rb1.setTextColor(this.getResources().getColor(R.color.green_submitted));
@@ -3068,8 +3004,6 @@ public void DayEndWithoutalert()
 
 			if ((storeStatus[current].split(Pattern.quote("~"))[0]).equals("3")|| (storeStatus[current].split(Pattern.quote("~"))[0]).equals("5")|| (storeStatus[current].split(Pattern.quote("~"))[0]).equals("6"))
 			{
-				//StoreflgSubmitFromQuotation
-				//rb1.setEnabled(false);
 				rb1.setTypeface(null, Typeface.BOLD);
 				rb1.setTextColor(this.getResources().getColor(R.color.static_text_color));
 			}
@@ -3085,9 +3019,7 @@ public void DayEndWithoutalert()
 					rb1.setTypeface(null, Typeface.BOLD);
 					rb1.setTextColor(Color.RED);
 				}
-			} 
-			
-					
+			}
 			
 			rb1.setOnClickListener(new OnClickListener()
 			{
@@ -3107,7 +3039,6 @@ public void DayEndWithoutalert()
 						child2 = (CheckBox)dataRow.findViewById(R.id.check1);
 						child3 = (CheckBox)dataRow.findViewById(R.id.check2);
 						
-
 						child1.setChecked(false);
                         child2.setEnabled(false);
                         child3.setEnabled(false);
@@ -3119,9 +3050,9 @@ public void DayEndWithoutalert()
                     
 					selStoreID = arg0.getTag().toString();
 					
-					dbengine.open();
+					//dbengine.open();
 					selStoreName=dbengine.FetchStoreName(selStoreID);
-					dbengine.close();
+					//dbengine.close();
 					
 					RadioButton child2get12 = (RadioButton) arg0;
 					child2get12.setChecked(true);
@@ -3144,36 +3075,32 @@ public void DayEndWithoutalert()
 								long syncTIMESTAMP = System.currentTimeMillis();
 								Date dateobj = new Date(syncTIMESTAMP);
 								SimpleDateFormat df = new SimpleDateFormat(
-										"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+										"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String startTS = df.format(dateobj);
 
 								Date currDate = new Date();
 								SimpleDateFormat currDateFormat = new SimpleDateFormat(
-										"dd-MMM-yyyy",Locale.ENGLISH);
+										"dd-MM-yyyy",Locale.ENGLISH);
 								String currSysDate = currDateFormat.format(
 										currDate).toString();
 
 								if (!currSysDate.equals(pickerDate)) {
 									fullFileName1 = pickerDate + " 12:00:00";
 								}
-								dbengine.open();
+								//dbengine.open();
 								dbengine.updateCloseflg(Sid, 1);
 								System.out.println("DateTimeNitish 1");
 								dbengine.UpdateStoreStartVisit(selStoreID,startTS);
-								// dbengine.UpdateStoreEndVisit(selStoreID,
-								// fullFileName1);
-
-								//dbengine.UpdateStoreActualLatLongi(selStoreID,"" + "0.00", "" + "0.00", "" + "0.00","" + "NA");
 
 								String passdLevel = battLevel + "%";
 								dbengine.UpdateStoreVisitBatt(selStoreID,passdLevel);
 
 								dbengine.UpdateStoreEndVisit(selStoreID,startTS);
-								dbengine.close();
+								//dbengine.close();
 
 							} else {
-								//System.out.println("1st unchecked with Store ID :"+ Sid);
-								dbengine.open();
+
+								//dbengine.open();
 								dbengine.updateCloseflg(Sid, 0);
 								//dbengine.delStoreCloseNextData(selStoreID);
 								
@@ -3184,7 +3111,7 @@ public void DayEndWithoutalert()
 								dbengine.UpdateStoreVisitBatt(selStoreID,"");
 								dbengine.UpdateStoreEndVisit(selStoreID,"");*/
 								
-								dbengine.close();
+								//dbengine.close();
 							}
 
 						}
@@ -3207,18 +3134,18 @@ public void DayEndWithoutalert()
 								//System.out.println("2nd checked with Store ID :"+ Sid);
 								long syncTIMESTAMP = System.currentTimeMillis();
 								Date dateobj = new Date(syncTIMESTAMP);
-								SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+								SimpleDateFormat df = new SimpleDateFormat(
+										"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String startTS = df.format(dateobj);
 
 								Date currDate = new Date();
 								SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
 								String currSysDate = currDateFormat.format(currDate).toString();
 
-								if (!currSysDate.equals(pickerDate))
-								{
+								if (!currSysDate.equals(pickerDate)) {
 									fullFileName1 = pickerDate + " 12:00:00";
 								}
-								dbengine.open();
+								//dbengine.open();
 								//System.out.println("DateTimeNitish2");
 								dbengine.updateNextDayflg(Sid, 1);
 
@@ -3235,11 +3162,11 @@ public void DayEndWithoutalert()
 								dbengine.UpdateStoreEndVisit(selStoreID,
 										startTS);
 
-								dbengine.close();
+								//dbengine.close();
 
 							} else {
 								System.out.println("2nd unchecked with Store ID :"+ Sid);
-								dbengine.open();
+								//dbengine.open();
 								dbengine.updateNextDayflg(Sid, 0);
 								//dbengine.delStoreCloseNextData(selStoreID);
 								
@@ -3250,7 +3177,7 @@ public void DayEndWithoutalert()
 								dbengine.UpdateStoreVisitBatt(selStoreID,"");
 								dbengine.UpdateStoreEndVisit(selStoreID,"");*/
 								
-								dbengine.close();
+								//dbengine.close();
 							}
 
 						}
@@ -3267,10 +3194,10 @@ public void DayEndWithoutalert()
 	
 	private void showDialogButtonClick() {
 		
-		dbengine.open();
+		//dbengine.open();
 		route_name = dbengine.fnGetRouteInfoForDDL();
 		route_name_id = dbengine.fnGetRouteIdsForDDL();
-		dbengine.close();
+		//dbengine.close();
         
 	       
         ContextThemeWrapper cw= new ContextThemeWrapper(this,R.style.AlertDialogTheme);
@@ -3312,9 +3239,9 @@ public void DayEndWithoutalert()
                        rID=selected_route_id;
                        
                        
-                       dbengine.open();
+                       //dbengine.open();
                        int checkRouteIDExistOrNot=dbengine.checkRouteIDExistInStoreListTable(Integer.parseInt(rID));
-                       dbengine.close();
+                       //dbengine.close();
                        
                        if(checkRouteIDExistOrNot==0)
                        {
@@ -3344,9 +3271,9 @@ public void DayEndWithoutalert()
 		try
 		{
 
-		dbengine.open();
-		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.open();
+		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -3400,17 +3327,17 @@ public void DayEndWithoutalert()
 							SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 							String Noti_ReadDateTime = df.format(dateobj);
 				    	
-							dbengine.open();
-							dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-							dbengine.close();
+							//dbengine.open();
+							dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+							//dbengine.close();
 							
 							try
 							{
-								dbengine.open();
-							    int checkleftNoti=dbengine.countNumberOFNotificationtblNotificationMstr();
+								//dbengine.open();
+							    int checkleftNoti=dbengine.countNumberOFNotificationtblPDANotificationMaster();
 							    if(checkleftNoti>0)
 							    {
-								    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
+								    	String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
 										System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 										if(!Noti_textWithMsgServerID.equals("Null"))
 										{
@@ -3419,7 +3346,7 @@ public void DayEndWithoutalert()
 											MsgServerID= Integer.parseInt(token.nextToken().trim());
 											Noti_text= token.nextToken().trim();
 											
-											dbengine.close();
+											//dbengine.close();
 											if(Noti_text.equals("") || Noti_text.equals("Null"))
 											{
 												
@@ -3443,7 +3370,7 @@ public void DayEndWithoutalert()
 							}
 				            finally
 				            {
-				            	dbengine.close();
+				            	//dbengine.close();
 							   
 				            }
 			            
@@ -3479,20 +3406,143 @@ public void DayEndWithoutalert()
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 
 
-		dbengine.open();
+		//dbengine.open();
 		String allLoctionDetails=  dbengine.getLocationDetails();
-		dbengine.close();
+		//dbengine.close();
 		if(allLoctionDetails.equals("0"))
 		{
 			firstTimeLocationTrack();
 		}
 
 
+
+		/*//dbengine.open();
+		String getPDADate = dbengine.fnGetPdaDate();
+		String getServerDate = dbengine.fnGetServerDate();
+		//dbengine.close();
+		if (!getPDADate.equals(""))
+		{
+			if(!getServerDate.equals(getPDADate))
+			{
+
+				if(dbengine.fnCheckForPendingImages()==1)
+				{
+					getPrevioisDateData();
+					return;
+				}
+				else if(checkImagesInFolder()>0)
+				{
+					getPrevioisDateData();
+					return;
+				}
+				else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+				{
+					getPrevioisDateData();
+					return;
+				}
+				else if(checkXMLFilesInFolder()>0)
+				{
+					getPrevioisDateData();
+					return;
+				}
+				else
+				{
+                 finish();
+				}
+
+
+			}
+
+		}*/
 		
+	}
+
+	public int checkImagesInFolder()
+	{
+		int totalFiles=0;
+		File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.ImagesFolder);
+
+		String [] AllFilesName= checkNumberOfFiles(del);
+
+		if(AllFilesName.length>0)
+		{
+			totalFiles=AllFilesName.length;
+		}
+		return totalFiles;
+	}
+
+	public int checkXMLFilesInFolder()
+	{
+		int totalFiles=0;
+		File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+		String [] AllFilesName= checkNumberOfFiles(del);
+
+		if(AllFilesName.length>0)
+		{
+			totalFiles=AllFilesName.length;
+		}
+		return totalFiles;
+	}
+
+	public void getPrevioisDateData()
+	{
+		//dbengine.open();
+		String getPDADate=dbengine.fnGetPdaDate();
+		//dbengine.close();
+		if(!getPDADate.equals(""))
+		{
+            /*Date date2 = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+            String fDate = sdf.format(date2).toString().trim();
+            if(!fDate.equals(getPDADate))
+            {*/
+			if (isOnline())
+			{
+				try
+				{
+					if(dbengine.fnCheckForPendingImages()==1)
+					{
+						new ImageUploadAsyncTask(this).execute();
+					}
+					else if(checkImagesInFolder()>0)
+					{
+						new ImageUploadFromFolderAsyncTask(this).execute();
+					}
+					else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+					{
+						new XMLFileUploadAsyncTask(this).execute();
+					}
+					else if(checkXMLFilesInFolder()>0)
+					{
+						new XMLFileUploadFromFolderAsyncTask(this).execute();
+					}
+					else
+					{
+						//dbengine.open();
+						dbengine.reCreateDB();
+						//dbengine.close();
+						//SplashScreen.CheckUpdateVersion cuv = new SplashScreen.CheckUpdateVersion();
+						//cuv.execute();
+						finish();
+					}
+
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+
+			}
+
+			// }
+		}
 	}
 
 	private class GetInvoiceForDay extends AsyncTask<Void, Void, Void>
@@ -3561,9 +3611,9 @@ public void DayEndWithoutalert()
 					}
 					if(mm==4)
 					{
-						dbengine.open();
+						//dbengine.open();
 						int check1=dbengine.counttblCatagoryMstr();
-						dbengine.close();
+						//dbengine.close();
 						if(check1==0)
 						{
 							newservice = newservice.getCategory(getApplicationContext(), imei);
@@ -3642,60 +3692,34 @@ public void DayEndWithoutalert()
 	        dialog = new Dialog(StoreSelection.this);
 	        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 	        dialog.setContentView(R.layout.selection_header_custom);
-	        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+	        dialog.getWindow().setBackgroundDrawableResource(
+	                android.R.color.transparent);
 	        dialog.getWindow().getAttributes().windowAnimations = R.style.side_dialog_animation;
 	        WindowManager.LayoutParams parms = dialog.getWindow().getAttributes();
 	        parms.gravity = Gravity.TOP | Gravity.LEFT;
 	        parms.height=parms.MATCH_PARENT;
 	        parms.dimAmount = (float) 0.5;
-
 		 final Button butn_Census_report = (Button) dialog.findViewById(R.id.butn_Census_report);
-			Button  butn_UpldPndngDta = (Button) dialog.findViewById(R.id.butn_UpldPndngDta);
-		 butn_UpldPndngDta.setOnClickListener(new OnClickListener() {
-			 @Override
-			 public void onClick(View v) {
-				 if(isOnline())
-				 {
-						dialog.dismiss();
-					 if((dbengine.fnCheckForPendingImages("tableImage",5)==1) || (dbengine.fnCheckForPendingImages("tblStoreProductPhotoDetail",5)==1) || (dbengine.fnCheckForPendingImages("tblStoreClosedPhotoDetail",5)==1))
-					 {
-						 ImageSync task = new ImageSync(StoreSelection.this);
-						 task.execute();
-
-					 }
-					 else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
-					 {
-						 new FullSyncDataNow(StoreSelection.this).execute();
-
-					 }
-					 else
-					 {
-						 showSyncSuccess(getString(R.string.AlertDialogHeaderMsg),getString(R.string.NoPendingDataMsg));
-						// showAlertSingleButtonError(getResources().getString(R.string.NoPendingDataMsg));
-					 }
-
-				 }
-				 else
-				 {
-					 showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
-				 }
-			 }
-		 });
+		 if(CommonInfo.flgDrctslsIndrctSls==1)
+		 {
+			 butn_Census_report.setVisibility(View.GONE);
+		 }
 		 butn_Census_report.setOnClickListener(new View.OnClickListener() {
 			 @Override
 			 public void onClick(View v) {
 				 Intent intent=new Intent(StoreSelection.this,AddedOutletSummaryReportActivity.class);
 				 startActivity(intent);
-				// finish();
+				 // finish();
 			 }
 		 });
 
+		 final   Button btn_uploadPending_data = (Button) dialog.findViewById(R.id.btn_uploadPending_data);
 
 
-		 final   Button butn_refresh_data = (Button) dialog.findViewById(R.id.butn_refresh_data);
-	        final  Button but_day_end=(Button) dialog.findViewById(R.id.mainImg1);
+	        final   Button butn_refresh_data = (Button) dialog.findViewById(R.id.butn_refresh_data);
+	        final  Button but_day_end = (Button) dialog.findViewById(R.id.mainImg1);
 	        final  Button changeRoute = (Button) dialog.findViewById(R.id.changeRoute);
-		    changeRoute.setVisibility(View.GONE);
+		 changeRoute.setVisibility(View.GONE);
 	        final  Button btnewAddedStore = (Button) dialog.findViewById(R.id.btnewAddedStore);
 
 
@@ -3707,6 +3731,36 @@ public void DayEndWithoutalert()
 			 {
 				 GetInvoiceForDay task = new GetInvoiceForDay(StoreSelection.this);
 				 task.execute();
+			 }
+		 });
+
+
+		 final   Button btnRemainingStockStatus = (Button) dialog.findViewById(R.id.btnRemainingStockStatus);
+		 if(CommonInfo.flgDrctslsIndrctSls==0)
+		 {
+			 btnRemainingStockStatus.setVisibility(View.GONE);
+		 }
+		 btnRemainingStockStatus.setOnClickListener(new OnClickListener()
+		 {
+
+			 @Override
+			 public void onClick(View v) {
+				 // TODO Auto-generated method stub
+
+
+
+				 btnRemainingStockStatus.setBackgroundColor(Color.GREEN);
+				 dialog.dismiss();
+				 Intent intent = new Intent(StoreSelection.this, RemainingStockStatusReport.class);
+				 // Intent intent = new Intent(StoreSelection.this, DetailReport_Activity.class);
+				 intent.putExtra("imei", imei);
+				 intent.putExtra("userDate", userDate);
+				 intent.putExtra("pickerDate", pickerDate);
+				 intent.putExtra("rID", rID);
+				 intent.putExtra("back", "0");
+				 startActivity(intent);
+				 finish();
+
 			 }
 		 });
 
@@ -3774,9 +3828,9 @@ public void DayEndWithoutalert()
 				}
 			});
 	        
-	        dbengine.open();
+	        //dbengine.open();
 			 String ApplicationVersion=dbengine.AppVersionID;
-			 dbengine.close();
+			 //dbengine.close();
 			 btnVersion.setText(getResources().getString(R.string.VersionNo)+ApplicationVersion);
 			 
 			// Version No-V12
@@ -3819,14 +3873,14 @@ public void DayEndWithoutalert()
 				 dialog.dismiss();
 				 final Dialog dialogLanguage = new Dialog(StoreSelection.this);
 				 dialogLanguage.requestWindowFeature(Window.FEATURE_NO_TITLE);
-				 dialogLanguage.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.WHITE));
+				 dialogLanguage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 
 				 dialogLanguage.setCancelable(false);
 				 dialogLanguage.setContentView(R.layout.language_popup);
 
 				 TextView textviewEnglish=(TextView) dialogLanguage.findViewById(R.id.textviewEnglish);
 				 TextView textviewHindi=(TextView) dialogLanguage.findViewById(R.id.textviewHindi);
-				 TextView textviewGujarati=(TextView) dialogLanguage.findViewById(R.id.textviewGujarati);
+				 TextView textviewGujrati=(TextView) dialogLanguage.findViewById(R.id.textviewGujrati);
 
 				 textviewEnglish.setOnClickListener(new OnClickListener()
 				 {
@@ -3844,7 +3898,7 @@ public void DayEndWithoutalert()
 						 setLanguage("hi");
 					 }
 				 });
-				 textviewGujarati.setOnClickListener(new OnClickListener()
+				 textviewGujrati.setOnClickListener(new OnClickListener()
 				 {
 					 @Override
 					 public void onClick(View v) {
@@ -3852,7 +3906,6 @@ public void DayEndWithoutalert()
 						 setLanguage("gu");
 					 }
 				 });
-
 				 dialogLanguage.show();
 
 
@@ -3864,15 +3917,15 @@ public void DayEndWithoutalert()
 
 
 		 final Button btnCheckTodayOrder = (Button) dialog.findViewById(R.id.btnCheckTodayOrder);
+		 if(CommonInfo.flgDrctslsIndrctSls==0)
+		 {
+			 btnCheckTodayOrder.setVisibility(View.GONE);
+		 }
 			btnCheckTodayOrder.setOnClickListener(new OnClickListener() 
 			{
-				
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
-					
-					
-				
 				 but_SalesSummray.setBackgroundColor(Color.GREEN);
 				 dialog.dismiss();
 				   Intent intent = new Intent(StoreSelection.this, CheckDatabaseData.class);
@@ -3887,8 +3940,39 @@ public void DayEndWithoutalert()
 					
 				}
 			});
-			
-			
+
+		 btn_uploadPending_data.setOnClickListener(new OnClickListener() {
+			 @Override
+			 public void onClick(View v) {
+
+				 dialog.dismiss();
+				 if(isOnline())
+				 {
+
+
+					 if(dbengine.fnCheckForPendingImages()==1)
+					 {
+						 ImageSync task = new ImageSync(StoreSelection.this);
+						 task.execute();
+
+					 }
+					 else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+					 {
+						 new FullSyncDataNow(StoreSelection.this).execute();
+
+					 }
+					 else
+					 {
+						 showInfoSingleButtonError(getResources().getString(R.string.NoPendingDataMsg));
+					 }
+
+				 }
+				 else
+				 {
+					 showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
+				 }
+			 }
+		 });
 			
 	        but_day_end.setOnClickListener(new OnClickListener() {
 
@@ -3939,7 +4023,7 @@ public void DayEndWithoutalert()
 						valDayEndOrChangeRoute=1;
 						//checkbuttonclick=2;
 
-						if(isOnline())
+						/*if(isOnline())
 						{
 
 						}
@@ -3949,7 +4033,7 @@ public void DayEndWithoutalert()
 							return;
 
 						}
-						dbengine.open();
+						//dbengine.open();
 						whereTo = "11";
 						//////System.out.println("Abhinav store Selection  Step 1");
 						//////System.out.println("StoreList2Procs(before): " + StoreList2Procs.length);
@@ -3962,7 +4046,7 @@ public void DayEndWithoutalert()
 							midPart();
 							dayEndCustomAlert(1);
 							//showPendingStorelist(1);
-							dbengine.close();
+							//dbengine.close();
 
 						} else if (dbengine.GetLeftStoresChk() == true)
 						{
@@ -3970,15 +4054,66 @@ public void DayEndWithoutalert()
 							//enableGPSifNot();
 							// showChangeRouteConfirm();
 							DayEnd();
-							dbengine.close();
+							//dbengine.close();
 						}
 
 						else {
 							DayEndWithoutalert();
+						}*/
+
+
+					File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+// check number of files in folder
+					final String [] AllFilesNameNotSync= checkNumberOfFiles(del);
+
+					String xmlfileNames = dbengine.fnGetXMLFile("3");
+					// String xmlfileNamesStrMap=dbengineSo.fnGetXMLFile("3");
+
+					//dbengine.open();
+					String[] SaveStoreList = dbengine.SaveStoreList();
+					//dbengine.close();
+					if(xmlfileNames.length()>0 || SaveStoreList.length != 0)
+					{
+						if(isOnline())
+						{
+
+
+
+							whereTo = "11";
+
+							//dbengine.open();
+
+							StoreList2Procs = dbengine.ProcessStoreReq();
+							if (StoreList2Procs.length != 0)
+							{
+
+								midPart();
+								dayEndCustomAlert(1);
+								//dbengine.close();
+
+							} else if (dbengine.GetLeftStoresChk() == true)
+							{
+								DayEnd();
+
+							}
+
+							else {
+								DayEndWithoutalert();
+							}
 						}
+						else
+						{
+							showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
 
 
+						}
+					}
+					else
+					{
+						showAlertSingleButtonInfo(getResources().getString(R.string.NoPendingDataMsg));
 
+					}
 						dialog.dismiss();
 					}
 
@@ -4009,7 +4144,7 @@ public void DayEndWithoutalert()
 
 					// ////System.out.println("closeList: "+closeList);
 					// chk if flag 2/3 found
-					dbengine.open();
+					//dbengine.open();
 					 StoreList2Procs = dbengine.ProcessStoreReq();
 
 					// int picsCHK = dbengine.getExistingPicNosOnRemStore();
@@ -4041,7 +4176,7 @@ public void DayEndWithoutalert()
 						//showChangeRouteConfirm();
 					}
 
-					dbengine.close();
+					//dbengine.close();
 					dialog.dismiss();
 				}
 			});
@@ -4053,59 +4188,21 @@ public void DayEndWithoutalert()
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
 					butn_refresh_data.setBackgroundColor(Color.GREEN);
-
-					if(isOnline())
+					if(CommonInfo.VanLoadedUnloaded==1)
 					{
-					
-					AlertDialog.Builder alertDialogBuilderNEw11 = new AlertDialog.Builder(StoreSelection.this);
-					
-						// set title
-					alertDialogBuilderNEw11.setTitle(getResources().getString(R.string.genTermNoDataConnection));
-			 
-						// set dialog message
-					alertDialogBuilderNEw11.setMessage(getResources().getString(R.string.RefreshDataMsg));
-					alertDialogBuilderNEw11.setCancelable(false);
-					alertDialogBuilderNEw11.setPositiveButton(getResources().getString(R.string.AlertDialogYesButton),new DialogInterface.OnClickListener()
-							{
-								public void onClick(DialogInterface dialogintrfc,int id) {
-									// if this button is clicked, close
-									// current activity
-									dialogintrfc.cancel();
-									try
-			    				    {	
-			    						new GetStoresForDay().execute();
-			    						//////System.out.println("SRVC-OK: "+ new GetStoresForDay().execute().get());
-			    					} 
-									catch(Exception e)
-									{
-										
-									}
-									
-									//onCreate(new Bundle());
-								}
-							  });
-						
-					alertDialogBuilderNEw11.setNegativeButton(getResources().getString(R.string.AlertDialogNoButton),
-									new DialogInterface.OnClickListener() {
+						showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
 
-										@Override
-										public void onClick(DialogInterface dialogintrfc, int which) {
-											// //System.out.println("value ofwhatTask after no button pressed by sunil"+whatTask);
+					}
+					else {
+						if (isOnline()) {
+							fnStartProcedureOfRefreshData();
 
-											dialogintrfc.dismiss();
-										}
-									});
+						} else {
+							showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
+							return;
 
-					alertDialogBuilderNEw11.setIcon(R.drawable.info_ico);
-					AlertDialog alert121 = alertDialogBuilderNEw11.create();
-					alert121.show();
-				}
-					else
-				 {
-					 showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
-					 return;
-
-				 }
+						}
+					}
 							
 				  dialog.dismiss();
 					
@@ -4118,8 +4215,59 @@ public void DayEndWithoutalert()
 	     dialog.setCanceledOnTouchOutside(true);
 	        dialog.show();
 	    }
-	//nitika
-	 public void dayEndCustomAlert(int flagWhichButtonClicked)
+
+	    public void fnStartProcedureOfRefreshData()
+		{
+			AlertDialog.Builder alertDialogBuilderNEw11 = new AlertDialog.Builder(StoreSelection.this);
+
+			// set title
+			alertDialogBuilderNEw11.setTitle(getResources().getString(R.string.genTermNoDataConnection));
+
+			// set dialog message
+			alertDialogBuilderNEw11.setMessage(getResources().getString(R.string.RefreshDataMsg));
+			alertDialogBuilderNEw11.setCancelable(false);
+			alertDialogBuilderNEw11.setPositiveButton(getResources().getString(R.string.AlertDialogYesButton), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialogintrfc, int id) {
+					// if this button is clicked, close
+					// current activity
+					dialogintrfc.cancel();
+					try {
+						try
+						{
+							// new GetRouteInfo().execute();
+							CommonFunction.getAllMasterTableModelData(StoreSelection.this,imei,CommonInfo.RegistrationID,"Please wait Refreshing data.");
+
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+
+						//////System.out.println("SRVC-OK: "+ new GetStoresForDay().execute().get());
+					} catch (Exception e) {
+
+					}
+
+					//onCreate(new Bundle());
+				}
+			});
+
+			alertDialogBuilderNEw11.setNegativeButton(getResources().getString(R.string.AlertDialogNoButton),
+					new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialogintrfc, int which) {
+							// //System.out.println("value ofwhatTask after no button pressed by sunil"+whatTask);
+
+							dialogintrfc.dismiss();
+						}
+					});
+
+			alertDialogBuilderNEw11.setIcon(R.drawable.info_ico);
+			AlertDialog alert121 = alertDialogBuilderNEw11.create();
+			alert121.show();
+		}
+	/* public void dayEndCustomAlert(int flagWhichButtonClicked)
 	 {
 		 final Dialog dialog = new Dialog(StoreSelection.this,R.style.AlertDialogDayEndTheme);
 
@@ -4269,9 +4417,163 @@ public void DayEndWithoutalert()
 				
 				
 			
-	 }
-	 
-	 
+	 }*/
+
+	public void dayEndCustomAlert(int flagWhichButtonClicked)
+	{
+		final Dialog dialog = new Dialog(StoreSelection.this,R.style.AlertDialogDayEndTheme);
+
+		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialog.setContentView(R.layout.day_end_custom_alert);
+		if(flagWhichButtonClicked==1)
+		{
+			dialog.setTitle(R.string.genStoreListWhoseDataIsNotYetSubmitted);
+
+			//dialog.setTitle(R.string.genTermSelectStoresPendingToCompleteDayEnd);
+		}
+		else if(flagWhichButtonClicked==2)
+		{
+			dialog.setTitle(R.string.genTermSelectStoresPendingToCompleteChangeRoute);
+		}
+
+
+
+		LinearLayout ll_product_not_submitted=(LinearLayout) dialog.findViewById(R.id.ll_product_not_submitted);
+		mSelectedItems.clear();
+		final String[] stNames4List = new String[stNames.size()];
+		checks=new boolean[stNames.size()];
+		stNames.toArray(stNames4List);
+
+		for(int cntPendingList=0;cntPendingList<stNames4List.length;cntPendingList++)
+		{
+			LayoutInflater inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			final View viewAlertProduct=inflater.inflate(R.layout.day_end_alrt,null);
+			final TextView txtVw_product_name=(TextView) viewAlertProduct.findViewById(R.id.txtVw_product_name);
+			txtVw_product_name.setText(stNames4List[cntPendingList]);
+			txtVw_product_name.setTextColor(this.getResources().getColor(R.color.green_submitted));
+			final ImageView img_to_be_submit=(ImageView) viewAlertProduct.findViewById(R.id.img_to_be_submit);
+			img_to_be_submit.setTag(cntPendingList);
+			img_to_be_submit.setVisibility(View.INVISIBLE);
+			final ImageView img_to_be_cancel=(ImageView) viewAlertProduct.findViewById(R.id.img_to_be_cancel);
+			img_to_be_cancel.setTag(cntPendingList);
+
+			img_to_be_cancel.setVisibility(View.INVISIBLE);
+			img_to_be_submit.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+
+
+					if(!checks[Integer.valueOf(img_to_be_submit.getTag().toString())])
+					{
+						img_to_be_submit.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.select_hover) );
+						img_to_be_cancel.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.cancel_normal) );
+						txtVw_product_name.setTextColor(getResources().getColor(R.color.green_submitted));
+						mSelectedItems.add(stNames4List[Integer.valueOf(img_to_be_submit.getTag().toString())]);
+						checks[Integer.valueOf(img_to_be_submit.getTag().toString())]=true;
+					}
+
+
+				}
+			});
+
+			img_to_be_cancel.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					if (mSelectedItems.contains(stNames4List[Integer.valueOf(img_to_be_cancel.getTag().toString())]))
+					{
+						if(checks[Integer.valueOf(img_to_be_cancel.getTag().toString())])
+						{
+
+							img_to_be_submit.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.select_normal) );
+							img_to_be_cancel.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.cancel_hover) );
+							txtVw_product_name.setTextColor(Color.RED);
+							mSelectedItems.remove(stNames4List[Integer.valueOf(img_to_be_cancel.getTag().toString())]);
+							checks[Integer.valueOf(img_to_be_cancel.getTag().toString())]=false;
+						}
+
+					}
+
+				}
+			});
+			mSelectedItems.add(stNames4List[cntPendingList]);
+			checks[cntPendingList]=false;
+			ll_product_not_submitted.addView(viewAlertProduct);
+		}
+
+
+		Button btnSubmit=(Button) dialog.findViewById(R.id.btnSubmit);
+		Button btn_cancel_Back=(Button) dialog.findViewById(R.id.btn_cancel_Back);
+		btnSubmit.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (mSelectedItems.size() == 0) {
+
+					DayEnd();
+
+
+				}
+
+				else {
+
+					int countOfOrderNonSelected=0;
+					for(int countForFalse=0;countForFalse<checks.length;countForFalse++)
+					{
+						if(checks[countForFalse]==false)
+						{
+							countOfOrderNonSelected++;
+						}
+
+					}
+					if(countOfOrderNonSelected>0)
+					{
+						confirmationForSubmission(String.valueOf(countOfOrderNonSelected));
+					}
+
+					else
+					{
+
+
+						whatTask = 2;
+						// -- Route Info Exec()
+						try {
+
+							new bgTasker().execute().get();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							//System.out.println(e);
+						} catch (ExecutionException e) {
+							e.printStackTrace();
+							//System.out.println(e);
+						}
+						// --
+					}
+
+				}
+
+			}
+		});
+
+		btn_cancel_Back.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				valDayEndOrChangeRoute=0;
+				dialog.dismiss();
+			}
+		});
+
+		dialog.setCanceledOnTouchOutside(false);
+
+
+		dialog.show();
+
+
+
+
+	}
 	 public void confirmationForSubmission(String number)
 	 {
 		 AlertDialog.Builder alertDialog = new AlertDialog.Builder(StoreSelection.this);
@@ -4412,7 +4714,13 @@ public void DayEndWithoutalert()
 						GpsAddress="NA";
 					}
 					GPSLocationLatitude=""+lattitude;
+					if(GPSLocationLatitude.contains("E") || GPSLocationLatitude.contains("e")){
+						GPSLocationLatitude=	convertExponential(lattitude);
+					}
 					GPSLocationLongitude=""+longitude;
+					if(GPSLocationLongitude.contains("E") || GPSLocationLongitude.contains("e")){
+						GPSLocationLongitude=	convertExponential(longitude);
+					}
 					GPSLocationProvider="GPS";
 					GPSLocationAccuracy=""+accuracy;
 					AllProvidersLocation="GPS=Lat:"+lattitude+"Long:"+longitude+"Acc:"+accuracy;
@@ -4444,7 +4752,13 @@ public void DayEndWithoutalert()
 
 
 				NetworkLocationLatitude=""+lattitude1;
+				if(NetworkLocationLatitude.contains("E") || NetworkLocationLatitude.contains("e")){
+					NetworkLocationLatitude=	convertExponential(lattitude1);
+				}
 				NetworkLocationLongitude=""+longitude1;
+				if(NetworkLocationLongitude.contains("E") || NetworkLocationLongitude.contains("e")){
+					NetworkLocationLongitude=	convertExponential(longitude1);
+				}
 				NetworkLocationProvider="Network";
 				NetworkLocationAccuracy=""+accuracy1;
 				if(!AllProvidersLocation.equals(""))
@@ -4582,73 +4896,57 @@ public void DayEndWithoutalert()
 			if(fnAccurateProvider.equals(""))
 			{
 				//because no location found so updating table with NA
-				dbengine.open();
+				//dbengine.open();
 				dbengine.deleteLocationTable();
 				dbengine.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-				dbengine.close();
+				//dbengine.close();
 				if(pDialog2STANDBY.isShowing())
 				{
 					pDialog2STANDBY.dismiss();
 				}
 
-				if(addStoreBtnClick)
-				{
-					addStoreBtnClick=false;
-					Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
-					intent.putExtra("storeID", "0");
-					intent.putExtra("activityFrom", "StoreSelection");
-					intent.putExtra("userdate", userDate);
-					intent.putExtra("pickerDate", pickerDate);
-					intent.putExtra("imei", imei);
-					intent.putExtra("rID", rID);
-					StoreSelection.this.startActivity(intent);
-					finish();
-				}
-				else
-				{
-					int flagtoShowStorelistOrAddnewStore=dbengine.fncheckCountNearByStoreExistsOrNot(CommonInfo.DistanceRange);
 
 
-					if(flagtoShowStorelistOrAddnewStore==1)
+				int flagtoShowStorelistOrAddnewStore=dbengine.fncheckCountNearByStoreExistsOrNot(CommonInfo.DistanceRange);
+
+
+				if(flagtoShowStorelistOrAddnewStore==1)
+				{
+					//getDataFromDatabaseToHashmap();
+					//tl2.removeAllViews();
+
+					if(tl2.getChildCount()>0){
+						tl2.removeAllViews();
+						// dynamcDtaContnrScrollview.removeAllViews();
+						//addViewIntoTable();
+						setStoresList();
+					}
+					else
 					{
-						//getDataFromDatabaseToHashmap();
-						//tl2.removeAllViews();
-
-						if(tl2.getChildCount()>0){
-							tl2.removeAllViews();
-							// dynamcDtaContnrScrollview.removeAllViews();
-							//addViewIntoTable();
-							setStoresList();
-						}
-						else
+						//addViewIntoTable();
+						setStoresList();
+					}
+					if(pDialog2STANDBY!=null)
+					{
+						if (pDialog2STANDBY.isShowing())
 						{
-							//addViewIntoTable();
-							setStoresList();
+							pDialog2STANDBY.dismiss();
 						}
-						if(pDialog2STANDBY!=null)
-						{
-							if (pDialog2STANDBY.isShowing())
-							{
-								pDialog2STANDBY.dismiss();
-							}
-						}
+					}
 
                        /* Intent intent =new Intent(LauncherActivity.this,StorelistActivity.class);
                         LauncherActivity.this.startActivity(intent);
                         finish();*/
 
-					}
-					else
-					{
-						if(pDialog2STANDBY!=null) {
-							if (pDialog2STANDBY.isShowing()) {
-								pDialog2STANDBY.dismiss();
-							}
+				}
+				else
+				{
+					if(pDialog2STANDBY!=null) {
+						if (pDialog2STANDBY.isShowing()) {
+							pDialog2STANDBY.dismiss();
 						}
 					}
 				}
-
-
 
 			}
 			else
@@ -4684,10 +4982,10 @@ public void DayEndWithoutalert()
 
 				if(fnAccuracy>10000)
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine.deleteLocationTable();
 					dbengine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-					dbengine.close();
+					//dbengine.close();
 					if(pDialog2STANDBY.isShowing())
 					{
 						pDialog2STANDBY.dismiss();
@@ -4695,148 +4993,127 @@ public void DayEndWithoutalert()
 
 
 
+
 				}
 				else
 				{
-					dbengine.open();
+					//dbengine.open();
 					dbengine.deleteLocationTable();
 					dbengine.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-					dbengine.close();
+					//dbengine.close();
 
-					if(addStoreBtnClick)
+
+					hmapOutletListForNear=dbengine.fnGetALLOutletMstr();
+					System.out.println("SHIVAM"+hmapOutletListForNear);
+					if(hmapOutletListForNear!=null)
 					{
-						if(pDialog2STANDBY!=null) {
-							if (pDialog2STANDBY.isShowing()) {
-								pDialog2STANDBY.dismiss();
-								pDialog2STANDBY=null;
-							}
-						}
-						addStoreBtnClick=false;
-						Intent intent = new Intent(StoreSelection.this, AddNewStore_DynamicSectionWise.class);
-						intent.putExtra("storeID", "0");
-						intent.putExtra("activityFrom", "StoreSelection");
-						intent.putExtra("userdate", userDate);
-						intent.putExtra("pickerDate", pickerDate);
-						intent.putExtra("imei", imei);
-						intent.putExtra("rID", rID);
-						StoreSelection.this.startActivity(intent);
-						finish();
-					}
-					else
-					{
-						hmapOutletListForNear=dbengine.fnGetALLOutletMstr();
-						System.out.println("SHIVAM"+hmapOutletListForNear);
-						if(hmapOutletListForNear!=null)
+
+						for(Map.Entry<String, String> entry:hmapOutletListForNear.entrySet())
 						{
+							int DistanceBWPoint=1000;
+							String outID=entry.getKey().toString().trim();
+							//  String PrevAccuracy = entry.getValue().split(Pattern.quote("^"))[0];
+							String PrevLatitude = entry.getValue().split(Pattern.quote("^"))[0];
+							String PrevLongitude = entry.getValue().split(Pattern.quote("^"))[1];
 
-							for(Map.Entry<String, String> entry:hmapOutletListForNear.entrySet())
+							// if (!PrevAccuracy.equals("0"))
+							// {
+							if (!PrevLatitude.equals("0"))
 							{
-								int DistanceBWPoint=1000;
-								String outID=entry.getKey().toString().trim();
-								//  String PrevAccuracy = entry.getValue().split(Pattern.quote("^"))[0];
-								String PrevLatitude = entry.getValue().split(Pattern.quote("^"))[0];
-								String PrevLongitude = entry.getValue().split(Pattern.quote("^"))[1];
-
-								// if (!PrevAccuracy.equals("0"))
-								// {
-								if (!PrevLatitude.equals("0"))
+								try
 								{
-									try
-									{
-										Location locationA = new Location("point A");
-										locationA.setLatitude(Double.parseDouble(fnLati));
-										locationA.setLongitude(Double.parseDouble(fnLongi));
+									Location locationA = new Location("point A");
+									locationA.setLatitude(Double.parseDouble(fnLati));
+									locationA.setLongitude(Double.parseDouble(fnLongi));
 
-										Location locationB = new Location("point B");
-										locationB.setLatitude(Double.parseDouble(PrevLatitude));
-										locationB.setLongitude(Double.parseDouble(PrevLongitude));
+									Location locationB = new Location("point B");
+									locationB.setLatitude(Double.parseDouble(PrevLatitude));
+									locationB.setLongitude(Double.parseDouble(PrevLongitude));
 
-										float distance = locationA.distanceTo(locationB) ;
-										DistanceBWPoint=(int)distance;
+									float distance = locationA.distanceTo(locationB) ;
+									DistanceBWPoint=(int)distance;
 
-										hmapOutletListForNearUpdated.put(outID, ""+DistanceBWPoint);
-									}
-									catch(Exception e)
-									{
-
-									}
+									hmapOutletListForNearUpdated.put(outID, ""+DistanceBWPoint);
 								}
-								// }
-							}
-						}
+								catch(Exception e)
+								{
 
-						if(hmapOutletListForNearUpdated!=null)
+								}
+							}
+							// }
+						}
+					}
+
+					if(hmapOutletListForNearUpdated!=null)
+					{
+						//dbengine.open();
+						for(Map.Entry<String, String> entry:hmapOutletListForNearUpdated.entrySet())
 						{
-							dbengine.open();
-							for(Map.Entry<String, String> entry:hmapOutletListForNearUpdated.entrySet())
+							String outID=entry.getKey().toString().trim();
+							String DistanceNear = entry.getValue().trim();
+							if(outID.equals("853399-a1445e87daf4-NA"))
 							{
-								String outID=entry.getKey().toString().trim();
-								String DistanceNear = entry.getValue().trim();
+								System.out.println("Shvam Distance = "+DistanceNear);
+							}
+							if(!DistanceNear.equals(""))
+							{
+								//853399-81752acdc662-NA
 								if(outID.equals("853399-a1445e87daf4-NA"))
 								{
 									System.out.println("Shvam Distance = "+DistanceNear);
 								}
-								if(!DistanceNear.equals(""))
-								{
-									//853399-81752acdc662-NA
-									if(outID.equals("853399-a1445e87daf4-NA"))
-									{
-										System.out.println("Shvam Distance = "+DistanceNear);
-									}
-									dbengine.UpdateStoreDistanceNear(outID,Integer.parseInt(DistanceNear));
-								}
+								dbengine.UpdateStoreDistanceNear(outID,Integer.parseInt(DistanceNear));
 							}
-							dbengine.close();
 						}
-						//send to storeListpage page
-						//From, addr,zipcode,city,state,errorMessageFlag,username,totaltarget,todayTarget
-						int flagtoShowStorelistOrAddnewStore=      dbengine.fncheckCountNearByStoreExistsOrNot(CommonInfo.DistanceRange);
+						//dbengine.close();
+					}
+					//send to storeListpage page
+					//From, addr,zipcode,city,state,errorMessageFlag,username,totaltarget,todayTarget
+					int flagtoShowStorelistOrAddnewStore=      dbengine.fncheckCountNearByStoreExistsOrNot(CommonInfo.DistanceRange);
 
 
-						if(flagtoShowStorelistOrAddnewStore==1)
+					if(flagtoShowStorelistOrAddnewStore==1)
+					{
+						//getDataFromDatabaseToHashmap();
+						if(tl2.getChildCount()>0){
+							tl2.removeAllViews();
+							// dynamcDtaContnrScrollview.removeAllViews();
+							//addViewIntoTable();
+							setStoresList();
+						}
+						else
 						{
-							//getDataFromDatabaseToHashmap();
-							if(tl2.getChildCount()>0){
-								tl2.removeAllViews();
-								// dynamcDtaContnrScrollview.removeAllViews();
-								//addViewIntoTable();
-								setStoresList();
-							}
-							else
-							{
-								//addViewIntoTable();
-								setStoresList();
-							}
+							//addViewIntoTable();
+							setStoresList();
+						}
 
                        /* Intent intent =new Intent(LauncherActivity.this,StorelistActivity.class);
                         LauncherActivity.this.startActivity(intent);
                         finish();*/
 
+					}
+					else
+					{
+
+
+
+						if(tl2.getChildCount()>0){
+							tl2.removeAllViews();
+							// dynamcDtaContnrScrollview.removeAllViews();
+							//addViewIntoTable();
+							setStoresList();
 						}
 						else
 						{
-
-
-							if(tl2.getChildCount()>0){
-								tl2.removeAllViews();
-								// dynamcDtaContnrScrollview.removeAllViews();
-								//addViewIntoTable();
-								setStoresList();
-							}
-							else
-							{
-								//addViewIntoTable();
-								setStoresList();
-							}
-
+							//addViewIntoTable();
+							setStoresList();
 						}
-						if(pDialog2STANDBY.isShowing())
-						{
-							pDialog2STANDBY.dismiss();
-						}
+
 					}
-
-
+					if(pDialog2STANDBY.isShowing())
+					{
+						pDialog2STANDBY.dismiss();
+					}
 
 				}
                /* Intent intent =new Intent(LauncherActivity.this,StorelistActivity.class);
@@ -4877,7 +5154,25 @@ public void DayEndWithoutalert()
 
 
 
-
+	public void showAlertSingleWareHouseStockconfirButtonInfo(String msg)
+	{
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(getResources().getString(R.string.AlertDialogHeaderMsg))
+				.setMessage(msg)
+				.setCancelable(false)
+				.setIcon(R.drawable.info_ico)
+				.setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+				{
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i)
+					{
+						dialogInterface.dismiss();
+						Intent intent=new Intent(StoreSelection.this,AllButtonActivity.class);
+						startActivity(intent);
+						finish();
+					}
+				}).create().show();
+	}
 	public String getAddressForDynamic(String latti,String longi){
 
 
@@ -4955,7 +5250,7 @@ public void DayEndWithoutalert()
 			jArray.put(jOnew);
 			jsonObjMain.put("GPSLastLocationDetils", jArray);
 
-			File jsonTxtFolder = new File(Environment.getExternalStorageDirectory(),CommonInfo.AppLatLngJsonFile);
+			File jsonTxtFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.AppLatLngJsonFile);
 			if (!jsonTxtFolder.exists())
 			{
 				jsonTxtFolder.mkdirs();
@@ -4963,7 +5258,7 @@ public void DayEndWithoutalert()
 			}
 			String txtFileNamenew="GPSLastLocation.txt";
 			File file = new File(jsonTxtFolder,txtFileNamenew);
-			String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
+			String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
 
 
 			// If file does not exists, then create it
@@ -5022,12 +5317,12 @@ public void DayEndWithoutalert()
 
 	}
 
-	/*public String getAddressOfProviders(String latti, String longi){
+	public String getAddressOfProviders(String latti, String longi){
 
 		StringBuilder FULLADDRESS2 =new StringBuilder();
 		Geocoder geocoder;
 		List<Address> addresses;
-		geocoder = new Geocoder(this, Locale.getDefault());
+		geocoder = new Geocoder(this, Locale.ENGLISH);
 
 
 
@@ -5053,7 +5348,7 @@ public void DayEndWithoutalert()
 						}
 					}
 				}
-		      *//* //String address = addresses.get(0).getAddressLine(0);
+		      /* //String address = addresses.get(0).getAddressLine(0);
 		       String address = addresses.get(0).getAddressLine(1); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
 		       String city = addresses.get(0).getLocality();
 		       String state = addresses.get(0).getAdminArea();
@@ -5061,42 +5356,8 @@ public void DayEndWithoutalert()
 		       String postalCode = addresses.get(0).getPostalCode();
 		       String knownName = addresses.get(0).getFeatureName();
 		       FULLADDRESS=address+","+city+","+state+","+country+","+postalCode;
-		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*//*
+		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*/
 
-			}
-
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-
-
-		return FULLADDRESS2.toString();
-
-	}*/
-
-	public String getAddressOfProviders(String latti, String longi){
-
-		StringBuilder FULLADDRESS2 =new StringBuilder();
-		Geocoder geocoder;
-		List<Address> addresses;
-		geocoder = new Geocoder(StoreSelection.this, Locale.ENGLISH);
-
-
-
-		try {
-			addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
-
-			if (addresses == null || addresses.size()  == 0 || addresses.get(0).getAddressLine(0)==null)
-			{
-				FULLADDRESS2=  FULLADDRESS2.append("NA");
-			}
-			else
-			{
-				FULLADDRESS2 =FULLADDRESS2.append(addresses.get(0).getAddressLine(0));
 			}
 
 		} catch (NumberFormatException e) {
@@ -5208,6 +5469,31 @@ public void DayEndWithoutalert()
 
 	}
 
+	public static String[] checkNumberOfFiles(File dir)
+	{
+		int NoOfFiles=0;
+		String [] Totalfiles = null;
+
+		if (dir.isDirectory())
+		{
+			String[] children = dir.list();
+			NoOfFiles=children.length;
+			Totalfiles=new String[children.length];
+
+			for (int i=0; i<children.length; i++)
+			{
+				Totalfiles[i]=children[i];
+			}
+		}
+		return Totalfiles;
+	}
+	public String convertExponential(double firstNumber){
+		String secondNumberAsString = String.format("%.10f",firstNumber);
+		return secondNumberAsString;
+	}
+
+
+
 	private class ImageSync extends AsyncTask<Void,Void,Boolean>
 	{
 		// ProgressDialog pDialogGetStores;
@@ -5232,53 +5518,77 @@ public void DayEndWithoutalert()
 
 			try
 			{
-				ArrayList<String> listTableToUploadImg=new ArrayList<String>();
-				listTableToUploadImg.add("tableImage");
-				listTableToUploadImg.add("tblStoreProductPhotoDetail");
-				listTableToUploadImg.add("tblStoreClosedPhotoDetail");
-				int imgUpldedSccsfly=0;
 				//dbEngine.upDateCancelTask("0");
-				for(int index=0;index<listTableToUploadImg.size();index++)
+				ArrayList<String> listImageDetails=new ArrayList<String>();
+
+				listImageDetails=dbengine.getImageDetails(5);
+
+				if(listImageDetails!=null && listImageDetails.size()>0)
 				{
-					ArrayList<String> listImageDetails=new ArrayList<String>();
-
-						listImageDetails=dbengine.getImageDetails(5,listTableToUploadImg.get(index));
-					imgUpldedSccsfly=0;
-
-
-					if(listImageDetails!=null && listImageDetails.size()>0)
+					for(String imageDetail:listImageDetails)
 					{
-						for(String imageDetail:listImageDetails)
+						String tempIdImage=imageDetail.split(Pattern.quote("^"))[0].toString();
+						String imagePath=imageDetail.split(Pattern.quote("^"))[1].toString();
+						String imageName=imageDetail.split(Pattern.quote("^"))[2].toString();
+						String file_dj_path = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.ImagesFolder+"/"+imageName;
+						File fImage = new File(file_dj_path);
+						if (fImage.exists())
 						{
-							imgUpldedSccsfly=0;
-							String tempIdImage=imageDetail.split(Pattern.quote("^"))[0].toString();
-							String imagePath=imageDetail.split(Pattern.quote("^"))[1].toString();
-							String imageName=imageDetail.split(Pattern.quote("^"))[2].toString();
-							String file_dj_path = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.ImagesFolder+"/"+imageName;
-							File fImage = new File(file_dj_path);
-							if (fImage.exists())
-							{
-								imgUpldedSccsfly=uploadImage(imagePath, imageName, tempIdImage,listTableToUploadImg.get(index));
-							}
-
-							if(imgUpldedSccsfly==-1)
-							{
-								break;
-							}
-
-
+							uploadImage(imagePath, imageName, tempIdImage);
 						}
 
 
-					}
-					if(imgUpldedSccsfly==-1)
-					{
-						isErrorExist=true;
-						break;
+
 					}
 				}
 
 
+				ArrayList<String> listImageStoreCheckIn=new ArrayList<String>();
+
+				listImageStoreCheckIn=dbengine.getStoreCheckInImages(5);
+
+				if(listImageStoreCheckIn!=null && listImageStoreCheckIn.size()>0)
+				{
+					for(String imageDetail:listImageStoreCheckIn)
+					{
+						String tempIdImage=imageDetail.split(Pattern.quote("^"))[0].toString();
+						String imagePath=imageDetail.split(Pattern.quote("^"))[1].toString();
+						String imageName=imageDetail.split(Pattern.quote("^"))[2].toString();
+						String file_dj_path = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.ImagesFolder+"/"+imageName;
+						File fImage = new File(file_dj_path);
+						if (fImage.exists())
+						{
+							uploadImage(imagePath, imageName, tempIdImage);
+						}
+
+
+
+					}
+				}
+
+
+				ArrayList<String> listImageStoreClosed=new ArrayList<String>();
+
+				listImageStoreClosed=dbengine.getStoreClosedImages(5);
+
+				if(listImageStoreClosed!=null && listImageStoreClosed.size()>0)
+				{
+					for(String imageDetail:listImageStoreClosed)
+					{
+						String tempIdImage=imageDetail.split(Pattern.quote("^"))[0].toString();
+						String imagePath=imageDetail.split(Pattern.quote("^"))[1].toString();
+						String imageName=imageDetail.split(Pattern.quote("^"))[2].toString();
+						String file_dj_path = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.ImagesFolder+"/"+imageName;
+						File fImage = new File(file_dj_path);
+						if (fImage.exists())
+						{
+							uploadImage(imagePath, imageName, tempIdImage);
+						}
+
+
+
+					}
+				}
 
 			}
 			catch (Exception e)
@@ -5302,19 +5612,12 @@ public void DayEndWithoutalert()
 
 			dismissProgress();
 
-			if(resultError)
-			{
-				showAlertSingleButtonError(getString(R.string.ErrorUploadingData));
-			}
-			else
-			{
-				if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
-				{
-					new FullSyncDataNow(StoreSelection.this).execute();
-				}
-			}
 
-
+			dbengine.fndeleteSbumittedStoreImagesOfSotre(4);
+			if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+			{
+				new FullSyncDataNow(StoreSelection.this).execute();
+			}
 
 
 
@@ -5323,9 +5626,8 @@ public void DayEndWithoutalert()
 		}
 	}
 
-	public int uploadImage(String sourceFileUri,String fileName,String tempIdImage,String tblImageName) throws IOException
+	public void uploadImage(String sourceFileUri,String fileName,String tempIdImage) throws IOException
 	{
-		int completed=0;
 		BitmapFactory.Options IMGoptions01 = new BitmapFactory.Options();
 		IMGoptions01.inDither=false;
 		IMGoptions01.inPurgeable=true;
@@ -5359,23 +5661,10 @@ public void DayEndWithoutalert()
 		//buffer.clear();
 		//buffer = null;
 		bitmap.recycle();
-		dbengine.open();
-		String routeID=dbengine.GetActiveRouteID();
-		dbengine.close();
-		long syncTIMESTAMP = System.currentTimeMillis();
-		Date datefromat = new Date(syncTIMESTAMP);
-		SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS",Locale.ENGLISH);
-		String onlyDate=df.format(datefromat);
-		nameValuePairs.add(new BasicNameValuePair("image", image_str));
-		nameValuePairs.add(new BasicNameValuePair("FileName",fileName));
-		nameValuePairs.add(new BasicNameValuePair("comment","NA"));
-		nameValuePairs.add(new BasicNameValuePair("storeID",tempIdImage));
-		nameValuePairs.add(new BasicNameValuePair("date",onlyDate));
-		nameValuePairs.add(new BasicNameValuePair("routeID",routeID));
-
-		/*nameValuePairs.add(new BasicNameValuePair("image",image_str));
+		nameValuePairs.add(new BasicNameValuePair("image",image_str));
 		nameValuePairs.add(new BasicNameValuePair("FileName", fileName));
-		nameValuePairs.add(new BasicNameValuePair("TempID", tempIdImage));*/
+		nameValuePairs.add(new BasicNameValuePair("storeID", tempIdImage));
+
 		try
 		{
 
@@ -5398,10 +5687,11 @@ public void DayEndWithoutalert()
 			String the_string_response = convertResponseToString(response);
 			if(the_string_response.equals("Abhinav"))
 			{
-				completed=1;
-				dbengine.updateSSttImage(fileName, 4,tblImageName);
-				dbengine.fndeleteSbumittedStoreImagesOfSotre(4,tblImageName);
-				System.out.println("Image Uploaded Done = "+tblImageName);
+				dbengine.updateSSttImage(fileName, 4);
+				dbengine.fndeleteSbumittedStoreImagesOfSotre(4);
+				dbengine.updateSSttStoreCheckImageImage(fileName, 4);
+				dbengine.fndeleteSbumittedStoreImagesOfSotre(4);
+
 				String file_dj_path = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.ImagesFolder+"/"+fileName;
 				File fdelete = new File(file_dj_path);
 				if (fdelete.exists()) {
@@ -5417,12 +5707,11 @@ public void DayEndWithoutalert()
 
 		}catch(Exception e)
 		{
-			completed=-1;
-			System.out.println("Image Uploaded Error = "+e.toString());
+
+			System.out.println(e);
 			//	IMGsyOK = 1;
 
 		}
-		return completed;
 	}
 	public String BitMapToString(Bitmap bitmap)
 	{
@@ -5505,6 +5794,7 @@ public void DayEndWithoutalert()
 					Uri.parse("file://" + Environment.getExternalStorageDirectory())));
 		}
 	}
+
 
 	private class FullSyncDataNow extends AsyncTask<Void, Void, Void>
 	{
@@ -5623,19 +5913,11 @@ public void DayEndWithoutalert()
 			if(responseCode == 200)
 			{
 
-				showSyncSuccess(getString(R.string.genTermInformation),getString(R.string.DataSucc));
 				dbengine.deleteXmlTable("4");
-				dbengine.open();
-				dbengine.updateRecordsSyncd(4);		// update syncd' records
-				dbengine.close();
-				//dbengine.UpdateStoreVisitWiseTablesAfterSync(4);
+				dbengine.UpdateStoreVisitWiseTablesAfterSync(4);
 
 
 
-			}
-			else
-			{
-				showAlertSingleButtonError(getString(R.string.ErrorUploadingData));
 			}
 
 
@@ -5812,50 +6094,5 @@ public void DayEndWithoutalert()
 		File file1 = new File(delPath.toString().replace(".xml", ".zip"));
 		file1.delete();
 	}
-	public static String[] checkNumberOfFiles(File dir)
-	{
-		int NoOfFiles=0;
-		String [] Totalfiles = null;
 
-		if (dir.isDirectory())
-		{
-			String[] children = dir.list();
-			NoOfFiles=children.length;
-			Totalfiles=new String[children.length];
-
-			for (int i=0; i<children.length; i++)
-			{
-				Totalfiles[i]=children[i];
-			}
-		}
-		return Totalfiles;
-	}
-
-	public void showSyncSuccess(String title,String msg)
-	{
-		AlertDialog.Builder alertDialogSyncOK = new AlertDialog.Builder(StoreSelection.this);
-		alertDialogSyncOK.setTitle(title);
-		alertDialogSyncOK.setCancelable(false);
-		/*alertDialogSyncOK
-				.setMessage("Sync was successful!");*/
-		alertDialogSyncOK.setMessage(msg);
-
-		alertDialogSyncOK.setNeutralButton(getText(R.string.AlertDialogOkButton),new DialogInterface.OnClickListener()
-		{
-			public void onClick(DialogInterface dialog, int which)
-			{
-
-
-
-				dialog.dismiss();
-
-
-			}
-		});
-		alertDialogSyncOK.setIcon(R.drawable.info_ico);
-
-		AlertDialog alert = alertDialogSyncOK.create();
-		alert.show();
-		// alertDialogLowbatt.show();
-	}
 }

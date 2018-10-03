@@ -24,7 +24,7 @@
         android:id="@+id/txt_store_sku"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="7"
+        android:layout_weight="8"
         android:text="Store"
      
         android:gravity="left"
@@ -62,13 +62,15 @@
              <View 
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="#000000"/>
+        android:background="#000000"
+                />
        <TextView 
              android:id="@+id/txt_store_sku_gross_val"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Gross"
+           android:visibility="gone"
         android:gravity="right|center_vertical"
          android:textSize="10sp"
           android:paddingTop="1dp"

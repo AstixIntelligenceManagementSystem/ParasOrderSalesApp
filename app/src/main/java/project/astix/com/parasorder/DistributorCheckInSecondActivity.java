@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.SpannableString;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
@@ -61,7 +60,7 @@ import java.util.zip.ZipOutputStream;
 public class DistributorCheckInSecondActivity extends BaseActivity
 {
     SharedPreferences sharedPref;
-    String flgInventory="1";
+
     Dialog dialog;
     public int StockPcsCaseType=0;
     RadioButton 	RB_inpieces;
@@ -80,8 +79,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity
     LinearLayout llayout_dialog_parentOfRows;
     TextView oldStck_BtnGlobal;
 
-    DBAdapterKenya dbengine = new DBAdapterKenya(DistributorCheckInSecondActivity.this);
-    LinkedHashMap<String,String> hmapPrdId_PhysicalStock;
+    PRJDatabase dbengine = new PRJDatabase(this);
     public int chkFlgForErrorToCloseApp = 0;
     String imei, fDate;
     int CstomrNodeType=0;
@@ -258,10 +256,6 @@ public class DistributorCheckInSecondActivity extends BaseActivity
             //ArrayAdapter<String> adapter = new ArrayAdapter<String>(DistributorEntryActivity.this,android.R.layout.simple_spinner_item,DbrArray);
             //adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
 
-
-
-
-
             btn_search.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -327,13 +321,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
                                 try
                                 {
-                                    if(validateStock())
-                                    {
-                                        saveDistributorStockInTable();
-                                        FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInSecondActivity.this);
-                                        task.execute();
-                                    }
-
+                                    saveDistributorStockInTable();
+                                    FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInSecondActivity.this);
+                                    task.execute();
                                 }
                                 catch(Exception e)
                                 {
@@ -358,16 +348,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                     }
                     else
                     {
-                        if(validateStock())
-                        {
-                            saveDistributorStockInTable();
-                            FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInSecondActivity.this);
-                            task.execute();
-                        }
-                        else {
-                            showAlertSingleButtonError("Please Fill stock, before submitting data.");
-                        }
-
+                        saveDistributorStockInTable();
+                        FullSyncDataNow task = new FullSyncDataNow(DistributorCheckInSecondActivity.this);
+                        task.execute();
                         //showNoConnAlertforLocalDataSaved();
                     }
                 }
@@ -388,8 +371,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                     {
                         ll_forSearchBox.setVisibility(View.GONE);
                         ll_forTableHeaderName.setVisibility(View.INVISIBLE);
-
-                     //   saveDistributorStockInTable();
+                        saveDistributorStockInTable();
                         lLayout_main.removeAllViews();
                         btn_save.setVisibility(View.INVISIBLE);
                         txt_stockDate.setVisibility(View.INVISIBLE);
@@ -406,9 +388,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                         btn_save.setVisibility(View.VISIBLE);
                         ll_forSearchBox.setVisibility(View.GONE);
                         ll_forTableHeaderName.setVisibility(View.INVISIBLE);
-                      //  saveDistributorStockInTable();
+                        saveDistributorStockInTable();
                         lLayout_main.removeAllViews();
-                        String   Distribtor_Detail=dbengine.fetchDistributorIdByName(text);
+                        String   Distribtor_Detail=dbengine.fetchSuplierIdByName(text);
 
                         int StrDistribtrId_Global=Integer.parseInt(Distribtor_Detail.split(Pattern.quote("^"))[0]);
                         int StrDistributorNodeType_Global=Integer.parseInt(Distribtor_Detail.split(Pattern.quote("^"))[1]);
@@ -435,11 +417,11 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                         {
 
                             //saveDistributorStockInTable();
-                            dbengine.open();
+                            //dbengine.open();
                             HmapDistribtrReport = dbengine.fetchtblDistribtrReport(DistribtrId_Global,DistributorNodeType_Global);
 
                             DistribtrReportColumnDesc = dbengine.fetchtblDistribtrReportColumnDesc(DistribtrId_Global,DistributorNodeType_Global);
-                            dbengine.close();
+                            //dbengine.close();
                             fnForStaticDates();
                             fnGetSavedDataFromPDA();
                             ll_forSearchBox.setVisibility(View.GONE);
@@ -489,10 +471,10 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     void getDistribtrList()
     {
-        dbengine.open();
+        //dbengine.open();
 
-        Distribtr_list_alert=dbengine.getDistributorDataMstr();
-        dbengine.close();
+        Distribtr_list_alert=dbengine.getSuplierDataMstr();
+        //dbengine.close();
         for(int i=0;i<Distribtr_list_alert.length;i++)
         {
             String value=Distribtr_list_alert[i];
@@ -544,15 +526,20 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                         fnSaveOldStockData(DistID,DistNodeType);
                     }
                     boolCheckToDelete++;
-                    dbengine.open();
+                    //dbengine.open();
 
                     dbengine.savetblDistributorSavedData(header,Short_name,pID,Date, Et_value,DistID,DistNodeType,ProductNodeType,StockDate,Sstat,EntryType,StockPcsCaseType);
+                    //System.out.println("SAVED DATA :"+header+" "+Short_name+" "+pID+" "+Date+" "+Et_value+" "+DistribtrId_Global+" "+Sstat);
 
-                    dbengine.close();
+                    //dbengine.close();
                 }
             }
 
 
+            //DistribtrId_Global=StrDistribtrId_Global;
+            //DistributorNodeType_Global=StrDistributorNodeType_Global;
+            // GetDistributorStockEntryData getData= new GetDistributorStockEntryData();
+            //getData.execute();
 
 
         }
@@ -660,19 +647,17 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     public void fnToAddRows()
     {
-
-        hmapPrdId_PhysicalStock= dbengine.getPrdId_PhysicalStock(DistribtrId_Global,DistributorNodeType_Global);
         LinkedHashMap<String, String> HmapForDatesssss= dbengine.fetchtblDistribtrMnthDates(DistribtrId_Global,DistributorNodeType_Global);
         int count_for_etText_Visibility;
         HmapSavedData.clear();
         HmapDistribtrOldStockData.clear();
         HmapDistribtrOldStockData.putAll(HmapGetPDAOldStockData);
 
-        dbengine.open();
+        //dbengine.open();
         PName = dbengine.getDistinctProdctName(DistribtrId_Global,DistributorNodeType_Global);
         ListMnthNames = dbengine.fetchtblDistribtrReportColumnDesc(DistribtrId_Global,DistributorNodeType_Global);
         count_for_etText_Visibility = ListMnthNames.size();
-        dbengine.close();
+        //dbengine.close();
 
         for (int n = 0; n < ListMnthNames.size(); n++)
         {
@@ -699,9 +684,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
             // ListPrdctNames.add(PName[i]);
 
 
-            dbengine.open();
+            //dbengine.open();
             String[] PIDAndShortName = dbengine.getPrdctIdAndSku(PName[i],DistribtrId_Global,DistributorNodeType_Global);
-            dbengine.close();
+            //dbengine.close();
 
             //ll_forRow.removeAllViews();
             for (int j = 0; j < PIDAndShortName.length; j++)
@@ -723,7 +708,6 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                 final EditText edittxt_mnth1 = (EditText) view1.findViewById(R.id.edittxt_mnth1);
                 final EditText edittxt_freeStck = (EditText) view1.findViewById(R.id.edittxt_freeStck);
                 final EditText edittxt_sampleStck = (EditText) view1.findViewById(R.id.edittxt_sampleStck);
-
                 final TextView txt_forBtn_OldStck=(TextView) view1.findViewById(R.id.txt_forBtn_OldStck);
 
 
@@ -743,11 +727,6 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 				edittxt_freeStck.setText("");
 				edittxt_sampleStck.setText("");*/
 
-                if(hmapPrdId_PhysicalStock!=null && hmapPrdId_PhysicalStock.containsKey(PrdctId))
-                {
-                    edittxt_sampleStck.setText(hmapPrdId_PhysicalStock.get(PrdctId));
-                    HmapSavedData.put(edittxt_sampleStck.getTag().toString().trim()+ "^" + prdct_header + "^" + SkuShortName+ "^3",hmapPrdId_PhysicalStock.get(PrdctId));
-                }
                 if (!HmapGetPDAdata.isEmpty() && HmapGetPDAdata != null)
                 {
                     if (HmapGetPDAdata.containsKey(PrdctId + "_"+ ArrayListMnth.get(0)+ "_"+DistribtrId_Global+ "_"+DistributorNodeType_Global+"_1"))
@@ -975,8 +954,6 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                     }
                 });
 
-
-
                 if (count_for_etText_Visibility == 0) {
                     edittxt_mnth1.setVisibility(View.GONE);
                     edittxt_mnth2.setVisibility(View.GONE);
@@ -1011,7 +988,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     public void fnGetSavedDataFromPDA()
     {
-
+        //HmapGetPDAdata.clear();
         HmapGetPDAOldStockData= dbengine.fetchtblDistribtrOldStockData(DistribtrId_Global,DistributorNodeType_Global);
 
         HmapGetPDAdata = dbengine.fetchtblDistribtrSavedData(DistribtrId_Global,DistributorNodeType_Global);
@@ -1063,7 +1040,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     public void fnSaveOldStockData(int DistID,int DistNodeType)
     {
-        dbengine.open();
+        //dbengine.open();
         //HmapDistribtrOldStockData = dbengine.fetchtblDistribtrOldStockData();
         for (Map.Entry<String, String> entry : HmapDistribtrOldStockData.entrySet())
         {
@@ -1072,7 +1049,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
             dbengine.savetblDistributorOldStockData(DistID,DistNodeType,key,value);
         }
-        dbengine.close();
+        //dbengine.close();
     }
     public void putDataToHashmapOfpopup(String tagOfButton ,LinkedHashMap<String, String> hmapforddd) {
         final String FlvShortName=tagOfButton.split(Pattern.quote("_"))[0];
@@ -1104,9 +1081,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     public void fnGetDistributorList()
     {
-        dbengine.open();
-        Distribtr_list=dbengine.getDistributorData();
-        dbengine.close();
+        //dbengine.open();
+        Distribtr_list=dbengine.getSuplierData();
+        //dbengine.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             //System.out.println("DISTRIBUTOR........"+Distribtr_list[i]);
@@ -1359,7 +1336,8 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         dialog.dismiss();
-                        Intent i=new Intent(DistributorCheckInSecondActivity.this,AllButtonActivity.class);
+                        Intent i=new Intent(DistributorCheckInSecondActivity.this,LauncherActivity.class);
+                        i.putExtra("imei", imei);
 
                         startActivity(i);
                         finish();
@@ -1445,12 +1423,12 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                 {
 
                 }
-                dbengine.open();
+                //dbengine.open();
                 HmapDistribtrReport = dbengine.fetchtblDistribtrReport(DistribtrId_Global,DistributorNodeType_Global);
 
                 DistribtrReportColumnDesc = dbengine.fetchtblDistribtrReportColumnDesc(DistribtrId_Global,DistributorNodeType_Global);
                 //System.out.println("SIZE 1:" + DistribtrReportColumnDesc.size());
-                dbengine.close();
+                //dbengine.close();
 
                 fnForStaticDates();
 
@@ -1536,13 +1514,13 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
 
 
-            dbengine.open();
+            //dbengine.open();
             String presentRoute=dbengine.GetActiveRouteIDForDistributor();
-            dbengine.close();
+            //dbengine.close();
 
 
 
-            SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
+            SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
 
             newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
 
@@ -1568,17 +1546,17 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                     DA.open();
                     DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
                     DA.close();
-					 /*dbengine.open();
+					 /*//dbengine.open();
 					 dbengine.savetbl_XMLfiles(newfullFileName, "3","3");
-					 dbengine.close();*/
+					 //dbengine.close();*/
                 }
 
-              /*  dbengine.open();
+              /*  //dbengine.open();
                 dbengine.updateDistributorSstat();
-                dbengine.close();*/
-                dbengine.open();
+                //dbengine.close();*/
+                //dbengine.open();
                 dbengine.updateDistributorCheckInSstat();
-                dbengine.close();
+                //dbengine.close();
 
 
             } catch (Exception e) {
@@ -1663,14 +1641,13 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
             File MeijiIndirectSFAxmlFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorCheckInXMLFolder);
 
-            if (!MeijiIndirectSFAxmlFolder.exists())
-            {
+            if (!MeijiIndirectSFAxmlFolder.exists()) {
                 MeijiIndirectSFAxmlFolder.mkdirs();
             }
 
             pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
 
-            pDialogGetStores.setMessage(getText(R.string.SubmittingDistributorDetails));
+            pDialogGetStores.setMessage("Submitting Distributor Details...");
 
             pDialogGetStores.setIndeterminate(false);
             pDialogGetStores.setCancelable(false);
@@ -1783,9 +1760,8 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                 AlertDialog alert = alertDialogSyncOK.create();
                 alert.show();
 
-            }
-            else
-            {
+            } else
+                {
                     showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
             }
 
@@ -1891,9 +1867,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
             if(serverResponseCode == 200)
             {
-						  /* dbengine.open();
+						  /* //dbengine.open();
 						   dbengine.upDateXMLFileFlag(fileUri, 4);
-						   dbengine.close();*/
+						   //dbengine.close();*/
 
                 //new File(dir, fileUri).delete();
                 syncFLAG=1;
@@ -1907,9 +1883,9 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                 String FileSyncFlag=pref.getString(fileUri, ""+1);
 
                 delXML(xmlForWeb[0].toString());
-						   		/*dbengine.open();
+						   		/*//dbengine.open();
 					            dbengine.deleteXMLFileRow(fileUri);
-					            dbengine.close();*/
+					            //dbengine.close();*/
 
             }
             else
@@ -2001,23 +1977,6 @@ public class DistributorCheckInSecondActivity extends BaseActivity
     }
 
 
-    public boolean validateStock()
-    {
-        boolean isStockFilled=false;
-        if(HmapSavedData!=null && HmapSavedData.size()>0)
-        {
-            for(Map.Entry<String,String> entry:HmapSavedData.entrySet())
-            {
-                if(!TextUtils.isEmpty(entry.getValue().trim()))
-                {
-                    isStockFilled=true;
-                    break;
-                }
-            }
-        }
-
-        return isStockFilled;
-    }
 
 
 

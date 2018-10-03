@@ -30,7 +30,7 @@
             android:layout_centerVertical="true"
             android:text="@string/AddNewStoreHeader"
 
-            android:textColor="#ED3338"
+            android:textColor="#CD005B"
             android:textStyle="bold"
             android:textSize="18sp"/>
         <LinearLayout
@@ -116,6 +116,7 @@
                 android:id="@+id/ll_refresh"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:gravity="center"
                 android:orientation="horizontal">
             <TextView
@@ -164,15 +165,14 @@
                 android:visibility="invisible"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
                 <ImageView
                     android:id="@+id/img_back"
                     android:layout_width="match_parent"
 
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:src="@drawable/previous" />
-
+                    android:src="@drawable/previous"
+                    />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -184,19 +184,17 @@
                 android:id="@+id/ll_save_Exit"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-android:visibility="gone"
+                android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
                 <ImageView
 
-                    android:id="@+id/imageView5"
-
                     android:layout_width="match_parent"
+
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:src="@drawable/save_img" />
-
+                    android:src="@drawable/save_img"
+                    />
                 <TextView
 
                     android:layout_width="match_parent"

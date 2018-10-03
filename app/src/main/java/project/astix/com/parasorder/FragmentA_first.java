@@ -4,18 +4,6 @@
 package project.astix.com.parasorder;
 
 
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Pattern;
-
-
-import com.astix.Common.CommonInfo;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,6 +18,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -41,7 +30,17 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+
+import com.astix.Common.CommonInfo;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -94,7 +93,7 @@ public class FragmentA_first extends Fragment implements DatePickerDialog.OnDate
 		boolean toDateBool=false;
 		 TextView frmDate,todateText;
 		 String uniqueId;
-		 DBAdapterKenya dbengine;
+		 PRJDatabase dbengine;
 		 String StoreNameFromHmap,ContactPersonFromHmap,ContactPersonPhoneFromHmap,ContactPersonEmailFromHmap,SalesQuoteTypeFromHmap,SalesQuoteValidFromFromHmap,SalesQuoteValidToFromHmap,ExpectedBusinessValueFromHmap,PaymentTermsFromHmap,PaymentTermsTypeFromHmap,DateFromHmap,SalesQuotePrcsIdFromHmap,SalesQuotePrcsFromHmap; 
 	public FragmentA_first() 
 	{
@@ -169,7 +168,7 @@ public class FragmentA_first extends Fragment implements DatePickerDialog.OnDate
 		 
 		 Done_btn= (Button) rootView.findViewById(R.id.Done_btn);
 		 cancleBtn= (Button) rootView.findViewById(R.id.cancleBtn);
-		 dbengine=new DBAdapterKenya(getActivity());
+		 dbengine=new PRJDatabase(getActivity());
 		 hmapPrcDetailsFromDataBase=dbengine.getSalesQuotePrcsMstr();
 		 hmapforQuotationtype=dbengine.fnGettblSalesQuoteTypeMstr();
 		
@@ -2357,7 +2356,7 @@ public void whenPaymentStageClickNew()
 	     }
 	     else
 	     {
-	    	 uniqueId=CommonInfo.newQuottionID;
+	    	 uniqueId= CommonInfo.newQuottionID;
 	    	 
 	     }
 	    
@@ -2414,7 +2413,7 @@ public void whenPaymentStageClickNew()
 		}
 	SalesQuoteCode=uniqueId;
 	PAYMENT_STAGEID_Values=	dbengine.fnGetDefaultStoreOrderPAymentDetails(storeIDString);
-	dbengine.open();
+	//dbengine.open();
 	dbengine.deleteSalesQuotePersonMeetMstr(uniqueId);
 	 dbengine.saveSalesQuotePersonMeetMstr(uniqueId, SalesQuoteCode, SalesQuotePrcsId, SalesQuotePrcs, storeNameString, "0",
 			 storeIDString, PaymntTermEditString, PaymntTermSpinnerString, ExpBusValueString, ValFromString, ValToString, 
@@ -2424,7 +2423,7 @@ public void whenPaymentStageClickNew()
 	
 	CommonInfo.SalesQuoteId=uniqueId;
 	QuotationActivity.SalesQuoteId=uniqueId;
-	 dbengine.close();
+	 //dbengine.close();
 	
 	 getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 	 Done_btn.setEnabled(true);

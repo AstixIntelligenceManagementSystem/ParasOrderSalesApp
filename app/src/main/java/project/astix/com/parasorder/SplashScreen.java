@@ -2,6 +2,7 @@ package project.astix.com.parasorder;
 
 
 //import com.newrelic.agent.android.NewRelic;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -14,18 +15,16 @@ import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
-import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.text.Html;
 import android.util.Log;
@@ -36,7 +35,7 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 import com.example.gcm.ApplicationConstants;
 import com.google.android.gms.common.ConnectionResult;
@@ -56,43 +55,163 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
-public class SplashScreen extends BaseActivity
+import project.astix.com.parasorder.model.IMEIVersionDetails;
+import project.astix.com.parasorder.model.IMEIVersionParentModel;
+import project.astix.com.parasorder.model.TblAvailableVersion;
+import project.astix.com.parasorder.model.TblUserAuthentication;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
+public class SplashScreen extends BaseActivity implements  TaskListner,InterfaceRetrofit
 {
-    SyncXMLfileData task2;
+   ArrayList blankTablearrayList=new ArrayList();
+    ApiInterface apiService;
+    public static final String REG_ID = "regId";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    public static SharedPreferences sPrefVanStockChanged;
     public String[] xmlForWeb = new String[1];
-    DatabaseAssistantDistributorEntry DA = new DatabaseAssistantDistributorEntry(this);
     public String newfullFileName;
-    int serverResponseCode = 0;
     public int syncFLAG = 0;
     public ProgressDialog pDialogGetStores;
-    String serverDateForSPref;
-    SharedPreferences sPref,sPrefAttandance;
     public int flgTodaySalesTargetToShow=0;
-
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
-    ServiceWorker newservice = new ServiceWorker();
     public String imei;
-
+    public SimpleDateFormat sdf;
     public String fDate;
     public int chkFlgForErrorToCloseApp=0;
-
-
+    public String RegistrationID="NotGettingFromServer";
+    SyncXMLfileData task2;
+    DatabaseAssistantDistributorEntry DA = new DatabaseAssistantDistributorEntry(this);
+    int serverResponseCode = 0;
+    String serverDateForSPref;
+    SharedPreferences sPref,sPrefAttandance;
+    PRJDatabase dbengine = new PRJDatabase(this);
+    ServiceWorker newservice = new ServiceWorker();
     RequestParams params = new RequestParams();
     GoogleCloudMessaging gcmObj;
     String regId = "";
-
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     AsyncTask<Void, Void, String> createRegIdTask;
-    public static final String REG_ID = "regId";
-    public String RegistrationID="NotGettingFromServer";
+
+    public static void zip(String[] files, String zipFile) throws IOException
+    {
+        BufferedInputStream origin = null;
+        final int BUFFER_SIZE = 2048;
+
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
+        try
+        {
+            byte data[] = new byte[BUFFER_SIZE];
+
+            for (int i = 0; i < files.length; i++)
+            {
+                FileInputStream fi = new FileInputStream(files[i]);
+                origin = new BufferedInputStream(fi, BUFFER_SIZE);
+                try
+                {
+                    ZipEntry entry = new ZipEntry(files[i].substring(files[i].lastIndexOf("/") + 1));
+                    out.putNextEntry(entry);
+                    int count;
+                    while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1)
+                    {
+                        out.write(data, 0, count);
+                    }
+                }
+                finally
+                {
+                    origin.close();
+                }
+            }
+        }
+        finally
+        {
+            out.close();
+        }
+    }
+
+    public static String[] checkNumberOfFiles(File dir)
+    {
+        int NoOfFiles=0;
+        String [] Totalfiles = null;
+
+        if (dir.isDirectory())
+        {
+            String[] children = dir.list();
+            NoOfFiles=children.length;
+            Totalfiles=new String[children.length];
+
+            for (int i=0; i<children.length; i++)
+            {
+                Totalfiles[i]=children[i];
+            }
+        }
+        return Totalfiles;
+    }
+
+    @Override
+    public void onTaskFinish(boolean serviceException,int returnFrom)
+    {
+
+        if(returnFrom==1)  // 1---> means uploading images Based on table and get Response
+        {
+            if(serviceException)
+            {
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                afterversioncheck();
+            }
+        }
+
+        if(returnFrom==2)  // 2---> means uploading images From the Folder and get Response
+        {
+            if(serviceException)
+            {
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+             }
+            else
+            {
+                afterversioncheck();
+            }
+        }
+
+        if(returnFrom==3)  // 3---> means uploading XML Files Async Task Response
+        {
+            if(serviceException)
+            {
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                afterversioncheck();
+            }
+        }
+        if(returnFrom==4) // 4---> means uploading XML From the Folder and get Response
+        {
+            if(serviceException)
+            {
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+               afterversioncheck();
+            }
+        }
+    }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
@@ -117,69 +236,156 @@ public class SplashScreen extends BaseActivity
         return super.onKeyDown(keyCode, event);
     }
 
+    public int checkImagesInFolder()
+    {
+        int totalFiles=0;
+        File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.ImagesFolder);
+
+        String [] AllFilesName= checkNumberOfFiles(del);
+
+        if(AllFilesName!=null && AllFilesName.length>0)
+        {
+            totalFiles=AllFilesName.length;
+        }
+        return totalFiles;
+    }
+
+    public int checkXMLFilesInFolder()
+    {
+        int totalFiles=0;
+        File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.OrderXMLFolder);
+
+        String [] AllFilesName= checkNumberOfFiles(del);
+
+        if(AllFilesName!=null && AllFilesName.length>0)
+        {
+            totalFiles=AllFilesName.length;
+        }
+        return totalFiles;
+    }
+
+    public void getPrevioisDateData()
+    {
+        //dbengine.open();
+        String getPDADate=dbengine.fnGetPdaDate();
+        //dbengine.close();
+        if(!getPDADate.equals(""))
+        {
+            /*Date date2 = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+            String fDate = sdf.format(date2).toString().trim();
+            if(!fDate.equals(getPDADate))
+            {*/
+                if (isOnline())
+                {
+                    try
+                    {
+                        if(dbengine.fnCheckForPendingImages()==1)
+                        {
+                            new ImageUploadAsyncTask(this).execute();
+                        }
+                        else if(checkImagesInFolder()>0)
+                        {
+                            new ImageUploadFromFolderAsyncTask(this).execute();
+                        }
+                        else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+                        {
+                            new XMLFileUploadAsyncTask(this).execute();
+                        }
+                        else if(checkXMLFilesInFolder()>0)
+                        {
+                            new XMLFileUploadFromFolderAsyncTask(this).execute();
+                        }
+                        else
+                        {
+                            //dbengine.open();
+                            dbengine.reCreateDB();
+                            //dbengine.close();
+                            CheckUpdateVersion cuv = new CheckUpdateVersion();
+                            cuv.execute();
+                        }
+
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                {
+
+                }
+
+           // }
+        }
+    }
+
     public void onCreateFunctionalityAllcode()
     {
-        try
-        {
-            TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            imei = tManager.getDeviceId();
-        }
-        catch(SecurityException e)
-        {
+        TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        imei = tManager.getDeviceId();
 
-        }
-       // imei="352602084784013";  // Live User
+      //imei="354010084603910";
 
-        // imei="864449033669429";
-
-        //  imei="864215030472491";  // Hard code imei given to Alok Sir
-
-        //  imei="863661037439754";  // Training imei
-
-       // imei="353202065143237";    // Development Imei
-        //  imei="865404034791887";
-       // imei="354010084603910";  // test release
-      // imei="354010084603910"; // test release
-
-
-      //  imei="359632061313398";
-
-    if(CommonInfo.imei.trim().equals(null) || CommonInfo.imei.trim().equals(""))
-    {
-        CommonInfo.imei=imei;
-    }
-        else
-    {
-        imei=CommonInfo.imei.trim();
-    }
-
-
+      //  imei="356808071065136";
 
         sPref=getSharedPreferences(CommonInfo.Preference, MODE_PRIVATE);
-        sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
-       // Date date1 = new Date();
-       // sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-        fDate = getDateInMonthTextFormat();//sdf.format(date1).toString().trim();
+        //imei = "359670066016988"; //  Varun Sir Testing phone imei
 
-       // int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
-        int CheckCountAllWebServiceSuccesful=dbengine.CheckCounttblAllServicesCalledSuccessfull();
-        // if (checkDataNotSync == 1)
-        if (CheckCountAllWebServiceSuccesful == 1)
-         {
+         // imei="354010084603910";  // New Testing Phoine
+
+        //imei="911383400331938";  // Test User Anil Kumar
+
+
+       // imei="862856033025653";   // Live user
+
+        //imei="359670066016988";
+
+        // imei="865735032952256";
+
+        // imei="863661037439754";
+
+        // imei="354010084603910";
+
+       // imei="911560353114284";
+
+
+        //imei="911560353114284";
+
+       //imei="863408031291603";  // paras imei like Godrej
+
+       // imei="868622032054183";
+       // imei="352801088236109";
+        CommonInfo.imei = imei;
+
+        if(dbengine.isDBOpen()==false)
+        {
             dbengine.open();
+        }
+
+        sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
+        sPrefVanStockChanged = getSharedPreferences(CommonInfo.sPrefVanLoadedUnloaded, 0);
+        Date date1 = new Date();
+        sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        fDate = sdf.format(date1).toString().trim();
+        if (sPrefVanStockChanged.contains("isVanLoadedUnloaded")) {
+            CommonInfo.VanLoadedUnloaded = 1;
+        }
+
+      /*  int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
+
+
+       if (checkDataNotSync == 1)
+        {
+            //dbengine.open();
             String rID = dbengine.GetActiveRouteID();
-            dbengine.close();
+            //dbengine.close();
 
             // Date date=new Date();
-            //sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-            String fDateNew = getDateInMonthTextFormat();//sdf.format(date1).toString();
+            sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+            String fDateNew = sdf.format(date1).toString();
             //fDate = passDate.trim().toString();
-
-
             // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
             // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
-
-
             Intent storeIntent = new Intent(SplashScreen.this, StoreSelection.class);
             storeIntent.putExtra("imei", imei);
             storeIntent.putExtra("userDate", fDate);
@@ -187,40 +393,64 @@ public class SplashScreen extends BaseActivity
             storeIntent.putExtra("rID", rID);
             startActivity(storeIntent);
             finish();
-
-        } else
+        }
+        else
+        {*/
+        if (isOnline())
         {
-            if (isOnline())
+            try
             {
-                try
-                {
-                    CheckUpdateVersion cuv = new CheckUpdateVersion();
-                    cuv.execute();
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
+               /* CheckUpdateVersion cuv = new CheckUpdateVersion();
+                cuv.execute();*/
 
-                }
+                startGettingDataFromServer();
+
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+
+            int flgcheckCheckRetrofitApiCalledSucessfullyOrNot= dbengine.fnCheckRetrofitApiCalledSucessfullyOrNot();
+            if (flgcheckCheckRetrofitApiCalledSucessfullyOrNot == 0)
+            {
+                //dbengine.open();
+                String rID = dbengine.GetActiveRouteID();
+                //dbengine.close();
+
+                // Date date=new Date();
+                Date date3 = new Date();
+                sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+                String fDateNew = sdf.format(date3).toString();
+                //fDate = passDate.trim().toString();
+                // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
+                // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
+                Intent storeIntent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                storeIntent.putExtra("imei", imei);
+                storeIntent.putExtra("userDate", fDate);
+                storeIntent.putExtra("pickerDate", fDateNew);
+                storeIntent.putExtra("rID", rID);
+                startActivity(storeIntent);
+                finish();
             }
             else
             {
                 showNoConnAlert();
             }
+
         }
+    //}
     }
 
-
-
-
     public void onCreateFunctionality()
-
     {
 
         SharedPreferences sharedPreferences=getSharedPreferences("LanguagePref", MODE_PRIVATE);
         SharedPreferences.Editor ed;
-        if(!sharedPreferences.contains("Language")){
 
+        if(!sharedPreferences.contains("Language")){
             final Dialog dialogLanguage = new Dialog(SplashScreen.this);
             dialogLanguage.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialogLanguage.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.WHITE));
@@ -230,7 +460,7 @@ public class SplashScreen extends BaseActivity
 
             TextView textviewEnglish=(TextView) dialogLanguage.findViewById(R.id.textviewEnglish);
             TextView textviewHindi=(TextView) dialogLanguage.findViewById(R.id.textviewHindi);
-            TextView textviewGujarati=(TextView) dialogLanguage.findViewById(R.id.textviewGujarati);
+            TextView textviewGujarati=(TextView) dialogLanguage.findViewById(R.id.textviewGujrati);
             textviewEnglish.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -258,7 +488,8 @@ public class SplashScreen extends BaseActivity
 
 
             dialogLanguage.show();
-          /*  android.app.AlertDialog.Builder dialog=new android.app.AlertDialog.Builder(SplashScreen.this);
+/*
+            android.app.AlertDialog.Builder dialog=new android.app.AlertDialog.Builder(SplashScreen.this);
             dialog.setTitle("Language");
             dialog.setMessage("Please Select Language ");
             dialog.setPositiveButton("Hindi", new DialogInterface.OnClickListener()
@@ -296,18 +527,17 @@ public class SplashScreen extends BaseActivity
             });
 
             android.app.AlertDialog alert=dialog.create();
-            alert.show();*/
+            alert.show();
+*/
 
         }
         else
         {
             loadLocale();
             onCreateFunctionalityAllcode();
-
         }
-
-
     }
+
     public void loadLocale()
     {
         String langPref = "Language";
@@ -315,6 +545,7 @@ public class SplashScreen extends BaseActivity
         String language = prefs.getString("Language", "");
         changeLang(language);
     }
+
     public void changeLang(String lang)
     {
         if (lang.equalsIgnoreCase(""))
@@ -322,16 +553,14 @@ public class SplashScreen extends BaseActivity
         Locale  myLocale = new Locale(lang);
         saveLocale(lang);
         Locale.setDefault(myLocale);
-        android.content.res.Configuration config = new android.content.res.Configuration();
+        Configuration config = new Configuration();
         config.locale = myLocale;
         getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         // updateTexts();
-
     }
+
     public void saveLocale(String lang)
     {
-
-
         SharedPreferences prefs = getSharedPreferences("LanguagePref", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("Language", lang);
@@ -347,23 +576,13 @@ public class SplashScreen extends BaseActivity
         } else {
             config.locale = locale;
         }
-        getResources().updateConfiguration(config,
-                getResources().getDisplayMetrics());
+        getResources().updateConfiguration(config,getResources().getDisplayMetrics());
         saveLocale(language);
-        // updateTexts();
-        //you can refresh or you can settext
-      /*  Intent refresh = new Intent(MainActivity.this, MainActivity.class);
-        startActivity(refresh);
-        finish();*/
 
     }
 
-
-
     public void fnShowAlertBeforeRedirectingToLauncher()
     {
-
-
         AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(SplashScreen.this);
         alertDialogNoConn.setTitle(R.string.genTermNoDataConnection);
         alertDialogNoConn.setMessage(Html.fromHtml(CommonInfo.SalesPersonTodaysTargetMsg));
@@ -372,7 +591,6 @@ public class SplashScreen extends BaseActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         dialog.dismiss();
-
                         int checkNoDataInTable=0;
                         try {
                             checkNoDataInTable=dbengine.counttblDistributorSavedData();
@@ -420,7 +638,7 @@ public class SplashScreen extends BaseActivity
         // Initalization New Relic Tool
        // NewRelic.withApplicationToken("AA650dd750f0d8d87061719815bd7514decb5fb129").start(this.getApplication());
 
-        if (android.os.Build.VERSION.SDK_INT > 9)
+        if (Build.VERSION.SDK_INT > 9)
         {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
@@ -479,149 +697,6 @@ public class SplashScreen extends BaseActivity
 
     }
 
-    private class CheckUpdateVersion extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-            try
-            {
-
-                int DatabaseVersion=dbengine.DATABASE_VERSION;
-                int ApplicationID=dbengine.Application_TypeID;
-                newservice = newservice.getAvailableAndUpdatedVersionOfAppNew(getApplicationContext(), imei,fDate,DatabaseVersion,ApplicationID);
-                if(!newservice.director.toString().trim().equals("1"))
-                {
-                    if(chkFlgForErrorToCloseApp==0)
-                    {
-                        chkFlgForErrorToCloseApp=1;
-                    }
-
-                }
-
-            }
-            catch (Exception e)
-            {}
-
-            finally
-            {}
-
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-            if(chkFlgForErrorToCloseApp==1)   // if Webservice showing exception or not excute complete properly
-            {
-                chkFlgForErrorToCloseApp=0;
-                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
-                finish();
-            }
-            else
-            {
-                dbengine.open();
-                int checkUserAuthenticate=dbengine.FetchflgUserAuthenticated();
-                int flgAppStatus= dbengine.FetchflgAppStatus();
-                int flgValidApplication= dbengine.FetchflgValidApplication();
-                dbengine.close();
-
-                if(checkUserAuthenticate==0)   // 0 means-->New user        1 means-->Exist User
-                {
-                    showAlertForEveryOne(getResources().getString(R.string.phnRegisterError));
-                    return;
-
-                }
-                // this flgValidApplication is used when SO Try to use DSR App or DSR try to use SO App
-               /* else if (flgValidApplication == 0)   // 0 means-->User not valid for this App       1 means-->User valid for this App
-                {
-                    String DisplayMessage=dbengine.FetchMessageForInvalid();
-                    showAlert(DisplayMessage);
-                    return;
-
-                } // this flgAppStatus is used when User try to run this App before data(like 20 jan is using date but try to run it 19 jan)
-                else if (flgAppStatus == 0)   // 0 means-->User can not use this App       1 means-->User can  use this App
-                {
-                    String DisplayMessage=dbengine.FetchDisplayMessage();
-                    showAlert(DisplayMessage);
-                    return;
-
-                }*/
-
-                dbengine.open();
-                int check=dbengine.FetchVersionDownloadStatus();  // 0 means-->new version installed  1 means-->new version not install
-
-                dbengine.close();
-                if(check==1)
-                {
-                    showNewVersionAvailableAlert();
-                }
-                else
-                {
-                    dbengine.open();
-                    int cntRoute=dbengine.counttblCountRoute();
-                    int chkIfPDADaeExistOrNot=dbengine.fnCheckPdaDateExistOrNot();
-                    dbengine.close();
-
-                    dbengine.open();
-
-                    dbengine.maintainPDADate();
-                    String getPDADate=dbengine.fnGetPdaDate();
-                    String getServerDate=dbengine.fnGetServerDate();
-
-                    dbengine.close();
-                    if(!getServerDate.equals(getPDADate))
-                    {
-                        //show message and close
-                        showAlertBox(getResources().getString(R.string.phnDateError));
-                        return;
-                    }
-
-                    dbengine.open();
-                    dbengine.fnFinaldropRoutesTBL();
-                    dbengine.createRouteTBL();
-                    dbengine.close();
-                    try
-                    {
-                        funGetRegistrationID(getResources().getString(R.string.regID));
-
-                        checkPlayServices();
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                }
-
-            }
-
-        }
-    }
-
-    public void showAlert(String abcd)
-    {
-        AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(SplashScreen.this);
-        alertDialogNoConn.setTitle("Info");
-        alertDialogNoConn.setMessage(abcd);
-        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,
-                new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                        finish();
-                    }
-                });
-        alertDialogNoConn.setIcon(R.drawable.error_ico);
-        AlertDialog alert = alertDialogNoConn.create();
-        alert.show();
-
-    }
-
     private void funGetRegistrationID(final String emailID)
     {
         new AsyncTask<Void, Void, String>()
@@ -651,10 +726,12 @@ public class SplashScreen extends BaseActivity
             {
 
                 RegistrationID=msg;
+                CommonInfo.RegistrationID=RegistrationID;
                 // System.out.println("Sunil Reg id msg SplashScreen:"+RegistrationID);
                 try
                 {
-                    new GetRouteInfo().execute();
+                    // new GetRouteInfo().execute();
+                    CommonFunction.getAllMasterTableModelData(SplashScreen.this,imei,RegistrationID,"Please wait loading data.");
 
                 }
                 catch (Exception e)
@@ -702,9 +779,9 @@ public class SplashScreen extends BaseActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.dismiss();
-                dbengine.open();
+                //dbengine.open();
                 dbengine.reTruncateRouteMstrTbl();
-                dbengine.close();
+                //dbengine.close();
                 finish();
 
             }
@@ -713,17 +790,6 @@ public class SplashScreen extends BaseActivity
         AlertDialog alert = alertDialogNoConn.create();
         alert.show();
 
-    }
-
-    public boolean isOnline()
-    {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnected())
-        {
-            return true;
-        }
-        return false;
     }
 
     public void showAlertForEveryOne(String msg)
@@ -759,95 +825,43 @@ public class SplashScreen extends BaseActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         dialog.dismiss();
-                        dbengine.open();
+                        //dbengine.open();
                         int cntRoute=dbengine.counttblCountRoute();
-                        dbengine.close();
+                        //dbengine.close();
                         if(cntRoute==0)
                         {
                             finish();
                         }
                         else
                         {
-                            dbengine.open();
+                            //dbengine.open();
                             serverDateForSPref=	dbengine.fnGetServerDate();
-                            dbengine.close();
+                            //dbengine.close();
 
                             if(sPref.contains("DatePref"))
                             {
 
                                 if(sPref.getString("DatePref", "").equals(serverDateForSPref))
                                 {
-                                    Date date1 = new Date();
-                                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-                                    fDate = sdf.format(date1).trim();
-
-                                    int chkIfStoreExists=dbengine.fntableExists("tblStoreList");
-                                    int checkDataNotSync =0;
-
-                                    if(chkIfStoreExists==1)
-                                    {
-                                        checkDataNotSync=dbengine.CheckUserDoneGetStoreOrNot();
-                                    }
-                                    else
-                                    {
-                                        checkDataNotSync=0;
-                                    }
-
-                                    // checkDataNotSync=0;
-                                    if (checkDataNotSync == 1)
-                                    {
-                                        dbengine.open();
-                                        String rID = dbengine.GetActiveRouteID();
-                                        dbengine.close();
-
-                                        // Date date=new Date();
-                                        sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-                                        String fDateNew = sdf.format(date1).toString();
-                                        //fDate = passDate.trim().toString();
-
-
-                                        // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
-                                        // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
-
-                                        Intent storeIntent = new Intent(SplashScreen.this, StoreSelection.class);
-                                        storeIntent.putExtra("imei", imei);
-                                        storeIntent.putExtra("userDate", fDate);
-                                        storeIntent.putExtra("pickerDate", fDateNew);
-                                        storeIntent.putExtra("rID", rID);
-                                        startActivity(storeIntent);
-                                        finish();
-
-                                    }
-                                    else
-                                    {
-                                        finish();
-                                    }
-                                  /*  Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                                    Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
                                     intent.putExtra("imei", imei);
                                     SplashScreen.this.startActivity(intent);
-                                    finish();*/
-
-                                   /* Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
-                                    intent.putExtra("imei", imei);
-                                    SplashScreen.this.startActivity(intent);
-                                    finish();*/
+                                    finish();
 
                                 }
                                 else
                                 {
-                                    finish();
-                                    /*SharedPreferences.Editor editor=sPref.edit();
+                                    SharedPreferences.Editor editor=sPref.edit();
                                     editor.clear();
                                     editor.commit();
                                     sPref.edit().putString("DatePref", serverDateForSPref).commit();
-                                    fnShowAlertBeforeRedirectingToLauncher();*/
+                                    fnShowAlertBeforeRedirectingToLauncher();
                                 }
                             }
                             else
                             {
-                                finish();;
-                               // sPref.edit().putString("DatePref", serverDateForSPref).commit();
-                               // fnShowAlertBeforeRedirectingToLauncher();
+                                sPref.edit().putString("DatePref", serverDateForSPref).commit();
+                                fnShowAlertBeforeRedirectingToLauncher();
                             }
                         }
 
@@ -882,60 +896,6 @@ public class SplashScreen extends BaseActivity
         alert.show();
 
     }
-    private class GetUpdateInfo extends AsyncTask<Void, Void, Void>
-    {
-
-        ProgressDialog pDialogGetStores;
-        public GetUpdateInfo(SplashScreen activity)
-        {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-            pDialogGetStores.setMessage(getText(R.string.UpdatingNewVersionMsg));
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-
-            try
-            {
-                downloadapk();
-            }
-            catch(Exception e)
-            {}
-
-            finally
-            {}
-
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-            if(pDialogGetStores.isShowing())
-            {
-                pDialogGetStores.dismiss();
-            }
-
-            installApk();
-        }
-    }
 
     private void downloadapk()
     {
@@ -945,7 +905,7 @@ public class SplashScreen extends BaseActivity
             //ParagIndirectTest
             // URL url = new URL("http://115.124.126.184/downloads/ParagIndirect.apk");
             //  URL url = new URL("http://115.124.126.184/downloads/ParagIndirectTest.apk");
-            URL url = new URL(CommonInfo.VersionDownloadPath.trim()+CommonInfo.VersionDownloadAPKName);
+            URL url = new URL(CommonInfo.VersionDownloadPath.trim()+ CommonInfo.VersionDownloadAPKName);
             URLConnection connection = url.openConnection();
             HttpURLConnection urlConnection = (HttpURLConnection) connection;
             //urlConnection.setRequestProperty("Accept-Charset", "UTF-8");
@@ -964,7 +924,7 @@ public class SplashScreen extends BaseActivity
 
             String PATH = Environment.getExternalStorageDirectory() + "/download/";
             // File file2 = new File(PATH+"ParagIndirect.apk");
-            File file2 = new File(PATH+CommonInfo.VersionDownloadAPKName);
+            File file2 = new File(PATH+ CommonInfo.VersionDownloadAPKName);
             if(file2.exists())
             {
                 file2.delete();
@@ -1007,7 +967,7 @@ public class SplashScreen extends BaseActivity
 
    /* private void installApk()
     {
-        this.deleteDatabase(DBAdapterKenya.DATABASE_NAME);
+        this.deleteDatabase(PRJDatabase.DATABASE_NAME);
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri uri = Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/download/" + CommonInfo.VersionDownloadAPKName));
         intent.setDataAndType(uri, "application/vnd.android.package-archive");
@@ -1019,13 +979,14 @@ public class SplashScreen extends BaseActivity
 */
    private void installApk()
    {
-       this.deleteDatabase(DBAdapterKenya.DATABASE_NAME);
+       this.deleteDatabase(PRJDatabase.DATABASE_NAME);
+
        File file = new File(Environment.getExternalStorageDirectory() + "/download/" + CommonInfo.VersionDownloadAPKName);
        Intent intent = new Intent(Intent.ACTION_VIEW);
        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
            Uri contentUri = FileProvider.getUriForFile(getBaseContext(), getApplicationContext().getPackageName() + ".provider", file);
-           //  Uri contentUri = FileProvider.getUriForFile(getApplicationContext(),"project.astix.com.rsplsfaindirect.fileprovider" , );
+           //  Uri contentUri = FileProvider.getUriForFile(getApplicationContext(),"project.astix.com.godrejsfaindirect.fileprovider" , );
            // Uri uri = Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/download/" + CommonInfo.VersionDownloadAPKName));
 
            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
@@ -1040,284 +1001,6 @@ public class SplashScreen extends BaseActivity
 
    }
 
-
-    private class GetRouteInfo extends AsyncTask<Void, Void, Void>
-    {
-        ServiceWorker getRouteservice = new ServiceWorker();
-
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-
-            try
-            {
-                for(int mm = 1; mm<9; mm++)
-                {
-                    if(mm==1)
-                    {
-                        getRouteservice = getRouteservice.getAvailbRoutes(getApplicationContext(), imei,fDate,RegistrationID,flgTodaySalesTargetToShow);
-
-                        if(!getRouteservice.director.toString().trim().equals("1")){
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                Toast.makeText(getApplicationContext(),getResources().getString(R.string.routeNoAvail),Toast.LENGTH_SHORT).show();
-                                break;
-                            }
-
-                        }
-                    }
-                    if(mm==2)
-                    {
-                        getRouteservice = getRouteservice.getAvailbNotification(getApplicationContext(),imei,fDate);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }
-                    }
-                    if(mm==3)
-                    {
-                        int DatabaseVersion=CommonInfo.DATABASE_VERSIONID;
-                        int ApplicationID=CommonInfo.Application_TypeID;
-                        newservice = newservice.callfnSingleCallAllWebService(getApplicationContext(),ApplicationID,imei);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }
-                    }
-                    if(mm==4)
-                    {
-                        getRouteservice = getRouteservice.getCallspToGetReasonMasterForNoVisit(getApplicationContext(), fDate, imei);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }
-                    }
-
-                    if(mm==5)
-                    {
-
-                        int check =dbengine.countDataIntblNoVisitStoreDetails();
-                        if(check==0)
-                        {
-                            getRouteservice = getRouteservice.getCallspToCheckForVisit(getApplicationContext(), fDate, imei);
-                            if(!newservice.director.toString().trim().equals("1"))
-                            {
-                                if(chkFlgForErrorToCloseApp==0)
-                                {
-                                    chkFlgForErrorToCloseApp=1;
-                                    break;
-                                }
-
-                            }
-                        }
-                        else
-                        {
-
-                        }
-
-
-                    }
-                    if(mm==6)
-                    {
-                        getRouteservice = getRouteservice.fnGetIncentiveData(getApplicationContext(), fDate, imei);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }
-                    }
-                    if(mm==7)
-                    {
-                        newservice = newservice.getDistributorMstr(getApplicationContext(), imei, fDate);
-                        if (!newservice.director.toString().trim().equals("1")) {
-                            if (chkFlgForErrorToCloseApp == 0) {
-                                chkFlgForErrorToCloseApp = 1;
-                                break;
-                            }
-                        }
-                    }
-                    if(mm==8)
-                    {
-
-                        newservice = newservice.fnGetStateCityListMstr(SplashScreen.this,imei, fDate,CommonInfo.Application_TypeID);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }
-                    }
-
-                }
-
-
-            }
-            catch (Exception e)
-            {
-
-            }
-            finally
-            {
-
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-            if(chkFlgForErrorToCloseApp==1)
-            {
-                chkFlgForErrorToCloseApp=0;
-                Toast.makeText(getApplicationContext(),getResources().getString(R.string.errorFetchData),Toast.LENGTH_LONG).show();
-                finish();
-            }
-
-            else
-            {
-
-
-
-                Handler handler = new Handler();
-
-                // run a thread after 2 seconds to start the home screen
-                handler.postDelayed(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        dbengine.open();
-                        serverDateForSPref=	dbengine.fnGetServerDate();
-                        dbengine.close();
-
-                        if(sPref.contains("DatePref"))
-                        {
-
-                            if(sPref.getString("DatePref", "").equals(serverDateForSPref))
-                            {
-                                if(!sPrefAttandance.contains("AttandancePref"))
-                                {
-                                    callDayStartActivity();
-                                }
-                                else
-                                {
-                                    Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
-                                    intent.putExtra("imei", imei);
-                                    SplashScreen.this.startActivity(intent);
-                                    finish();
-                                }
-
-
-                            }
-                            else
-                            {
-                                SharedPreferences.Editor editor=sPref.edit();
-                                editor.clear();
-                                editor.commit();
-                                sPref.edit().putString("DatePref", serverDateForSPref).commit();
-                                SharedPreferences.Editor editor1=sPrefAttandance.edit();
-                                editor1.clear();
-                                editor1.commit();
-
-                                if(!sPrefAttandance.contains("AttandancePref"))
-                                {
-                                    callDayStartActivity();
-                                }
-                                else
-                                {
-                                    Intent i = new Intent(SplashScreen.this, DSR_Registration.class);
-                                    i.putExtra("IntentFrom", "SPLASH");
-                                    startActivity(i);
-                                    finish();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            sPref.edit().putString("DatePref", serverDateForSPref).commit();
-                            if(!sPrefAttandance.contains("AttandancePref"))
-                            {
-                                callDayStartActivity();
-                            }
-                            else
-                            {
-                                Intent i = new Intent(SplashScreen.this, DSR_Registration.class);
-                                i.putExtra("IntentFrom", "SPLASH");
-                                startActivity(i);
-                                finish();
-                            }
-                        }
-
-                    }
-
-                }, 1000); // time in milliseconds (1 second = 1000 milliseconds) until the run() method will be called
-
-            }
-        }
-    }
-    public void callDayStartActivity()
-    {
-        dbengine.open();
-        int flgPersonTodaysAtt=dbengine.FetchflgPersonTodaysAtt();
-        dbengine.close();
-
-        if(flgPersonTodaysAtt==0)
-        {
-            Intent intent=new Intent(this,DSR_Registration.class);
-            intent.putExtra("IntentFrom", "SPLASH");
-            startActivity(intent);
-            finish();
-        }
-        else
-        {
-            Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
-            intent.putExtra("imei", imei);
-            SplashScreen.this.startActivity(intent);
-            finish();
-        }
-
-
-
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
@@ -1333,269 +1016,6 @@ public class SplashScreen extends BaseActivity
         }
     }
 
-
-    private class FullSyncDataNow extends AsyncTask<Void, Void, Void>
-    {
-
-
-        ProgressDialog pDialogGetStores;
-        public FullSyncDataNow(SplashScreen activity)
-        {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-            pDialogGetStores.setMessage(getResources().getString(R.string.genTermLoadData));
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-
-
-        }
-
-        @Override
-
-        protected Void doInBackground(Void... params)
-        {
-
-            int Outstat=3;
-
-            long  syncTIMESTAMP = System.currentTimeMillis();
-            Date dateobj = new Date(syncTIMESTAMP);
-          //  SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
-         //   String StampEndsTime = df.format(dateobj);
-
-
-
-            dbengine.open();
-            String presentRoute="0";
-            dbengine.close();
-
-          //  SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
-            newfullFileName=imei+"."+presentRoute+"."+ getDateAndTimeInSecondForMakingXML();//df1.format(dateobj);
-
-            try
-            {
-
-                File MeijiDistributorEntryXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
-                if (!MeijiDistributorEntryXMLFolder.exists())
-                {
-                    MeijiDistributorEntryXMLFolder.mkdirs();
-                }
-
-                int checkNoFiles=dbengine.counttblDistributorSavedData();
-                if(checkNoFiles==1)
-                {
-                    String routeID=dbengine.GetActiveRouteIDSunil();
-                    DA.open();
-                    DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
-                    DA.close();
-
-                }
-
-
-
-                //dbengine.deleteDistributorStockTbles();
-
-
-
-
-            }
-            catch (Exception e)
-            {
-
-                e.printStackTrace();
-                if(pDialogGetStores.isShowing())
-                {
-                    pDialogGetStores.dismiss();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-            if(pDialogGetStores.isShowing())
-            {
-                pDialogGetStores.dismiss();
-            }
-
-            try
-            {
-
-                task2 = new SyncXMLfileData(SplashScreen.this);
-                task2.execute();
-            }
-            catch(Exception e)
-            {
-
-            }
-
-
-        }
-    }
-
-
-
-
-    private class SyncXMLfileData extends AsyncTask<Void, Void, Integer>
-    {
-
-
-
-        public SyncXMLfileData(SplashScreen activity)
-        {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-
-            File MeijiIndirectSFAxmlFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
-
-            if (!MeijiIndirectSFAxmlFolder.exists())
-            {
-                MeijiIndirectSFAxmlFolder.mkdirs();
-            }
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-
-            pDialogGetStores.setMessage(getText(R.string.genTermPleaseWaitNew));
-
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-
-        }
-
-        @Override
-        protected Integer doInBackground(Void... params)
-        {
-
-
-            // This method used for sending xml from Folder without taking records in DB.
-
-            // Sending only one xml at a times
-
-            File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
-
-            // check number of files in folder
-            String [] AllFilesName= checkNumberOfFiles(del);
-
-
-            if(AllFilesName.length>0)
-            {
-                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-
-
-                for(int vdo=0;vdo<AllFilesName.length;vdo++)
-                {
-                    String fileUri=  AllFilesName[vdo];
-
-
-                    System.out.println("Sunil Again each file Name :" +fileUri);
-
-                    if(fileUri.contains(".zip"))
-                    {
-                        File file = new File(fileUri);
-                        file.delete();
-                    }
-                    else
-                    {
-                        String f1=Environment.getExternalStorageDirectory().getPath()+"/"+CommonInfo.DistributorStockXMLFolder+"/"+fileUri;
-                        System.out.println("Sunil Again each file full path"+f1);
-                        try
-                        {
-                            upLoad2ServerXmlFiles(f1,fileUri);
-                        }
-                        catch (Exception e)
-                        {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-
-                }
-
-            }
-            else
-            {
-
-            }
-
-
-
-            // pDialogGetStores.dismiss();
-
-            return serverResponseCode;
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-            // Log.i("SyncMasterForDistributor","Sync Cancelled");
-        }
-
-        @Override
-        protected void onPostExecute(Integer result)
-        {
-            super.onPostExecute(result);
-            if(!isFinishing())
-            {
-
-                // Log.i("SyncMasterForDistributor", "Sync cycle completed");
-
-
-                if(pDialogGetStores.isShowing())
-                {
-                    pDialogGetStores.dismiss();
-                }
-
-
-
-
-            }
-            dbengine.deleteDistributorStockTbles();
-				/* showAlertBox("Your Phone  Date is not correct.Please Correct it.");
-					return;*/
-
-          /*  dbengine.open();
-            dbengine.reCreateDB();
-            dbengine.close();*/
-            Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
-            intent.putExtra("imei", imei);
-            SplashScreen.this.startActivity(intent);
-            finish();
-
-
-        }
-
-
-
-
-
-    }
-
-
-
     public  int upLoad2ServerXmlFiles(String sourceFileUri,String fileUri)
     {
 
@@ -1604,12 +1024,12 @@ public class SplashScreen extends BaseActivity
         String fileName = fileUri;
         String zipFileName=fileUri;
 
-        String newzipfile = Environment.getExternalStorageDirectory() + "/"+CommonInfo.DistributorStockXMLFolder+"/" + fileName + ".zip";
+        String newzipfile = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.DistributorStockXMLFolder+"/" + fileName + ".zip";
         ///storage/sdcard0/PrabhatDirectSFAXml/359648069495987.2.21.04.2016.12.44.02.zip
 
         sourceFileUri=newzipfile;
 
-        xmlForWeb[0] = Environment.getExternalStorageDirectory() + "/"+CommonInfo.DistributorStockXMLFolder+"/" + fileName + ".xml";
+        xmlForWeb[0] = Environment.getExternalStorageDirectory() + "/"+ CommonInfo.DistributorStockXMLFolder+"/" + fileName + ".xml";
         //[/storage/sdcard0/PrabhatDirectSFAXml/359648069495987.2.21.04.2016.12.44.02.xml]
 
         try
@@ -1692,9 +1112,9 @@ public class SplashScreen extends BaseActivity
 
             if(serverResponseCode == 200)
             {
-							  /* dbengine.open();
+							  /* //dbengine.open();
 							   dbengine.upDateXMLFileFlag(fileUri, 4);
-							   dbengine.close();*/
+							   //dbengine.close();*/
 
                 //new File(dir, fileUri).delete();
                 syncFLAG=1;
@@ -1708,9 +1128,9 @@ public class SplashScreen extends BaseActivity
                 String FileSyncFlag=pref.getString(fileUri, ""+1);
 
                 delXML(xmlForWeb[0].toString());
-							   		/*dbengine.open();
+							   		/*//dbengine.open();
 						            dbengine.deleteXMLFileRow(fileUri);
-						            dbengine.close();*/
+						            //dbengine.close();*/
 
             }
             else
@@ -1746,58 +1166,1163 @@ public class SplashScreen extends BaseActivity
         file1.delete();
     }
 
-    public static void zip(String[] files, String zipFile) throws IOException
+    @Override
+    public void success() {
+        sendIntentToOtherActivityAfterAllDataFetched();
+    }
+
+    @Override
+    public void failure() {
+        showAlertForError("Error while retreiving data from server");
+    }
+
+    private class CheckUpdateVersion extends AsyncTask<Void, Void, Void>
     {
-        BufferedInputStream origin = null;
-        final int BUFFER_SIZE = 2048;
-
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
-        try
-        {
-            byte data[] = new byte[BUFFER_SIZE];
-
-            for (int i = 0; i < files.length; i++)
-            {
-                FileInputStream fi = new FileInputStream(files[i]);
-                origin = new BufferedInputStream(fi, BUFFER_SIZE);
-                try
-                {
-                    ZipEntry entry = new ZipEntry(files[i].substring(files[i].lastIndexOf("/") + 1));
-                    out.putNextEntry(entry);
-                    int count;
-                    while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1)
-                    {
-                        out.write(data, 0, count);
-                    }
-                }
-                finally
-                {
-                    origin.close();
-                }
-            }
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+          /*  //dbengine.open();
+            dbengine.reCreateDB();
+            //dbengine.close();*/
         }
-        finally
+
+        @Override
+        protected Void doInBackground(Void... params)
         {
-            out.close();
+            try
+            {
+
+                int DatabaseVersion=dbengine.DATABASE_VERSION;
+                int ApplicationID=dbengine.Application_TypeID;
+                newservice = newservice.getAvailableAndUpdatedVersionOfAppNew(getApplicationContext(), imei,fDate,DatabaseVersion,ApplicationID);
+                if(!newservice.director.toString().trim().equals("1"))
+                {
+                    if(chkFlgForErrorToCloseApp==0)
+                    {
+                        chkFlgForErrorToCloseApp=1;
+                    }
+
+                }
+
+                newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(),fDate, imei);
+
+            }
+            catch (Exception e)
+            {}
+
+            finally
+            {}
+
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            super.onPostExecute(result);
+
+            if(chkFlgForErrorToCloseApp==1)   // if Webservice showing exception or not excute complete properly
+            {
+                chkFlgForErrorToCloseApp=0;
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+                finish();
+            }
+            else
+                {
+
+                //dbengine.open();
+                int checkUserAuthenticate = dbengine.FetchflgUserAuthenticated();
+                //dbengine.close();
+
+                if (checkUserAuthenticate == 0)   // 0 means-->New user        1 means-->Exist User
+                {
+                    showAlertForEveryOne(getResources().getString(R.string.phnRegisterError));
+                    return;
+
+                }
+                else
+                 {
+                    //dbengine.open();
+                    String getPDADate = dbengine.fnGetPdaDate();
+                    String getServerDate = dbengine.fnGetServerDate();
+                    //dbengine.close();
+                    if (!getPDADate.equals(""))
+                    {
+                        if(!getServerDate.equals(getPDADate))
+                        {
+
+                            if(dbengine.fnCheckForPendingImages()==1)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(checkImagesInFolder()>0)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(checkXMLFilesInFolder()>0)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else
+                            {
+                                afterversioncheck();
+                            }
+
+
+                        }
+                        else
+                        {
+                            afterversioncheck();
+                        }
+
+                    }
+                    else
+                    {
+                        afterversioncheck();
+                    }
+
+
+
+                }
+
+
+            }
+
         }
     }
 
-    public static String[] checkNumberOfFiles(File dir)
+
+    public void afterversioncheck()
     {
-        int NoOfFiles=0;
-        String [] Totalfiles = null;
 
-        if (dir.isDirectory())
+        int checkUserAuthenticate = dbengine.FetchflgUserAuthenticated();
+        //dbengine.close();
+
+        if (checkUserAuthenticate == 0)   // 0 means-->New user        1 means-->Exist User
         {
-            String[] children = dir.list();
-            NoOfFiles=children.length;
-            Totalfiles=new String[children.length];
+            showAlertForEveryOne(getResources().getString(R.string.phnRegisterError));
+            return;
 
-            for (int i=0; i<children.length; i++)
+        }
+        else {
+            //dbengine.open();
+            int check=dbengine.FetchVersionDownloadStatus();  // 0 means-->new version installed  1 means-->new version not install
+            //dbengine.close();
+            if(check==1)
             {
-                Totalfiles[i]=children[i];
+                showNewVersionAvailableAlert();
+            }
+            else
+            {
+
+
+                int flgcheckCheckRetrofitApiCalledSucessfullyOrNot= dbengine.fnCheckRetrofitApiCalledSucessfullyOrNot();
+
+
+                if (flgcheckCheckRetrofitApiCalledSucessfullyOrNot == 1)
+                {
+                    //dbengine.open();
+                    String rID = dbengine.GetActiveRouteID();
+                    //dbengine.close();
+
+                    // Date date=new Date();
+                    Date date1 = new Date();
+                    sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+                    String fDateNew = sdf.format(date1).toString();
+                    //fDate = passDate.trim().toString();
+                    // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
+                    // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
+                    Intent storeIntent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                    storeIntent.putExtra("imei", imei);
+                    storeIntent.putExtra("userDate", fDate);
+                    storeIntent.putExtra("pickerDate", fDateNew);
+                    storeIntent.putExtra("rID", rID);
+                    startActivity(storeIntent);
+                    finish();
+                }
+                else
+                {
+
+                    //dbengine.open();
+                    dbengine.maintainSplashPDADate();
+                    String getPDADate=dbengine.fnGetPdaDate();
+                    String getServerDate=dbengine.fnGetServerDate();
+
+                    //dbengine.close();
+                    if(!getServerDate.equals(getPDADate))
+                    {
+                        showAlertBox(getResources().getString(R.string.phnDateError));
+                        //dbengine.open();
+                        dbengine.reCreateDB();
+                        //dbengine.close();
+                        return;
+                    }
+
+                    //dbengine.open();
+                    dbengine.fnFinaldropRoutesTBL();
+                    dbengine.createRouteTBL();
+                    //dbengine.close();
+                    try
+                    {
+                        funGetRegistrationID(getResources().getString(R.string.regID));
+
+                        checkPlayServices();
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
+
+
+
+
+
+
             }
         }
-        return Totalfiles;
+
+    }
+
+    private class GetUpdateInfo extends AsyncTask<Void, Void, Void>
+    {
+
+        ProgressDialog pDialogGetStores;
+        public GetUpdateInfo(SplashScreen activity)
+        {
+            pDialogGetStores = new ProgressDialog(activity);
+        }
+
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+
+            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
+            pDialogGetStores.setMessage(getText(R.string.UpdatingNewVersionMsg));
+            pDialogGetStores.setIndeterminate(false);
+            pDialogGetStores.setCancelable(false);
+            pDialogGetStores.setCanceledOnTouchOutside(false);
+            pDialogGetStores.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params)
+        {
+
+            try
+            {
+                downloadapk();
+            }
+            catch(Exception e)
+            {}
+
+            finally
+            {}
+
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            super.onPostExecute(result);
+
+            if(pDialogGetStores.isShowing())
+            {
+                pDialogGetStores.dismiss();
+            }
+
+            installApk();
+        }
+    }
+
+    private class GetRouteInfo extends AsyncTask<Void, Void, Void>
+    {
+        ServiceWorker getRouteservice = new ServiceWorker();
+
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params)
+        {
+
+            try
+            {
+                for(int mm = 1; mm<12; mm++)
+                {
+                    System.out.println("Error at = "+mm);
+                    if(mm==1)
+                    {
+                        getRouteservice = getRouteservice.getAvailbRoutes(getApplicationContext(), imei,fDate,RegistrationID,flgTodaySalesTargetToShow);
+
+                        if(!getRouteservice.director.toString().trim().equals("1")){
+                            if(chkFlgForErrorToCloseApp==0)
+                            {
+                                chkFlgForErrorToCloseApp=1;
+                                Toast.makeText(getApplicationContext(),getResources().getString(R.string.routeNoAvail),Toast.LENGTH_SHORT).show();
+                                break;
+                            }
+
+                        }
+                    }
+                    if(mm==2)
+                    {
+                        String rID=dbengine.GetActiveRouteID();
+                        String RouteType=dbengine.FetchRouteType(rID);
+                        newservice = newservice.getallProduct(getApplicationContext(), fDate, imei, rID,RouteType);
+                        if(newservice.flagExecutedServiceSuccesfully!=2)
+                        {
+                            chkFlgForErrorToCloseApp=1;
+                            break;
+                        }
+                        //Commented For Now By Abhinav On 24-Apr-2018
+
+                       // getRouteservice = getRouteservice.getAvailbNotification(getApplicationContext(),imei,fDate);
+
+                    }
+                    if(mm==3)
+                    {
+                        int DatabaseVersion= CommonInfo.DATABASE_VERSIONID;
+                        int ApplicationID= CommonInfo.Application_TypeID;
+                        newservice = newservice.callfnSingleCallAllWebService(getApplicationContext(),ApplicationID,imei);
+                        if(!newservice.director.toString().trim().equals("1"))
+                        {
+                            if(chkFlgForErrorToCloseApp==0)
+                            {
+                                chkFlgForErrorToCloseApp=1;
+                                break;
+                            }
+
+                        }
+                    }
+                    if(mm==4)
+                    {
+                        getRouteservice = getRouteservice.getCallspToGetReasonMasterForNoVisit(getApplicationContext(), fDate, imei);
+
+                        if(!newservice.director.toString().trim().equals("1"))
+                        {
+                            if(chkFlgForErrorToCloseApp==0)
+                            {
+                                chkFlgForErrorToCloseApp=1;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    if(mm==5)
+                    {
+
+                        int check =dbengine.countDataIntblNoVisitStoreDetails();
+                        if(check==0)
+                        {
+                            getRouteservice = getRouteservice.getCallspToCheckForVisit(getApplicationContext(), fDate, imei);
+                            if(!newservice.director.toString().trim().equals("1"))
+                            {
+                                if(chkFlgForErrorToCloseApp==0)
+                                {
+                                    chkFlgForErrorToCloseApp=1;
+                                    break;
+                                }
+
+                            }
+                        }
+                        else
+                        {
+
+                        }
+
+
+                    }
+                    if(mm==6)
+                    {
+                        //Commented For Now By Abhinav On 24-Apr-2018
+                       /// getRouteservice = getRouteservice.fnGetIncentiveData(getApplicationContext(), fDate, imei);
+//getWarehouseMappingMstr
+                        newservice = newservice.getWarehouseMappingMstr(getApplicationContext(), imei, fDate);
+                        if(!newservice.director.toString().trim().equals("1"))
+                        {
+                            if(chkFlgForErrorToCloseApp==0)
+                            {
+                                chkFlgForErrorToCloseApp=1;
+                                break;
+                            }
+
+                        }
+
+                    }
+                    if(mm==7)
+                    {
+
+                        // Acc. to Avinash Sir, Distributor will not come in Godrej SFA on 28 Jan 2018
+                        newservice = newservice.getDistributorMstr(getApplicationContext(), imei, fDate);
+                        if (!newservice.director.toString().trim().equals("1")) {
+                            if (chkFlgForErrorToCloseApp == 0) {
+                                chkFlgForErrorToCloseApp = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if(mm==8)
+                    {
+                        getRouteservice = getRouteservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
+                        if (!newservice.director.toString().trim().equals("1")) {
+                            if (chkFlgForErrorToCloseApp == 0) {
+                                chkFlgForErrorToCloseApp = 1;
+                                Toast.makeText(getApplicationContext(), getResources().getString(R.string.stockUploadStatusMsg), Toast.LENGTH_SHORT).show();
+                                    break;
+                            }
+                        }
+                    }
+                    if(mm==9)
+                    {
+                        int flgStockOut= dbengine.fetchtblStockUploadedStatus();
+                        if(flgStockOut!=0)
+                        {
+                            newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
+                            if (newservice.flagExecutedServiceSuccesfully != 39) {
+                                chkFlgForErrorToCloseApp = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if(mm==10)
+                    {
+                        newservice = newservice.fnGetStateCityListMstr(SplashScreen.this,imei, fDate, CommonInfo.Application_TypeID);
+                        if(!newservice.director.toString().trim().equals("1"))
+                        {
+                            if(chkFlgForErrorToCloseApp==0)
+                            {
+                                chkFlgForErrorToCloseApp=1;
+                                break;
+                            }
+
+                        }
+                    }
+                    if(mm==11)
+                    {
+                        newservice = newservice.getStoreAllDetails(SplashScreen.this, imei, fDate, CommonInfo.DATABASE_VERSIONID, CommonInfo.Application_TypeID,RegistrationID);
+                        if (!newservice.director.toString().trim().equals("1")) {
+                           /* if (chkFlgForErrorToCloseApp == 0) {
+                                chkFlgForErrorToCloseApp = 1;
+                                break;
+                            }*/
+
+                        }
+
+
+                    }
+
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                chkFlgForErrorToCloseApp=1;
+                System.out.println("error = "+ e.toString());
+            }
+            finally
+            {
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onCancelled()
+        {
+
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            super.onPostExecute(result);
+
+            if(chkFlgForErrorToCloseApp==1)
+            {
+                chkFlgForErrorToCloseApp=0;
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.errorFetchData),Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+            else
+            {
+
+
+
+                Handler handler = new Handler();
+
+                // run a thread after 2 seconds to start the home screen
+                handler.postDelayed(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        //dbengine.open();
+                        serverDateForSPref=	dbengine.fnGetServerDate();
+                        //dbengine.close();
+                        //setSharedPreferencesDate(serverDateForSPref);
+
+                        if(sPref.contains("DatePref"))
+                        {
+
+                            if(sPref.getString("DatePref", "").equals(serverDateForSPref))
+                            {
+                                if(!sPrefAttandance.contains("AttandancePref"))
+                                {
+                                    callDayStartActivity();
+                                }
+                                else {
+                                    Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                                    intent.putExtra("imei", imei);
+                                    SplashScreen.this.startActivity(intent);
+                                    finish();
+                                }
+
+                            }
+                            else
+                            {
+
+                                SharedPreferences.Editor editor=sPref.edit();
+                                editor.clear();
+                                editor.commit();
+                                sPref.edit().putString("DatePref", serverDateForSPref).commit();
+
+                                SharedPreferences.Editor editor1=sPrefAttandance.edit();
+                                editor1.clear();
+                                editor1.commit();
+
+                                if(!sPrefAttandance.contains("AttandancePref"))
+                                {
+                                    callDayStartActivity();
+                                }
+                                else {
+
+                                    Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                                    intent.putExtra("imei", imei);
+                                    SplashScreen.this.startActivity(intent);
+                                    finish();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            sPref.edit().putString("DatePref", serverDateForSPref).commit();
+
+                            if(!sPrefAttandance.contains("AttandancePref"))
+                            {
+                                callDayStartActivity();
+                            }
+                            else {
+
+                                Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                                intent.putExtra("imei", imei);
+                                SplashScreen.this.startActivity(intent);
+                                finish();
+                            }
+                        }
+
+                    }
+
+                }, 1000); // time in milliseconds (1 second = 1000 milliseconds) until the run() method will be called
+                      /* // //dbengine.open();
+                      //  dbengine.reCreateDB();
+                      //  //dbengine.close();
+
+
+
+                       *//* Intent intent = new Intent(SplashScreen.this, AddNewStore_DynamicSectionWise.class);
+                        intent.putExtra("storeID", "0");
+                        intent.putExtra("userdate", "0");
+                        intent.putExtra("pickerDate", "0");
+                        intent.putExtra("imei", imei);
+                        intent.putExtra("rID", "0");*//*
+
+                        Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                        intent.putExtra("imei", imei);
+                        SplashScreen.this.startActivity(intent);
+                        finish();
+                    // time in milliseconds (1 second = 1000 milliseconds) until the run() method will be called*/
+            }
+
+
+
+
+
+        }
+    }
+
+    public void callDayStartActivity()
+    {
+        //dbengine.open();
+        int flgPersonTodaysAtt=dbengine.FetchflgPersonTodaysAtt();
+        //dbengine.close();
+
+        if(flgPersonTodaysAtt==0)
+        {
+           /* Intent intent=new Intent(this,DayStartActivity.class);
+            startActivity(intent);
+            finish();*/
+            Intent intent=new Intent(SplashScreen.this,DSR_Registration.class);
+            intent.putExtra("IntentFrom", "SPLASH");
+            startActivity(intent);
+            finish();
+        }
+        else
+        {
+            Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+            intent.putExtra("imei", imei);
+            SplashScreen.this.startActivity(intent);
+            finish();
+        }
+
+
+
+    }
+
+    private class FullSyncDataNow extends AsyncTask<Void, Void, Void>
+    {
+
+
+        ProgressDialog pDialogGetStores;
+        public FullSyncDataNow(SplashScreen activity)
+        {
+            pDialogGetStores = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+
+            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
+            pDialogGetStores.setMessage(getResources().getString(R.string.genTermLoadData));
+            pDialogGetStores.setIndeterminate(false);
+            pDialogGetStores.setCancelable(false);
+            pDialogGetStores.setCanceledOnTouchOutside(false);
+            pDialogGetStores.show();
+
+
+        }
+
+        @Override
+
+        protected Void doInBackground(Void... params)
+        {
+
+            int Outstat=3;
+
+            long  syncTIMESTAMP = System.currentTimeMillis();
+            Date dateobj = new Date(syncTIMESTAMP);
+            SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+            String StampEndsTime = df.format(dateobj);
+
+
+
+            //dbengine.open();
+            String presentRoute="0";
+            //dbengine.close();
+
+            SimpleDateFormat df1 = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+            newfullFileName=imei+"."+presentRoute+"."+ df1.format(dateobj);
+
+            try
+            {
+
+                File MeijiDistributorEntryXMLFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
+                if (!MeijiDistributorEntryXMLFolder.exists())
+                {
+                    MeijiDistributorEntryXMLFolder.mkdirs();
+                }
+
+                int checkNoFiles=dbengine.counttblDistributorSavedData();
+                if(checkNoFiles==1)
+                {
+                    String routeID=dbengine.GetActiveRouteIDSunil();
+                    DA.open();
+                    DA.export(CommonInfo.DATABASE_NAME, newfullFileName,routeID);
+                    DA.close();
+
+                }
+
+
+
+                //dbengine.deleteDistributorStockTbles();
+
+
+
+
+            }
+            catch (Exception e)
+            {
+
+                e.printStackTrace();
+                if(pDialogGetStores.isShowing())
+                {
+                    pDialogGetStores.dismiss();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onCancelled()
+        {
+
+        }
+
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            super.onPostExecute(result);
+            if(pDialogGetStores.isShowing())
+            {
+                pDialogGetStores.dismiss();
+            }
+
+            try
+            {
+
+                task2 = new SyncXMLfileData(SplashScreen.this);
+                task2.execute();
+            }
+            catch(Exception e)
+            {
+
+            }
+
+
+        }
+    }
+
+    private class SyncXMLfileData extends AsyncTask<Void, Void, Integer>
+    {
+
+
+
+        public SyncXMLfileData(SplashScreen activity)
+        {
+            pDialogGetStores = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+
+
+            File MeijiIndirectSFAxmlFolder = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
+
+            if (!MeijiIndirectSFAxmlFolder.exists())
+            {
+                MeijiIndirectSFAxmlFolder.mkdirs();
+            }
+
+            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
+
+            pDialogGetStores.setMessage(getText(R.string.genTermPleaseWaitNew));
+
+            pDialogGetStores.setIndeterminate(false);
+            pDialogGetStores.setCancelable(false);
+            pDialogGetStores.setCanceledOnTouchOutside(false);
+            pDialogGetStores.show();
+
+        }
+
+        @Override
+        protected Integer doInBackground(Void... params)
+        {
+
+
+            // This method used for sending xml from Folder without taking records in DB.
+
+            // Sending only one xml at a times
+
+            File del = new File(Environment.getExternalStorageDirectory(), CommonInfo.DistributorStockXMLFolder);
+
+            // check number of files in folder
+            String [] AllFilesName= checkNumberOfFiles(del);
+
+
+            if(AllFilesName.length>0)
+            {
+                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+
+
+                for(int vdo=0;vdo<AllFilesName.length;vdo++)
+                {
+                    String fileUri=  AllFilesName[vdo];
+
+
+                    System.out.println("Sunil Again each file Name :" +fileUri);
+
+                    if(fileUri.contains(".zip"))
+                    {
+                        File file = new File(fileUri);
+                        file.delete();
+                    }
+                    else
+                    {
+                        String f1=Environment.getExternalStorageDirectory().getPath()+"/"+ CommonInfo.DistributorStockXMLFolder+"/"+fileUri;
+                        System.out.println("Sunil Again each file full path"+f1);
+                        try
+                        {
+                            upLoad2ServerXmlFiles(f1,fileUri);
+                        }
+                        catch (Exception e)
+                        {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+
+            }
+            else
+            {
+
+            }
+
+
+
+            // pDialogGetStores.dismiss();
+
+            return serverResponseCode;
+        }
+
+        @Override
+        protected void onCancelled()
+        {
+            // Log.i("SyncMasterForDistributor","Sync Cancelled");
+        }
+
+        @Override
+        protected void onPostExecute(Integer result)
+        {
+            super.onPostExecute(result);
+            if(!isFinishing())
+            {
+
+                // Log.i("SyncMasterForDistributor", "Sync cycle completed");
+
+
+                if(pDialogGetStores.isShowing())
+                {
+                    pDialogGetStores.dismiss();
+                }
+
+
+
+
+            }
+            dbengine.deleteDistributorStockTbles();
+				/* showAlertBox("Your Phone  Date is not correct.Please Correct it.");
+					return;*/
+
+          /*  //dbengine.open();
+            dbengine.reCreateDB();
+            //dbengine.close();*/
+            Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+            intent.putExtra("imei", imei);
+            SplashScreen.this.startActivity(intent);
+            finish();
+
+
+        }
+
+
+
+
+
+    }
+    public void startGettingDataFromServer(){
+        System.out.println("DATAENSERTEDStart?");
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        IMEIVersionDetails imeiVersionDetail=new IMEIVersionDetails();
+        imeiVersionDetail.setApplicationType(CommonInfo.Application_TypeID);
+        imeiVersionDetail.setIMEINo(imei);
+        imeiVersionDetail.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        Call<IMEIVersionParentModel> call= apiService.Call_IMEIVersionDetailStatus(imeiVersionDetail);
+
+        call.enqueue(new Callback<IMEIVersionParentModel>() {
+            @Override
+            public void onResponse(Call<IMEIVersionParentModel> call, Response<IMEIVersionParentModel> response) {
+                if(response.code()==200){
+                    IMEIVersionParentModel imeiVersionParentModel= response.body();
+
+                    String flgAppStatus="1";
+                    String DisplayMessage="No Message";
+                    String flgValidApplication="1";
+                    String MessageForInvalid="No Message";
+                    String flgPersonTodaysAtt="0";
+                    dbengine.droptblUserAuthenticationMstrTBL();
+                    dbengine.createtblUserAuthenticationMstrTBL();
+                    dbengine.dropAvailbUpdatedVersionTBL();
+                    dbengine.createAvailbUpdatedVersionTBL();
+                    /*dbengine.droptblManagerMstr();
+                    dbengine.createtblManagerMstr();*/
+
+                    List<TblUserAuthentication> listTblUserAuthentication= imeiVersionParentModel.getTblUserAuthentication();
+                    TblUserAuthentication tblUserAuthentication=  listTblUserAuthentication.get(0);
+                    dbengine.savetblUserAuthenticationMstr(""+tblUserAuthentication.getFlgUserAuthenticated(),tblUserAuthentication.getPersonName(),""+tblUserAuthentication.getFlgRegistered(),flgAppStatus,DisplayMessage,flgValidApplication,MessageForInvalid,flgPersonTodaysAtt,tblUserAuthentication.getPersonNodeID(),tblUserAuthentication.getPersonNodeType(),tblUserAuthentication.getContactNo(),tblUserAuthentication.getDOB(),tblUserAuthentication.getSelfieName(),tblUserAuthentication.getSelfieNameURL(),tblUserAuthentication.getSalesAreaName(),tblUserAuthentication.getCoverageAreaNodeID(),tblUserAuthentication.getCoverageAreaNodeType(),tblUserAuthentication.getFlgToShowAllRoutesData());
+
+                    List<TblAvailableVersion> listTblAvailableVersion= imeiVersionParentModel.getTblAvailableVersion();
+                    TblAvailableVersion tblAvailableVersion=  listTblAvailableVersion.get(0);
+                    dbengine.savetblAvailbUpdatedVersion(""+tblAvailableVersion.getVersionID(),tblAvailableVersion.getVersionSerialNo(),""+tblAvailableVersion.getVersionDownloadStatus(),tblAvailableVersion.getServerDate());
+
+                    if(tblUserAuthentication.getSelfieNameURL()!=null && tblUserAuthentication.getSelfieName()!=null){
+                        if((!tblUserAuthentication.getSelfieNameURL().equals("")) && (!tblUserAuthentication.getSelfieName().equals("")) && (!tblUserAuthentication.getSelfieNameURL().equals("0")) && (!tblUserAuthentication.getSelfieName().equals("0"))){
+                            downLoadingSelfieImage(tblUserAuthentication.getSelfieNameURL(),tblUserAuthentication.getSelfieName());
+                        }
+                    }
+
+                    //start check version check
+                    String getPDADate = dbengine.fnGetPdaDate();
+                    String getServerDate = dbengine.fnGetServerDate();
+
+                    if (!getPDADate.equals(""))
+                    {
+                        if(!getServerDate.equals(getPDADate))
+                        {
+
+                            if(dbengine.fnCheckForPendingImages()==1)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(checkImagesInFolder()>0)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else if(checkXMLFilesInFolder()>0)
+                            {
+                                getPrevioisDateData();
+                                return;
+                            }
+                            else
+                            {
+                                afterversioncheck();
+                            }
+
+
+                        }
+                        else
+                        {
+                            afterversioncheck();
+                        }
+
+                    }
+                    else
+                    {
+                        afterversioncheck();
+                    }
+
+//End check version check
+
+
+                }
+                else{
+                    showAlertSingleButtonError("Error while retrieving Version Detail data. ");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<IMEIVersionParentModel> call, Throwable t) {
+
+                showAlertSingleButtonError("Error while retrieving Version Detail data. ");
+            }
+        });
+    }
+    public void showAlertSingleButtonError(String msg)
+    {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.AlertDialogHeaderErrorMsg))
+                .setMessage(msg)
+                .setCancelable(false)
+                .setIcon(R.drawable.error_ico)
+                .setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.dismiss();
+                    }
+                }).create().show();
+    }
+    public void downLoadingSelfieImage(String SelfieNameURL,String SelfieName){
+        String URL_String=  SelfieNameURL;
+        String Video_Name=  SelfieName;
+
+        try {
+
+            URL url = new URL(URL_String);
+            URLConnection connection = url.openConnection();
+            HttpURLConnection urlConnection = (HttpURLConnection) connection;
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setDoInput(true);
+            urlConnection.connect();
+            String PATH = Environment.getExternalStorageDirectory() + "/" + CommonInfo.ImagesFolderServer + "/";
+
+            File file2 = new File(PATH + Video_Name);
+            if (file2.exists()) {
+                file2.delete();
+            }
+
+            File file1 = new File(PATH);
+            if (!file1.exists()) {
+                file1.mkdirs();
+            }
+
+
+            File file = new File(file1, Video_Name);
+
+            int size = connection.getContentLength();
+
+
+            FileOutputStream fileOutput = new FileOutputStream(file);
+
+            InputStream inputStream = urlConnection.getInputStream();
+
+            byte[] buffer = new byte[size];
+            int bufferLength = 0;
+            long total = 0;
+            int current = 0;
+            while ((bufferLength = inputStream.read(buffer)) != -1) {
+                total += bufferLength;
+
+                fileOutput.write(buffer, 0, bufferLength);
+            }
+
+            fileOutput.close();
+
+        }
+        catch (Exception e){
+
+        }
+
+    }
+
+    public void sendIntentToOtherActivityAfterAllDataFetched(){
+
+
+            //dbengine.open();
+            serverDateForSPref=	dbengine.fnGetServerDate();
+            //dbengine.close();
+            //setSharedPreferencesDate(serverDateForSPref);
+
+            if(sPref.contains("DatePref"))
+            {
+
+                if(sPref.getString("DatePref", "").equals(serverDateForSPref))
+                {
+                    if(!sPrefAttandance.contains("AttandancePref"))
+                    {
+                        callDayStartActivity();
+                    }
+                    else {
+                        Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                        intent.putExtra("imei", imei);
+                        SplashScreen.this.startActivity(intent);
+                        finish();
+                    }
+
+                }
+                else
+                {
+
+                    SharedPreferences.Editor editor=sPref.edit();
+                    editor.clear();
+                    editor.commit();
+                    sPref.edit().putString("DatePref", serverDateForSPref).commit();
+
+                    SharedPreferences.Editor editor1=sPrefAttandance.edit();
+                    editor1.clear();
+                    editor1.commit();
+
+                    if(!sPrefAttandance.contains("AttandancePref"))
+                    {
+                        callDayStartActivity();
+                    }
+                    else {
+
+                        Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                        intent.putExtra("imei", imei);
+                        SplashScreen.this.startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+            else
+            {
+                sPref.edit().putString("DatePref", serverDateForSPref).commit();
+
+                if(!sPrefAttandance.contains("AttandancePref"))
+                {
+                    callDayStartActivity();
+                }
+                else {
+
+                    Intent intent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                    intent.putExtra("imei", imei);
+                    SplashScreen.this.startActivity(intent);
+                    finish();
+
+            }
+
+        }
+    }
+
+    public void showAlertForError(String msg)
+    {
+        // AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(new ContextThemeWrapper(SplashScreen.this, R.style.Dialog));
+        AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(SplashScreen.this);
+
+        alertDialogNoConn.setTitle(R.string.AlertDialogHeaderMsg);
+        alertDialogNoConn.setMessage(msg);
+        alertDialogNoConn.setCancelable(false);
+        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                finish();
+            }
+        });
+        //alertDialogNoConn.setIcon(R.drawable.info_ico);
+        AlertDialog alert = alertDialogNoConn.create();
+        alert.show();
     }
 }

@@ -1,9 +1,6 @@
 package project.astix.com.parasorder;
 
 import android.app.Activity;
-
-import java.io.FileInputStream;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -24,16 +21,17 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -62,11 +60,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -102,8 +102,8 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
     boolean dob_Bool=false;
     boolean married_Bool=false;
     DatePickerDialog datePickerDialog ;
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
 
+    PRJDatabase dbengine=new PRJDatabase(this);
     public static int RESULT_LOAD_IMAGE=1;
 
     public  Dialog dialog=null;
@@ -152,12 +152,13 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
     String userNodeIdGlobal="0";
     String userNodetypeGlobal="0";
     SharedPreferences sPrefAttandance;
+    public  String  fDate;
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(CommonInfo.DayStartClick==2)
+       /* if(CommonInfo.DayStartClick==2)
         {
             SharedPreferences.Editor editor1=sPrefAttandance.edit();
             editor1.clear();
@@ -165,7 +166,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
             CommonInfo.DayStartClick=0;
             finish();
 
-        }
+        }*/
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) // Control the PDA
@@ -197,6 +198,12 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dsr__registration_activity);
 
+
+        Date date1=new Date();
+        SimpleDateFormat  sdf = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+        String  passDate = sdf.format(date1).toString();
+        fDate = passDate.trim().toString();
+
         Intent intent = getIntent();
          FROM= intent.getStringExtra("IntentFrom");
         TelephonyManager tManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -207,9 +214,9 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         }
         else
         {
-            imei=CommonInfo.imei.trim();
+            imei= CommonInfo.imei.trim();
         }
-        sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
+      //  sPrefAttandance=getSharedPreferences(CommonInfo.AttandancePreference, MODE_PRIVATE);
         profile_image=(ImageView)findViewById(R.id.profile_image);
         //Retreiving master data from database
         getDataFromDataBase();
@@ -228,11 +235,15 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
 
 
             if(FROM != null && !FROM.isEmpty()) {
-            if (FROM.equals("DAYEND")) {
-                imei = intent.getStringExtra("imei").trim();
-                pickerDate = intent.getStringExtra("pickerDate").trim();
-                userDate = intent.getStringExtra("userDate");
+            if (FROM.equals("DAYEND") ||  FROM.equals("AllButtonActivity")) {
 
+                imei = intent.getStringExtra("imei").trim();
+
+                if(FROM.equals("DAYEND") ) {
+
+                    pickerDate = intent.getStringExtra("pickerDate").trim();
+                    userDate = intent.getStringExtra("userDate");
+                }
                 parentOf_questionLayout.setVisibility(View.GONE);
                 parentOf_registrationformLayout.setVisibility(View.VISIBLE);
                 LL_banner_image.setVisibility(View.GONE);
@@ -415,12 +426,24 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         text_Daystart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
+                i.putExtra("IntentFrom", 0);
+                startActivity(i);
+                finish();*/
 
+              /*  Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
+                startActivity(i);
+                finish();*/
                 Intent intent=new Intent(DSR_Registration.this,DayStartActivity.class);
                 startActivity(intent);
                 finish();
-               /* Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
-                i.putExtra("IntentFrom", 0);
+
+
+                /*Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
+                i.putExtra("imei", imei);
+                i.putExtra("CstmrNodeId", 0);
+                i.putExtra("CstomrNodeType", 0);
+                i.putExtra("fDate", fDate);
                 startActivity(i);
                 finish();*/
 
@@ -439,7 +462,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 Year = calendar.get(Calendar.YEAR) ;
                 Month = calendar.get(Calendar.MONTH);
                 Day = calendar.get(Calendar.DAY_OF_MONTH);
-                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-24, Month, Day);
+                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-13, Month, Day);
 
                 datePickerDialog.setThemeDark(false);
                 datePickerDialog.showYearPickerFirst(false);
@@ -453,7 +476,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 // datePickerDialog.setMinDate(calendar);
 
                 //surbhi
-               calendarForSetDate.set(Year - 24, Month, Day);
+               calendarForSetDate.set(Year - 13, Month, Day);
                 datePickerDialog.setMaxDate(calendarForSetDate);
                 datePickerDialog.setAccentColor(Color.parseColor("#544f88"));
 
@@ -473,7 +496,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 Year = calendar.get(Calendar.YEAR) ;
                 Month = calendar.get(Calendar.MONTH);
                 Day = calendar.get(Calendar.DAY_OF_MONTH);
-                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-24, Month, Day);
+                datePickerDialog = DatePickerDialog.newInstance(DSR_Registration.this, Year-13, Month, Day);
 
                 datePickerDialog.setThemeDark(false);
 
@@ -488,7 +511,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 // datePickerDialog.setMinDate(calendar);
 
               //  datePickerDialog.setMinDate(calendarForSetDate);
-                calendarForSetDate.set(Year - 24, Month, Day);
+                calendarForSetDate.set(Year - 13, Month, Day);
                 datePickerDialog.setMaxDate(calendarForSetDate);
                 datePickerDialog.setAccentColor(Color.parseColor("#544f88"));
 
@@ -860,13 +883,20 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 //deleting image from image folder
                 deletingPreviousImage();
 
-                Intent intent=new Intent(DSR_Registration.this,DayStartActivity.class);
-                startActivity(intent);
-                finish();
-             /*   Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
+               /* Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
                 i.putExtra("IntentFrom", 0);
                 startActivity(i);
                 finish();*/
+              /*  Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
+                i.putExtra("imei", imei);
+                i.putExtra("CstmrNodeId", 0);
+                i.putExtra("CstomrNodeType", 0);
+                i.putExtra("fDate", fDate);
+                startActivity(i);
+                finish();*/
+                Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
+                startActivity(i);
+                finish();
 
             }
         });
@@ -1111,7 +1141,8 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                         File file=pictureFile;
                         System.out.println("File +++"+pictureFile);
                         imageName=pictureFile.getName();
-                        Bitmap bmp = decodeSampledBitmapFromFile(file.getAbsolutePath(), 80, 80);
+                        CommonFunction.normalizeImageForUri(DSR_Registration.this,Uri.fromFile(pictureFile));
+                        Bitmap bmp = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getAbsolutePath()),120,120);
 
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         uriSavedImage = Uri.fromFile(pictureFile);
@@ -1243,7 +1274,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         //and make a media file:
         //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
        // mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+"$"+ timeStamp + ".jpg");
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+timeStamp + ".jpg");
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + CommonInfo.imei+timeStamp + ".jpg");
 
         return mediaFile;
     }
@@ -1265,7 +1296,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         File mediaFile;
         //and make a media file:
        /// mediaFile = new File(mediaStorageDir.getPath() + File.separator + imgName);
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" +CommonInfo.imei+"$"+ timeStamp + ".jpg");
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + CommonInfo.imei+"$"+ timeStamp + ".jpg");
 
         return mediaFile;
     }
@@ -1589,93 +1620,93 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
 
     }
 
-      public boolean validate()
-       {
-           String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
-           String mail=editText_emailID.getText().toString().trim();
+    public boolean validate()
+    {
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+        String mail=editText_emailID.getText().toString().trim();
 
-           if(ET_firstname.getText().toString().trim().equals(""))
-           {
+        if(ET_firstname.getText().toString().trim().equals(""))
+        {
 
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateFirstName));
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateFirstName));
 
-               return false;
-           }
-           else if(ET_lastname.getText().toString().trim().equals(""))
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateLastName));
+            return false;
+        }
+        else if(ET_lastname.getText().toString().trim().equals(""))
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateLastName));
 
-               return false;
-           }
+            return false;
+        }
 
-           else if( ET_contact_no.getText().toString().trim().equals("0000000000") || ET_contact_no.getText().toString().trim().equals("") || ET_contact_no.getText().toString().trim().length()<10)
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateContactNo));
+        else if( ET_contact_no.getText().toString().trim().equals("0000000000") || ET_contact_no.getText().toString().trim().equals("") || ET_contact_no.getText().toString().trim().length()<10)
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateContactNo));
 
-               return false;
-           }
-           else if(Text_Dob.getText().toString().trim().equals("Select Date"))
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtSelectDOB));
+            return false;
+        }
+        else if(Text_Dob.getText().toString().trim().equals(getResources().getString(R.string.txtSelectDate)))
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtSelectDOB));
 
-               return false;
-           }
-           else if(!radio_Male.isChecked() && !radio_Female.isChecked())
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateSelectSex));
+            return false;
+        }
+        else if(!radio_Male.isChecked() && !radio_Female.isChecked())
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateSelectSex));
 
-               return false;
-           }
-           else if(!radio_married.isChecked() && !radio_unmarried.isChecked())
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateMaritalStatus));
+            return false;
+        }
+        else if(!radio_married.isChecked() && !radio_unmarried.isChecked())
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateMaritalStatus));
 
-               return false;
-           }
-           else if(radio_married.isChecked() && Text_married_date.getText().toString().trim().equals("Select Date") )
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateMarriedDate));
+            return false;
+        }
+        else if(radio_married.isChecked() && Text_married_date.getText().toString().trim().equals(getResources().getString(R.string.txtSelectDate)) )
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateMarriedDate));
 
-               return false;
-           }
-           else if(spinnerQualification.getText().toString().trim().equals("Select"))
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateQualification));
+            return false;
+        }
+        else if(spinnerQualification.getText().toString().trim().equals(getResources().getString(R.string.txtSelect)))
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateQualification));
 
-               return false;
-           }
-           else if(hmapImageData.isEmpty())
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateUpdatePhoto));
+            return false;
+        }
+        else if(hmapImageData.isEmpty())
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateUpdatePhoto));
 
-               return false;
-           }
-           else if(!editText_emailID.getText().toString().trim().equals("") && !mail.matches(emailPattern))
-           {
+            return false;
+        }
+        else if(!editText_emailID.getText().toString().trim().equals("") && !mail.matches(emailPattern))
+        {
 
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateEmailID));
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateEmailID));
 
 
-               return false;
-           }
-           else if(spinner_bloodgrp.getText().toString().trim().equals("Select"))
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateBloodGroup));
+            return false;
+        }
+        else if(spinner_bloodgrp.getText().toString().trim().equals(getResources().getString(R.string.txtSelect)))
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateBloodGroup));
 
-               return false;
-           }
-           else if(!signOrNot)
-           {
-               showAlertForEveryOne(getResources().getString(R.string.txtValidateSignature));
+            return false;
+        }
+        else if(!signOrNot)
+        {
+            showAlertForEveryOne(getResources().getString(R.string.txtValidateSignature));
 
-               return false;
-           }
+            return false;
+        }
 
-           else{
-               return true;
-           }
+        else{
+            return true;
+        }
 
-       }
+    }
     public void showAlertForEveryOne(String msg)
     {
         AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(DSR_Registration.this);
@@ -1708,9 +1739,8 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
             String SelfieName=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[4];
             String SelfieNameURL=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[5];
             String SalesAreaName=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[6];
-             userNodeIdGlobal=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[7];
-             userNodetypeGlobal=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[8];
-
+            userNodeIdGlobal=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[7];
+            userNodetypeGlobal=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[8];
 
 
 
@@ -2004,7 +2034,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
        mSignature.save(view, StoredPath);
        String ddd= pic_name;
 
-       String IMEI_string=CommonInfo.imei;
+       String IMEI_string= CommonInfo.imei;
        String ClickedDateTime_string="0";
        String FirstName_string="0";
        String LastName_string="0";
@@ -2058,10 +2088,10 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
        SignName_string=pic_name + ".png";
        SignPath_string=StoredPath;
 
-       dbengine.open();
+       //dbengine.open();
        dbengine.Delete_tblDsrRegDetails();
        dbengine.savetblDsrRegDetails(IMEI_string,ClickedDateTime_string,FirstName_string,LastName_string,ContactNo_string,DOB_string,Sex_string,MaritalStatus_string,MarriedDate_string,Qualification_string,SelfieName_string,SelfiePath_string,EmailID_string,BloodGroup_string,SignName_string,SignPath_string,3,PhotoName_string,PersonNodeId_string,PersonNodeType_string);
-       dbengine.close();
+       //dbengine.close();
        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
        if(FROM.equals("DAYEND"))
        {
@@ -2069,19 +2099,31 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
            trans2storeList.putExtra("imei", imei);
            trans2storeList.putExtra("userDate", userDate);
            trans2storeList.putExtra("pickerDate", pickerDate);
-
+           startActivity(trans2storeList);
+           finish();
+       }
+       else if(FROM.equals("AllButtonActivity")){
+           Intent trans2storeList = new Intent(DSR_Registration.this, AllButtonActivity.class);
+           trans2storeList.putExtra("imei", imei);
            startActivity(trans2storeList);
            finish();
        }
        else
        {
-           Intent intent=new Intent(DSR_Registration.this,DayStartActivity.class);
-           startActivity(intent);
-           finish();
          /*  Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
            i.putExtra("IntentFrom", 0);
            startActivity(i);
            finish();*/
+          /* Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
+           i.putExtra("imei", imei);
+           i.putExtra("CstmrNodeId", 0);
+           i.putExtra("CstomrNodeType", 0);
+           i.putExtra("fDate", fDate);
+           startActivity(i);
+           finish();*/
+           Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
+           startActivity(i);
+           finish();
        }
 
    }
@@ -2116,7 +2158,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
 
             try
             {
-                newservice = newservice.getDsrRegistrationData(getApplicationContext(),CommonInfo.imei,mobNumberForService,dobForService);
+                newservice = newservice.getDsrRegistrationData(getApplicationContext(), CommonInfo.imei,mobNumberForService,dobForService);
                 if(!newservice.director.toString().trim().equals("1"))
                 {
                     if(chkFlgForErrorToCloseApp==0)
@@ -2187,13 +2229,20 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                         public void onClick(DialogInterface dialog, int which)
                         {
                             dialog.dismiss();
-                            Intent intent=new Intent(DSR_Registration.this,DayStartActivity.class);
-                            startActivity(intent);
-                            finish();
-                          /*  Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
+                           /* Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
                             i.putExtra("IntentFrom", 0);
                             startActivity(i);
                             finish();*/
+                           /* Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
+                            i.putExtra("imei", imei);
+                            i.putExtra("CstmrNodeId", 0);
+                            i.putExtra("CstomrNodeType", 0);
+                            i.putExtra("fDate", fDate);
+                            startActivity(i);
+                            finish();*/
+                            Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
+                            startActivity(i);
+                            finish();
 
                         }
                     });

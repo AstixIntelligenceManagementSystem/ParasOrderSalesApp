@@ -47,7 +47,7 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 
 	public String back="0";
 
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+    PRJDatabase dbengine = new PRJDatabase(this);
 	public TableLayout tl2;
 	public int bck = 0;
 
@@ -70,7 +70,7 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 		// TODO Auto-generated method stub
 		super.onResume();
 		dbengine.open();
-		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
+		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
 		dbengine.close();
 
 		if(!Noti_textWithMsgServerID.equals("Null"))
@@ -102,7 +102,7 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 								String Noti_ReadDateTime = df.format(dateobj);
 								dbengine.open();
 
-								dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+								dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
 								dbengine.close();
 								dialog.dismiss();
 
@@ -165,8 +165,8 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 		backbutton= (ImageView) findViewById(R.id.backbutton);
 		backbutton.setVisibility(View.GONE);
 
-		tbl_targetAchieved= (TableLayout) findViewById(R.id.tbl_targetAchieved);
-		tbl_targetAchieved.setVisibility(View.GONE);
+		/*tbl_targetAchieved= (TableLayout) findViewById(R.id.tbl_targetAchieved);
+		tbl_targetAchieved.setVisibility(View.GONE);*/
 
 		TextView txtSalessumuryDate=(TextView)findViewById(R.id.txtSalessumuryDate);
 		txtSalessumuryDate.setText(getResources().getString(R.string.txtSummaryAsOn)+fDate);

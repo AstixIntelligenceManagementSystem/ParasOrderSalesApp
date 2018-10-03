@@ -1,28 +1,13 @@
 package project.astix.com.parasorder;
 
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
-
-
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -36,7 +21,14 @@ import android.widget.Toast;
 
 import com.astix.Common.CommonInfo;
 
-public class DetailReport_Activity extends Activity 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
+
+public class DetailReport_Activity extends BaseActivity
 {
 
 	String date_value="";
@@ -109,7 +101,7 @@ public class DetailReport_Activity extends Activity
 	TextView totalFreeLt;
 	TextView totalSampleLt;
 	TextView totalDiscount;
-	DBAdapterKenya dbengine = new DBAdapterKenya(this);
+	PRJDatabase dbengine = new PRJDatabase(this);
 	public TableLayout tl2; 
 	public int bck = 0;
 	
@@ -148,9 +140,9 @@ public class DetailReport_Activity extends Activity
       {
 		// TODO Auto-generated method stub
 		super.onResume();
-		dbengine.open();
-		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblNotificationMstr();
-		dbengine.close();
+		//dbengine.open();
+		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
+		//dbengine.close();
 		System.out.println("Sunil Tty Noti_textWithMsgServerID :"+Noti_textWithMsgServerID);
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -159,7 +151,7 @@ public class DetailReport_Activity extends Activity
 		MsgServerID= Integer.parseInt(token.nextToken().trim());
 		Noti_text= token.nextToken().trim();
 		
-		dbengine.close();
+		//dbengine.close();
 		if(Noti_text.equals("") || Noti_text.equals("Null"))
 		{
 			
@@ -177,12 +169,12 @@ public class DetailReport_Activity extends Activity
 			    	 long syncTIMESTAMP = System.currentTimeMillis();
 						Date dateobj = new Date(syncTIMESTAMP);
 						SimpleDateFormat df = new SimpleDateFormat(
-								"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+								"dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
 						String Noti_ReadDateTime = df.format(dateobj);
-			    	 dbengine.open();
+			    	 //dbengine.open();
 						
-						dbengine.updatetblNotificationMstr(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-						dbengine.close();
+						dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
+						//dbengine.close();
 			      dialog.dismiss();
 			     
 			     }
@@ -402,9 +394,9 @@ protected void onCreate(Bundle savedInstanceState)
 					
 					if(Integer.parseInt(back)==1)
 					{
-						dbengine.open();
+						//dbengine.open();
 				        AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
-				        dbengine.close();
+				        //dbengine.close();
 				        intializeFields();
 					}
 					else
@@ -435,16 +427,7 @@ protected void onCreate(Bundle savedInstanceState)
 				
 				
           }
-public boolean isOnline()
-{
-	ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-	NetworkInfo netInfo = cm.getActiveNetworkInfo();
-	if (netInfo != null && netInfo.isConnected()) 
-	{
-		return true;
-	}
-	return false;
-}
+
 
 private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 {		
@@ -459,9 +442,9 @@ private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 	{
 		super.onPreExecute();
 		
-		dbengine.open();
+		//dbengine.open();
 		dbengine.truncateAllSummaryDataTable();
-		dbengine.close();
+		//dbengine.close();
 		
 		
 		pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -505,9 +488,9 @@ private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 	      {
 	    	   pDialogGetStores.dismiss();
 		  }
-        dbengine.open();
+        //dbengine.open();
         AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
-        dbengine.close();
+        //dbengine.close();
         intializeFields();
 	  
 	}

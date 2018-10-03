@@ -74,7 +74,7 @@
         android:id="@+id/table_row_prdct" 
         android:layout_height="wrap_content" 
         android:layout_width="match_parent"
-        android:visibility="visible"
+        android:visibility="gone"
         android:weightSum="6">  
         <TextView 
             android:id="@+id/txt_prdct_lvl_dscnt"
@@ -125,7 +125,7 @@
         android:id="@+id/table_free_qty" 
         android:layout_height="wrap_content" 
         android:layout_width="match_parent"
-        android:visibility="visible"
+        android:visibility="gone"
         android:weightSum="6">
 
                <TextView
@@ -229,7 +229,7 @@
         android:id="@+id/table_addtnl_dscnt" 
         android:layout_height="wrap_content" 
         android:layout_width="match_parent"
-        android:visibility="visible"
+        android:visibility="gone"
         android:weightSum="6">  
         <TextView 
             android:id="@+id/txtaddtnl_dscnt"
@@ -275,12 +275,13 @@
       <View 
        android:layout_width="match_parent"
        android:layout_height="1dp"
+          android:visibility="gone"
        android:background="#80B0BEC5"/>
            <TableRow 
         android:id="@+id/table_invc_val_aftr_dscnt" 
         android:layout_height="wrap_content" 
         android:layout_width="match_parent"
-        android:visibility="visible"
+        android:visibility="gone"
         android:weightSum="6">  
         <TextView 
             android:id="@+id/txt_invc_val_aftr_dscnt"
@@ -342,7 +343,7 @@
                    android:paddingBottom="1dp"
                    android:paddingLeft="5dp"
                    android:paddingTop="1dp"
-                   android:text="@string/GStAmount"
+                   android:text="@string/productlist_taxamount"
                    android:textColor="#000000"
                    android:textSize="12sp"/>
         <TextView 
@@ -394,7 +395,7 @@
                    android:paddingBottom="1dp"
                    android:paddingLeft="5dp"
                    android:paddingTop="1dp"
-                   android:text="@string/prodOValAfterGst"
+                   android:text="@string/prodOValAfterTax"
                    android:textColor="#000000"
                    android:textSize="12sp"/>
         <TextView 
@@ -530,6 +531,7 @@
             <View 
        android:layout_width="match_parent"
        android:layout_height="1dp"
+                android:visibility="gone"
        android:background="#80B0BEC5"/>
            <TableRow 
         android:id="@+id/table_amnt_prv_due" 
@@ -680,19 +682,22 @@
            android:textColor="#000000"
             android:padding="1dp" android:gravity="center"/>
     </TableRow>
-
+       <View
+           android:layout_width="match_parent"
+           android:layout_height="1dp"
+           android:background="#80B0BEC5"/>
 
        <TableRow
-           android:id="@+id/table_tvPrvsAmtOutstanding_due"
+           android:id="@+id/table_trPreviousOutStanding"
            android:layout_height="wrap_content"
            android:layout_width="match_parent"
            android:visibility="visible"
            android:weightSum="6">
            <TextView
-               android:id="@+id/tvPrvsAmtOutstanding"
+               android:id="@+id/tvPrvAmtOutstandingNew"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
-               android:text="@string/PrvAmtOutStnding"
+               android:text="@string/PrevOutAmt"
                android:layout_weight="3"
                android:paddingTop="1dp"
                android:paddingBottom="1dp"
@@ -700,7 +705,7 @@
                android:textColor="#000000"
                android:paddingLeft="5dp" />
            <TextView
-               android:id="@+id/txt_tvAmtPrvsOutstanding_amnt"
+               android:id="@+id/txt_amt1"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
 
@@ -711,7 +716,7 @@
 
                android:padding="1dp" android:gravity="center"/>
            <TextView
-               android:id="@+id/tvAmtPrvsOutstandingVAL"
+               android:id="@+id/tvPreAmtOutstandingVALNew"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
                android:text="0.00"
@@ -720,7 +725,7 @@
                android:textColor="#000000"
                android:padding="1dp" android:gravity="center"/>
            <TextView
-               android:id="@+id/txt_tvAmtPrvsOutstanding_bal"
+               android:id="@+id/txt_amt2"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
 
@@ -729,22 +734,21 @@
                android:textColor="#000000"
                android:padding="1dp" android:gravity="center"/>
        </TableRow>
-
        <View
            android:layout_width="match_parent"
            android:layout_height="1dp"
            android:background="#80B0BEC5"/>
        <TableRow
-           android:id="@+id/table_tvTtlAmtOutstanding_due"
+           android:id="@+id/table_trTotalAmtCollected"
            android:layout_height="wrap_content"
            android:layout_width="match_parent"
-           android:visibility="visible"
+           android:visibility="gone"
            android:weightSum="6">
            <TextView
-               android:id="@+id/tvTtlAmtOutstanding"
+               android:id="@+id/tvTotalAmtCollectedNew"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
-               android:text="@string/TtlAmtOutStnding"
+               android:text="Collection Amount"
                android:layout_weight="3"
                android:paddingTop="1dp"
                android:paddingBottom="1dp"
@@ -752,7 +756,7 @@
                android:textColor="#000000"
                android:paddingLeft="5dp" />
            <TextView
-               android:id="@+id/txt_tvTtlAmtOutstanding_amnt"
+               android:id="@+id/txt_TotalAmtCollected1"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
 
@@ -763,7 +767,7 @@
 
                android:padding="1dp" android:gravity="center"/>
            <TextView
-               android:id="@+id/tvTtlAmtOutstandingVAL"
+               android:id="@+id/tvTotalAmtCollected"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
                android:text="0.00"
@@ -772,7 +776,7 @@
                android:textColor="#000000"
                android:padding="1dp" android:gravity="center"/>
            <TextView
-               android:id="@+id/txt_tvTtlAmtOutstanding_bal"
+               android:id="@+id/txt_TotalAmtCollected2"
                android:layout_width="0dp"
                android:layout_height="wrap_content"
 
@@ -781,6 +785,12 @@
                android:textColor="#000000"
                android:padding="1dp" android:gravity="center"/>
        </TableRow>
+       <View
+           android:layout_width="match_parent"
+           android:layout_height="1dp"
+
+           android:background="#80B0BEC5"/>
+
    </TableLayout>
                 
            

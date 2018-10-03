@@ -1,12 +1,10 @@
 package project.astix.com.parasorder;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
-
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -16,11 +14,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.ProgressDialog;
+import android.widget.Toast;
 
 import com.astix.Common.CommonInfo;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment 
 {
@@ -28,7 +30,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
-	DBAdapterKenya dbengine; 
+	PRJDatabase dbengine;
 	private Activity mContext;
 	
 	LinearLayout ll_Scroll_product,ll_scheme_detail;
@@ -39,6 +41,17 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 	
 	public String[] AllDataContainer;
 	public View rootView;
+
+	public boolean isOnline()
+	{
+		ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnected())
+		{
+			return true;
+		}
+		return false;
+	}
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,7 +60,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
        rootView = inflater.inflate(R.layout.store_and_sku_wise, container, false);
         
         mContext = getActivity();
-        dbengine = new DBAdapterKenya(mContext);
+        dbengine = new PRJDatabase(mContext);
         
         TelephonyManager tManager = (TelephonyManager) mContext.getSystemService(mContext.TELEPHONY_SERVICE);
 		imei = tManager.getDeviceId();
@@ -59,7 +72,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		}
 		else
 		{
-			imei=CommonInfo.imei.trim();
+			imei= CommonInfo.imei.trim();
 		}
 		
 		
@@ -69,18 +82,21 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		//fDate="29-10-2015";
 		
 		//'868087024619932','29-10-2015'  
-		
 
-		 try
-		    {
-		      GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay();
-			  task.execute();
-			} 
-		 catch (Exception e) 
-		 {
-					// TODO Autouuid-generated catch block
-			e.printStackTrace();
+
+		if(isOnline()) {
+			try {
+				GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay();
+				task.execute();
+			} catch (Exception e) {
+				// TODO Autouuid-generated catch block
+				e.printStackTrace();
 			}
+		}
+		else
+		{
+			Toast.makeText(mContext, getResources().getString(R.string.NoDataConnectionFullMsg), Toast.LENGTH_SHORT).show();
+		}
 		 
 		
 		
@@ -101,9 +117,9 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 			super.onPreExecute();
 			
 
-			dbengine.open();
+			//dbengine.open();
 			dbengine.truncateStoreAndSKUWiseDataTable();
-			dbengine.close();
+			//dbengine.close();
 			
 			
 			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
@@ -147,9 +163,9 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		      {
 		    	   pDialogGetStores.dismiss();
 			  }
-            dbengine.open();
+            //dbengine.open();
             AllDataContainer= dbengine.fetchAllDataFromtblStoreSKUWiseDaySummary();
-            dbengine.close();
+            //dbengine.close();
             intializeFields();
 		  
 		}
@@ -197,7 +213,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		TextView total_StockValue=(TextView)rootView.findViewById(R.id.total_StockValue);
 		total_StockValue.setText(a4);*/
 		TextView total_discountValue=(TextView)rootView.findViewById(R.id.total_discountValue);
-		Double disc_val=Double.parseDouble(a8);
+		Double disc_val=Double.parseDouble(a7);
 		disc_val= Double.parseDouble(new DecimalFormat("##.##").format(disc_val));
 		total_discountValue.setText(""+disc_val.intValue());
 		
@@ -270,9 +286,9 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 				
 				
 				txt_store_sku.setText(s3);
-				/*dbengine.open();
+				/*//dbengine.open();
 				String StoreName=dbengine.FetchStoreName(s13.trim());
-				dbengine.close();
+				//dbengine.close();
 				txt_store_sku.setText(StoreName);*/
 				
 				Double disc_val1=Double.parseDouble(s8);
@@ -283,7 +299,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 				Double ValBeforeTax1=Double.parseDouble(s9);
 				ValBeforeTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax1));
 				txt_store_sku_gross_val.setText(""+ValBeforeTax1.intValue());
-				
+				 txt_store_sku_gross_val.setVisibility(View.GONE);
 				
 				Double ValTax1=Double.parseDouble(s10);
 		 		ValTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValTax1));
@@ -368,7 +384,7 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 				Double ValBeforeTax1=Double.parseDouble(s9);
 				ValBeforeTax1=Double.parseDouble(new DecimalFormat("##.##").format(ValBeforeTax1));
 				txt_gross_val.setText(""+ValBeforeTax1.intValue());
-				
+				 txt_gross_val.setVisibility(View.GONE);
 				
 				TextView txt_tac_val=(TextView) view.findViewById(R.id.txt_tac_val);
 				Double ValTax1=Double.parseDouble(s10);

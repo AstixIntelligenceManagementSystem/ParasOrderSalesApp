@@ -12,8 +12,6 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,7 +22,6 @@ import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -83,7 +80,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 
-public class DistributorMapActivity extends AppCompatActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,OnMapReadyCallback
+public class DistributorMapActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,OnMapReadyCallback
 {
     LinkedHashMap<String,String> hmapDistributorListWithRemapFlg=new LinkedHashMap<String,String>();
     LinkedHashMap<String,String> hmapDistributorListWithNodeIDType=new LinkedHashMap<String,String>();
@@ -139,7 +136,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
     public String fnLongi="0";
     public Double fnAccuracy=0.0;
 
-    DBAdapterKenya helperDb;
+    PRJDatabase helperDb=new PRJDatabase(this);
 
     public String AccuracyFromLauncher="NA";
     String AddressFromLauncher="NA";
@@ -247,7 +244,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
         setContentView(R.layout.activity_distributor_map);
 
         refreshCount=0;
-        helperDb=new DBAdapterKenya(DistributorMapActivity.this);
+       // helperDb=new PRJDatabase(DistributorMapActivity.this);
         locationManager=(LocationManager) this.getSystemService(LOCATION_SERVICE);
         ll_locationDetails= (LinearLayout) findViewById(R.id.ll_locationDetails);
         ll_parentLayout= (LinearLayout) findViewById(R.id.ll_parentLayout);
@@ -285,7 +282,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
 
         if(imei==null)
         {
-            imei=CommonInfo.imei;
+            imei= CommonInfo.imei;
         }
         if(fDate==null)
         {
@@ -538,10 +535,10 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
 
     public void fnGetDistributorList()
     {
-        helperDb.open();
+        //helperDb.open();
 
-        Distribtr_list=helperDb.getDistributorDataMstr();
-        helperDb.close();
+        Distribtr_list=helperDb.getSuplierDataMstr();
+        //helperDb.close();
         for(int i=0;i<Distribtr_list.length;i++)
         {
             String value=Distribtr_list[i];
@@ -803,8 +800,17 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
         startLocationUpdates();
     }
 
-    protected void startLocationUpdates() {
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates( mGoogleApiClient, mLocationRequest, this);
+    protected void startLocationUpdates()
+    {
+        try
+        {
+            PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates( mGoogleApiClient, mLocationRequest, this);
+        }
+        catch (SecurityException e)
+        {
+
+        }
+
 
     }
 
@@ -1057,10 +1063,10 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
             // fnAccurateProvider="";
             if(fnAccurateProvider.equals(""))
             {
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails("NA", "NA", "NA","NA","NA","NA","NA","NA", "NA", "NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA","NA");
-                helperDb.close();
+                //helperDb.close();
 
                 if(pDialog2STANDBY.isShowing())
                 {
@@ -1166,10 +1172,10 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                 ft.show(mapFrag);
 
 
-                helperDb.open();
+                //helperDb.open();
                 helperDb.deleteLocationTable();
                 helperDb.saveTblLocationDetails(fnLati, fnLongi, String.valueOf(fnAccuracy), addr, city, zipcode, state,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
-                helperDb.close();
+                //helperDb.close();
         //        if(!checkLastFinalLoctionIsRepeated("28.4873276","77.1045244","22.201"))
                 if(!checkLastFinalLoctionIsRepeated(LattitudeFromLauncher,LongitudeFromLauncher,AccuracyFromLauncher))
                 {
@@ -1241,16 +1247,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
 
         }}
 
-    public boolean isOnline()
-    {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnected())
-        {
-            return true;
-        }
-        return false;
-    }
+
 
     public boolean checkLastFinalLoctionIsRepeated(String currentLat, String currentLong, String currentAccuracy){
         boolean repeatedLoction=false;
@@ -1268,7 +1265,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
             // If file does not exists, then create it
             if (file.exists()) {
@@ -1348,7 +1345,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
             }
             String txtFileNamenew="GPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.AppLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1415,7 +1412,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
             }
             String txtFileNamenew="FinalGPSLastLocation.txt";
             File file = new File(jsonTxtFolder,txtFileNamenew);
-            String fpath = Environment.getExternalStorageDirectory()+"/"+CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
+            String fpath = Environment.getExternalStorageDirectory()+"/"+ CommonInfo.FinalLatLngJsonFile+"/"+txtFileNamenew;
 
 
             // If file does not exists, then create it
@@ -1455,12 +1452,12 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
         }
     }
 
-   /* public String getAddressOfProviders(String latti, String longi){
+    public String getAddressOfProviders(String latti, String longi){
 
         StringBuilder FULLADDRESS2 =new StringBuilder();
         Geocoder geocoder;
         List<Address> addresses;
-        geocoder = new Geocoder(DistributorMapActivity.this, Locale.getDefault());
+        geocoder = new Geocoder(DistributorMapActivity.this, Locale.ENGLISH);
 
 
 
@@ -1486,7 +1483,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                         }
                     }
                 }
-		      *//* //String address = addresses.get(0).getAddressLine(0);
+		      /* //String address = addresses.get(0).getAddressLine(0);
 		       String address = addresses.get(0).getAddressLine(1); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
 		       String city = addresses.get(0).getLocality();
 		       String state = addresses.get(0).getAdminArea();
@@ -1494,42 +1491,8 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
 		       String postalCode = addresses.get(0).getPostalCode();
 		       String knownName = addresses.get(0).getFeatureName();
 		       FULLADDRESS=address+","+city+","+state+","+country+","+postalCode;
-		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*//*
+		      Toast.makeText(contextcopy, "ADDRESS"+address+"city:"+city+"state:"+state+"country:"+country+"postalCode:"+postalCode, Toast.LENGTH_LONG).show();*/
 
-            }
-
-        } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-
-
-        return FULLADDRESS2.toString();
-
-    }*/
-
-    public String getAddressOfProviders(String latti, String longi){
-
-        StringBuilder FULLADDRESS2 =new StringBuilder();
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(DistributorMapActivity.this, Locale.ENGLISH);
-
-
-
-        try {
-            addresses = geocoder.getFromLocation(Double.parseDouble(latti), Double.parseDouble(longi), 1);
-
-            if (addresses == null || addresses.size()  == 0 || addresses.get(0).getAddressLine(0)==null)
-            {
-                FULLADDRESS2=  FULLADDRESS2.append("NA");
-            }
-            else
-            {
-                FULLADDRESS2 =FULLADDRESS2.append(addresses.get(0).getAddressLine(0));
             }
 
         } catch (NumberFormatException e) {
@@ -1663,6 +1626,15 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                 }
 
 
+               /* for(int i=0 ;i<addresses.size();i++){
+                    addressTemp = addresses.get(i);
+                    if(addressTemp.getPostalCode()!=null){
+                        zipcode=addressTemp.getPostalCode();
+                        this.pincode=zipcode;
+                        break;
+                    }
+                    address=  getAddressNewWay(addresses.get(0).getAddressLine(0),city,state,zipcode,countryname);
+                }*/
                 for(int i=0 ;i<addresses.size();i++){
                     addressTemp = addresses.get(i);
                     if(addressTemp.getPostalCode()!=null){
@@ -1671,14 +1643,16 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                         break;
                     }
                 }
+
                 if(addresses.get(0).getAddressLine(0)!=null && addr.equals("NA")){
                     String countryname="NA";
                     if(addresses.get(0).getCountryName()!=null){
                         countryname=addresses.get(0).getCountryName();
                     }
 
-                    addr=  getAddressNewWay(addresses.get(0).getAddressLine(0),city,state,zipcode,countryname);
+                    address=  getAddressNewWay(addresses.get(0).getAddressLine(0),city,state,zipcode,countryname);
                 }
+
 
                 NewStoreForm recFragment = (NewStoreForm)getFragmentManager().findFragmentByTag("NewStoreFragment");
                 if(null != recFragment)
@@ -1694,31 +1668,6 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
         finally{
             return fullAddress=addr+"^"+zipcode+"^"+city+"^"+state;
         }
-    }
-    public String getAddressNewWay(String ZeroIndexAddress,String city,String State,String pincode,String country){
-        String editedAddress=ZeroIndexAddress;
-        if(editedAddress.contains(city)){
-            editedAddress= editedAddress.replace(city,"");
-
-        }
-        if(editedAddress.contains(State)){
-            editedAddress=editedAddress.replace(State,"");
-
-        }
-        if(editedAddress.contains(pincode)){
-            editedAddress= editedAddress.replace(pincode,"");
-
-        }
-        if(editedAddress.contains(country)){
-            editedAddress=editedAddress.replace(country,"");
-
-        }
-        if(editedAddress.contains(",")){
-            editedAddress=editedAddress.replace(","," ");
-
-        }
-
-        return editedAddress;
     }
 
     void SubmitBtnWorking()
@@ -2017,8 +1966,8 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
         String finalCity=etCity.getText().toString().trim();
         String finalState=etState.getText().toString().trim();
 
-        helperDb.open();
-        helperDb.savetblDistributorMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
+        //helperDb.open();
+        helperDb.savetblSuplierMappingData(UniqueDistribtrMapId,""+DistribtrId_Global,""+DistributorNodeType_Global,flgGSTCapture,flgGSTCompliance,
                 GSTNumber,finalAddress,finalPinCode,finalCity,finalState,SOLattitudeFromLauncher,SOLongitudeFromLauncher,
                 SOAccuracyFromLauncer,"0",SOProviderFromLauncher,SOAllProvidersLocationFromLauncher,fnAddressFromLauncher,
                 SOGpsLatFromLauncher,SOGpsLongFromLauncher,SOGpsAccuracyFromLauncher,SOGpsAddressFromLauncher,
@@ -2028,7 +1977,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                 SOFusedLocationAccuracyWithFirstAttemptFromLauncher,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart);
 
 
-        helperDb.close();
+        //helperDb.close();
         try
         {
            FullSyncDataNow task = new FullSyncDataNow(DistributorMapActivity.this);
@@ -2120,7 +2069,7 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
             SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
             String StampEndsTime = df.format(dateobj);
             SimpleDateFormat df1 = new SimpleDateFormat("dd.MMM.yyyy.HH.mm.ss",Locale.ENGLISH);
-            newfullFileName=CommonInfo.imei+"."+ df1.format(dateobj);
+            newfullFileName= CommonInfo.imei+"."+ df1.format(dateobj);
             LinkedHashMap<String,String> hmapstlist=new LinkedHashMap<String, String>();
 
 
@@ -2138,14 +2087,14 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
                 DA.close();
 
                 helperDb.savetbl_XMLfiles(newfullFileName, "3","2");
-                helperDb.open();
+                //helperDb.open();
 
                 helperDb.UpdateDistributerFlag(UniqueDistribtrMapId, 4);
 
 
-                helperDb.close();
+                //helperDb.close();
 
-                helperDb.fnupdateDisributorMstrLocationtrackRemapFlg(UniqueDistribtrMapId);
+                helperDb.fnupdateSuplierMstrLocationtrackRemapFlg(UniqueDistribtrMapId);
 
 
 
@@ -2206,5 +2155,29 @@ public class DistributorMapActivity extends AppCompatActivity implements Locatio
 
 
 
+    public String getAddressNewWay(String ZeroIndexAddress,String city,String State,String pincode,String country){
+        String editedAddress=ZeroIndexAddress;
+        if(editedAddress.contains(city)){
+            editedAddress= editedAddress.replace(city,"");
+
+        }
+        if(editedAddress.contains(State)){
+            editedAddress=editedAddress.replace(State,"");
+
+        }
+        if(editedAddress.contains(pincode)){
+            editedAddress= editedAddress.replace(pincode,"");
+
+        }
+        if(editedAddress.contains(country)){
+            editedAddress=editedAddress.replace(country,"");
+
+        }
+        if(editedAddress.contains(",")){
+            editedAddress=editedAddress.replace(","," ");
+
+        }
+        return editedAddress;
+    }
 
 }

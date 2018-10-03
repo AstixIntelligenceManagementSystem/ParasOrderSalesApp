@@ -1,7 +1,5 @@
 package project.astix.com.parasorder;
 
-import java.util.StringTokenizer;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -14,6 +12,8 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.StringTokenizer;
+
 public class LastVisitDetailsSecondPart extends BaseActivity
 {
 
@@ -22,18 +22,11 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 	public String fIMEI;
 	public String fDate;
 	public String pickerDate;
-	
-	DBAdapterKenya dbengine = new DBAdapterKenya(this); 
-	
-	public TableLayout tbl1_dyntable_For_LastVisitDate; 
-	
-	public TableLayout tbl1_dyntable_For_LastOrderDate; 
-	
+	public TableLayout tbl1_dyntable_For_LastVisitDate;
+	public TableLayout tbl1_dyntable_For_LastOrderDate;
 	public String LastVisitDateForTable[]=new String[1];
+	PRJDatabase dbengine = new PRJDatabase(this);
 	
-	
-
-	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -58,9 +51,9 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 	public void setUpVariable()
 	{
 		 TextView StoreName = (TextView)findViewById(R.id.StoreName);
-		    dbengine.open();
+		    //dbengine.open();
 			String selStoreName=dbengine.FetchStoreName(fStoreID);
-			dbengine.close();
+			//dbengine.close();
 			StoreName.setText(selStoreName+" "+getText(R.string.Summary));
 			
 			
@@ -92,16 +85,16 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			}
 		});
 		
-		dbengine.open();
+		//dbengine.open();
 		int checkDataForTotalValues=dbengine.counttblspForPDAGetLastOrderDetails_TotalValues(fStoreID);
 		System.out.println("Hello Value checkDataForTotalValues :"+checkDataForTotalValues);
-		dbengine.close();
+		//dbengine.close();
 		if(checkDataForTotalValues==1)
 		{
 			
 			 TextView OrderValue = (TextView)findViewById(R.id.OrderValue);
 			 TextView ExecutionValue = (TextView)findViewById(R.id.ExecutionValue);
-			dbengine.open();
+			//dbengine.open();
 			String LastTotalOrderAndExecutionValue[]=dbengine.fetchAllDataFromtblspForPDAGetLastOrderDetails_TotalValues(fStoreID);
 			StringTokenizer tokens = new StringTokenizer(String.valueOf(LastTotalOrderAndExecutionValue[0]), "_");
 			
@@ -114,17 +107,17 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			OrderValue.setText("Rs. "+OV);
 			
 			ExecutionValue.setText("Rs. "+EV);
-			dbengine.close();
+			//dbengine.close();
 		}
 		
 	}
 	
 	public void setUpTablesData()
 	{
-		dbengine.open();
+		//dbengine.open();
 		System.out.println("New Getting fStoreID :"+fStoreID);
 		int checkDataForVisitDetails=dbengine.counttblForPDAGetLastVisitDetails(fStoreID);
-		dbengine.close();
+		//dbengine.close();
 		System.out.println("New Getting checkDataForVisitDetails :"+checkDataForVisitDetails);
 		if(checkDataForVisitDetails==1)
 		{
@@ -132,16 +125,16 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 			VisitDetailLayout.setVisibility(View.VISIBLE);
 			RelativeLayout relativeLayoutLastVisitDate = (RelativeLayout)findViewById(R.id.relativeLayoutLastVisitDate);
 			relativeLayoutLastVisitDate.setVisibility(View.VISIBLE);
-			dbengine.open();
+			//dbengine.open();
 			String LastVisitDetails[]=dbengine.fetchAllDataFromtblForPDAGetLastVisitDetails(fStoreID);
 			LastVisitDateForTable=dbengine.fetchDateFromtblForPDAGetLastVisitDetails(fStoreID);
 			//System.out.println("Ashish and Anuj LTDdet[i] : "+LTDdet.length);
-			dbengine.close();
+			//dbengine.close();
 			
 			TextView VisitDate = (TextView)findViewById(R.id.VisitDateId);
 			VisitDate.setText("("+LastVisitDateForTable[0]+")");
-			TextView ExecutedDate = (TextView)findViewById(R.id.ExecutedDate);
-			ExecutedDate.setText(getText(R.string.Executed)+"("+LastVisitDateForTable[0]+")");
+			//TextView ExecutedDate = (TextView)findViewById(R.id.ExecutedDate);
+			//ExecutedDate.setText(getText(R.string.Executed)+"("+LastVisitDateForTable[0]+")");
 			
 			
 			LayoutInflater inflater = getLayoutInflater();
@@ -162,15 +155,15 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 				final TableRow row = (TableRow)inflater.inflate(R.layout.table_last_visit_details, tbl1_dyntable_For_LastVisitDate, false);
 				
 				TextView tv1 = (TextView)row.findViewById(R.id.RowSKUName);
-				TextView tv2 = (TextView)row.findViewById(R.id.RowStock);
-				TextView tv3 = (TextView)row.findViewById(R.id.RowOrderQty);
+				//TextView tv2 = (TextView)row.findViewById(R.id.RowStock);
+				//TextView tv3 = (TextView)row.findViewById(R.id.RowOrderQty);
 				TextView tv4 = (TextView)row.findViewById(R.id.RowExecutionQty);
 				
 				if(screenInches>6.5)
 				{
 					tv1.setTextSize(14);
-					tv2.setTextSize(14);
-					tv3.setTextSize(14);
+					//tv2.setTextSize(14);
+					//tv3.setTextSize(14);
 					tv4.setTextSize(14);
 				}
 				else
@@ -182,9 +175,10 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 				StringTokenizer tokens = new StringTokenizer(String.valueOf(LastVisitDetails[current]), "^");
 				
 				tv1.setText(tokens.nextToken().trim());
-				
-				tv2.setText(tokens.nextToken().trim());
-				tv3.setText(tokens.nextToken().trim());
+				tokens.nextToken().trim();
+				tokens.nextToken().trim();
+				//tv2.setText(tokens.nextToken().trim());
+				//tv3.setText(tokens.nextToken().trim());
 				tv4.setText(tokens.nextToken().trim());
 			
 				tbl1_dyntable_For_LastVisitDate.addView(row);
@@ -206,22 +200,22 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 		
 		
 
-		dbengine.open();
+		//dbengine.open();
 		int checkDataForOrderDetails=dbengine.counttblForPDAGetLastOrderDetails(fStoreID);
-		dbengine.close();
+		//dbengine.close();
 		if(checkDataForOrderDetails==1)
 		{
 			
 			
-			dbengine.open();
+			//dbengine.open();
 			String LastOrderDetails[]=dbengine.fetchAllDataFromtblForPDAGetLastOrderDetails(fStoreID);
 			//System.out.println("Ashish and Anuj LTDdet[i] : "+LTDdet.length);
 			String LastOrderDateForTable[]=dbengine.fetchOrderDateFromtblForPDAGetLastOrderDetails(fStoreID);
-			dbengine.close();
-			System.out.println("New Value LastOrderDateForTable.length"+LastOrderDateForTable.length);
+			//dbengine.close();
+			/*System.out.println("New Value LastOrderDateForTable.length"+LastOrderDateForTable.length);
 			System.out.println("New Value LastVisitDateForTable.length"+LastVisitDateForTable.length);
 			System.out.println("New Value LastVisitDateForTable "+LastVisitDateForTable[0]);
-			System.out.println("New Value LastOrderDateForTable"+LastOrderDateForTable[0]);
+			System.out.println("New Value LastOrderDateForTable"+LastOrderDateForTable[0]);*/
 			
 			if(LastVisitDateForTable[0].equals(LastOrderDateForTable[0]))
 			{
@@ -241,8 +235,8 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 				relativeLayoutForOrderDetails.setVisibility(View.VISIBLE);
 			TextView OrderDate = (TextView)findViewById(R.id.OrderDateId);
 			OrderDate.setText("("+LastOrderDateForTable[0]+")");
-			TextView ExecutedDateOrder = (TextView)findViewById(R.id.ExecutedDateOrder);
-			ExecutedDateOrder.setText(getText(R.string.Executed)+"("+LastOrderDateForTable[0]+")");
+			//TextView ExecutedDateOrder = (TextView)findViewById(R.id.ExecutedDateOrder);
+			//ExecutedDateOrder.setText(getText(R.string.Executed)+"("+LastOrderDateForTable[0]+")");
 			
 			LayoutInflater inflater = getLayoutInflater();
 			
@@ -263,15 +257,15 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 				
 				TextView tv1 = (TextView)row.findViewById(R.id.RowSKUName);
 				TextView tv2 = (TextView)row.findViewById(R.id.RowOrder);
-				TextView tv3 = (TextView)row.findViewById(R.id.RowFreeQty);
-				TextView tv4 = (TextView)row.findViewById(R.id.RowExecutionQty);
+				//TextView tv3 = (TextView)row.findViewById(R.id.RowFreeQty);
+				//TextView tv4 = (TextView)row.findViewById(R.id.RowExecutionQty);
 				
 				if(screenInches>6.5)
 				{
 					tv1.setTextSize(14);
 					tv2.setTextSize(14);
-					tv3.setTextSize(14);
-					tv4.setTextSize(14);
+					//tv3.setTextSize(14);
+					//tv4.setTextSize(14);
 				}
 				else
 				{
@@ -284,8 +278,8 @@ public class LastVisitDetailsSecondPart extends BaseActivity
 				tv1.setText(tokens.nextToken().trim());
 				
 				tv2.setText(tokens.nextToken().trim());
-				tv3.setText(tokens.nextToken().trim());
-				tv4.setText(tokens.nextToken().trim());
+				//tv3.setText(tokens.nextToken().trim());
+				//tv4.setText(tokens.nextToken().trim());
 			
 				tbl1_dyntable_For_LastOrderDate.addView(row);
 			}

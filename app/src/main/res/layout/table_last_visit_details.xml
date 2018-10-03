@@ -9,32 +9,17 @@
                             android:background="#90a3c1"
                            android:textSize="10dp"
                              android:layout_width="0dip"
-                            android:layout_weight="5"
+                            android:layout_weight="7"
                             android:singleLine="true" />
 
                         
-                        
-                        <TextView
-                            android:id="@+id/RowStock"
-                            android:layout_margin="0.2dp"
-                            android:background="#90a3c1"
-                            android:layout_width="0dip"
-                            android:layout_weight="1"
-                            android:textSize="10dp"
-                            android:gravity="center_horizontal"
-                            android:singleLine="true" />
 
-                        <TextView
-                            android:id="@+id/RowOrderQty"
-                            android:layout_margin="0.2dp"
-                            android:background="#90a3c1"
-                             android:layout_width="0dip"
-                            android:layout_weight="1"
-                           android:textSize="10dp"
-                            android:gravity="center_horizontal"
-                            android:singleLine="true" />
+
+
+
                         <TextView
                             android:id="@+id/RowExecutionQty"
+
                             android:layout_margin="0.2dp"
                             android:background="#90a3c1"
                             android:layout_width="0dip"

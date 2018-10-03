@@ -91,8 +91,8 @@ public class SyncMasterDistributor extends Activity
 
     public  File dir;
 
-    DBAdapterKenya db = new DBAdapterKenya(this);
-    DBAdapterKenya dbengine = new DBAdapterKenya(this);
+    PRJDatabase db = new PRJDatabase(this);
+    PRJDatabase dbengine = new PRJDatabase(this);
     class MyTimerTaskForDataSubmission extends TimerTask
     {
 
@@ -210,7 +210,7 @@ public class SyncMasterDistributor extends Activity
 
                         dialog.dismiss();
 
-                        //  db.open();
+                        //  //db.open();
                         //System.out.println("Indubati flgChangeRouteOrDayEnd :"+StoreSelection_Old.flgChangeRouteOrDayEnd);
 					/*if(StoreSelection.flgChangeRouteOrDayEnd==1 || StoreSelection.flgChangeRouteOrDayEnd==2)
 					{
@@ -219,7 +219,7 @@ public class SyncMasterDistributor extends Activity
 
 
                         //  db.reCreateDB();
-                        //  db.close();
+                        //  //db.close();
 
                         Intent submitStoreIntent = new Intent(SyncMasterDistributor.this, AllButtonActivity.class);
                         startActivity(submitStoreIntent);
@@ -294,10 +294,10 @@ public class SyncMasterDistributor extends Activity
         String[] fp2s; // = "/mnt/sdcard/NMPphotos/1539_24-05-2013_1.jpg";
 
         try {
-            //db.open();
+            ////db.open();
             //String[] sySTidS = db.getStoreIDTblSelectedStoreIDinChangeRouteCase();
             //String date= db.GetPickerDate();
-            // db.close();
+            // //db.close();
 
             showSyncSuccessStart();
 
@@ -306,7 +306,7 @@ public class SyncMasterDistributor extends Activity
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
-            db.close();
+            //db.close();
             e.printStackTrace();
         }
     }
