@@ -288,12 +288,33 @@
             android:drawablePadding="10dp"
             android:paddingBottom="8dp"
             />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="0dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/custom_button_login"
+                android:layout_height="30dp"
+                android:visibility="visible"
+                android:layout_weight="1"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:textColor="#fff"
+                android:id="@+id/cancel_btn"
+                android:textStyle="bold"
+                android:text="@string/txtCancel"
+                />
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
 android:layout_gravity="center_horizontal"
             android:background="@drawable/custom_button_login"
             android:layout_height="30dp"
             android:visibility="visible"
+            android:layout_weight="1"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="10dp"
@@ -303,7 +324,7 @@ android:layout_gravity="center_horizontal"
             android:textStyle="bold"
             android:text="@string/txtValidate"
             />
-
+        </LinearLayout>
 
     </LinearLayout>
         <ScrollView

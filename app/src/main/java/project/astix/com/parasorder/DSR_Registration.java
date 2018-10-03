@@ -89,7 +89,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
     TextView welcomeTextView,txt_Dob_credential,Text_Dob,Text_married_date,spinnerQualification,Text_capture_image,Text_Browse_image,spinner_bloodgrp,textMessage,text_UpdateNow,text_NotYou,text_Daystart;
     TextView CovrageArea,textContact,textDob,ContactOnWelcome , DobOnWelcome,textCoverage ,textviewFirstname,textviewLastname,textviewContact,textviewDOB,textviewSex,textviewMaritalStatus,textviewMarriedDate,textviewQualification,textviewUpdatedPhoto,textviewBloodGrp,textviewSignhere;
     EditText ET_mobile_credential,ET_firstname,ET_lastname ,ET_contact_no,editText_emailID;
-    Button validate_btn,Submit_btn,BtnCancel;
+    Button validate_btn,Submit_btn,BtnCancel,cancel_btn;
     ImageView imgView_photo,imgCncl,profile_image;
     public int chkFlgForErrorToCloseApp=0;
 
@@ -810,6 +810,14 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
     public void ButtonInitialize()
     {
        validate_btn=(Button)findViewById(R.id.validate_btn);
+        cancel_btn= (Button) findViewById(R.id.cancel_btn);
+        cancel_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                parentOf_questionLayout.setVisibility(View.VISIBLE);
+                parentOf_validationLayout.setVisibility(View.GONE);
+            }
+        });
        validate_btn.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View v) {

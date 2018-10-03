@@ -1050,6 +1050,8 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                     flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
 
             //dbengine.close();
+            dbengine.deleteLocationTable();
+            dbengine.saveTblLocationDetails(fnLati, fnLongi, finalAccuracy, MapAddress, MapCity, MapPincode, MapState,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
 
 
 
@@ -1106,6 +1108,10 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
                         FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,
                         FusedLocationAccuracyWithFirstAttempt,3,flgLocationServicesOnOff,flgGPSOnOff,flgNetworkOnOff,
                         flgFusedOnOff,flgInternetOnOffWhileLocationTracking,flgRestart, cityID, StateID, MapAddress, MapCity, MapPincode, MapState);
+
+                //dbengine.close();
+                dbengine.deleteLocationTable();
+                dbengine.saveTblLocationDetails(fnLati, fnLongi, finalAccuracy, MapAddress, MapCity, MapPincode, MapState,fnAccurateProvider,GpsLat,GpsLong,GpsAccuracy,NetwLat,NetwLong,NetwAccuracy,FusedLat,FusedLong,FusedAccuracy,AllProvidersLocation,GpsAddress,NetwAddress,FusedAddress,FusedLocationLatitudeWithFirstAttempt,FusedLocationLongitudeWithFirstAttempt,FusedLocationAccuracyWithFirstAttempt);
 
                 //dbengine.close();
 
