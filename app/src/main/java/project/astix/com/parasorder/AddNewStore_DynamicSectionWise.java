@@ -1944,7 +1944,7 @@ public class AddNewStore_DynamicSectionWise extends BaseFragmentActivity impleme
         else
         {
 
-            if(countSubmitClicked==1)
+            if(countSubmitClicked==0)
             {
 
                 locationRetrievingAndDistanceCalculating();

@@ -3410,13 +3410,13 @@ else
 		}
 
 
-		//dbengine.open();
-		String allLoctionDetails=  dbengine.getLocationDetails();
-		//dbengine.close();
+
+		/*String allLoctionDetails=  dbengine.getLocationDetails();
+
 		if(allLoctionDetails.equals("0"))
 		{
 			firstTimeLocationTrack();
-		}
+		}*/
 
 
 
