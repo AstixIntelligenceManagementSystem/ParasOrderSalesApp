@@ -3468,7 +3468,7 @@ else
 
 		String [] AllFilesName= checkNumberOfFiles(del);
 
-		if(AllFilesName.length>0)
+		if(AllFilesName!=null && AllFilesName.length>0)
 		{
 			totalFiles=AllFilesName.length;
 		}
@@ -3482,7 +3482,7 @@ else
 
 		String [] AllFilesName= checkNumberOfFiles(del);
 
-		if(AllFilesName.length>0)
+		if(AllFilesName!=null && AllFilesName.length>0)
 		{
 			totalFiles=AllFilesName.length;
 		}

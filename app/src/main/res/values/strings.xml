@@ -537,6 +537,7 @@ Click on UPDATE PAYMENT to update Collection amount.</string>
     <string name="Continue">Continue</string>
     <string name="ChangeQty">Change Qty</string>
     <string name="SubmittingOrderDetails">Saving Invoice Details...</string>
+
     <string name="SubmittingInvoiceOrderDetails">Saving Invoice/Order Details...</string>
     <string name="Loading">Loading...</string>
     <string name="MyNameAbhinav">My Name Abhinav</string>

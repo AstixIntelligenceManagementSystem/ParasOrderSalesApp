@@ -136,7 +136,7 @@ class ImageUploadAsyncTask extends AsyncTask<Void,Void,Boolean>
 
         String [] AllFilesName= checkNumberOfFiles(del);
 
-        if(AllFilesName.length>0)
+        if(AllFilesName!=null && AllFilesName.length>0)
         {
             totalFiles=AllFilesName.length;
         }
@@ -150,7 +150,7 @@ class ImageUploadAsyncTask extends AsyncTask<Void,Void,Boolean>
 
         String [] AllFilesName= checkNumberOfFiles(del);
 
-        if(AllFilesName.length>0)
+        if(AllFilesName!=null && AllFilesName.length>0)
         {
             totalFiles=AllFilesName.length;
         }

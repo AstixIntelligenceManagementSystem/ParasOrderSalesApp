@@ -1534,13 +1534,7 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
             if (!AmountThirdString.equals("0")) {
                 dbengine.savetblAllCollectionData(StoreVisitCode, storeIDGlobal, paymentModeThirdString, "4", AmountThirdString, ChequeNoThirdString, DateThirdString, BankThirdString, TmpInvoiceCodePDA, CollectionCode);
             }
-           /* dbengine.savetblAllCollectionData(storeIDGlobal, paymentModeFirstString, AmountFirstString,
-                    ChequeNoFirstString, DateFirstString, BankFirstString,
-                    paymentModeSecondString, AmountSecondString,
-                    ChequeNoSecondString, DateSecondString, BankSecondString,
-                    paymentModeThirdString, AmountThirdString,
-                    ChequeNoThirdString, DateThirdString, BankThirdString,strGlobalOrderID);*/
-            //dbengine.close();
+
         } else {
 
         }
@@ -1548,19 +1542,6 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
 
         dbengine.UpdateStoreVisitSelfCreditNote(storeIDGlobal, StoreVisitCode, valSelfCreditNote);
 
-
-      /*  Intent ide=new Intent(CollectionActivityNew.this,ProductOrderReview.class);
-        ide.putExtra("SN", SN);
-        ide.putExtra("storeID", storeID);
-        ide.putExtra("imei", imei);
-        ide.putExtra("userdate", date);
-        ide.putExtra("pickerDate", pickerDate);
-        ide.putExtra("flgOrderType", flgOrderType);
-        ide.putExtra("OrderPDAID", strGlobalOrderID);
-
-
-        startActivity(ide);
-        finish();*/
 
 
     }
@@ -1624,39 +1605,7 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
         Double MinCollectionvalue = dbengine.fnGetStoretblLastOutstanding(storeID);
         MinCollectionvalue = Double.parseDouble(new DecimalFormat("##.##").format(MinCollectionvalue));
 
-       /* Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
-        cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
-*/
 
-       /* Double cntInvoceValue=dbengine.fetch_Store_InvValAmount(storeID,TmpInvoiceCodePDA);
-        cntInvoceValue=Double.parseDouble(new DecimalFormat("##.##").format(cntInvoceValue));
-
-
-        Double cntAllOustandings=dbengine.fetch_Store_AllOustandings(storeID);
-        cntAllOustandings=Double.parseDouble(new DecimalFormat("##.##").format(cntAllOustandings));
-
-
-        Double cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotCollectionAmtAgainstStoreIrespectiveOfVisit(storeID);
-        cntTotCollectionAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotCollectionAmtAgainstStoreIrespectiveOfVisit));
-
-
-
-
-        Double cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=dbengine.fnTotInvoicesAmtAgainstStoreIrespectiveOfVisit(storeID);
-        cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit=Double.parseDouble(new DecimalFormat("##.##").format(cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit));
-
-
-        Double totOutstandingValue=cntAllOustandings+cntInvoceValue+cntTotInvoicesAmtAgainstStoreIrespectiveOfVisit-cntTotCollectionAmtAgainstStoreIrespectiveOfVisit;
-        totOutstandingValue=Double.parseDouble(new DecimalFormat("##.##").format(totOutstandingValue));
-
-
-        Double valSelfCreditNote=0.0;
-        if(!TextUtils.isEmpty(et_SelfCreditNote.getText().toString()));
-        {
-            valSelfCreditNote=Double.parseDouble(et_SelfCreditNote.getText().toString());
-            valSelfCreditNote=Double.parseDouble(new DecimalFormat("##.##").format(valSelfCreditNote));
-        }
-*/
 
         if (ll_collectionMandatory.getVisibility() == View.VISIBLE && cb_collection.isChecked() == false && lnCollection.getVisibility() == View.VISIBLE && OverAllAmountCollected == 0.0) {
             showAlertSingleButtonError(CollectionActivityNew.this.getResources().getString(R.string.CollectionAlert1));
@@ -1669,8 +1618,14 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
             //if(Math.ceil(OverAllAmountCollected) < Math.ceil(totOutstandingValue))
             {
                 // showAlertSingleButtonError("Collection Amount can not be less then "+MinCollectionvalue);
-                showAlertSingleAfterCostumValidationForAmountCollection(CollectionActivityNew.this.getResources().getString(R.string.CollectionAlert2));
-                return false;
+                if(CommonInfo.hmapAppMasterFlags.get("flgControlCollection")==1) {
+                    showAlertSingleAfterCostumValidationForAmountCollection(CollectionActivityNew.this.getResources().getString(R.string.CollectionAlert2));
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             } else if (Math.ceil(OverAllAmountCollected) >= Math.ceil(MinCollectionvalue))// && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
             //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
             //else if(Math.ceil(OverAllAmountCollected)>=Math.ceil(totOutstandingValue) && Math.ceil(OverAllAmountCollected)<=Math.ceil(OverAllAmountCollectedLimit))
@@ -1688,9 +1643,13 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
             } else {
                 // showAlertSingleButtonError("Collection Amount can not be greater then "+OverAllAmountCollectedLimit);
                 // showAlertSingleAfterCostumValidationForAmountCollection("Collection amount exceeds then required and current Invoice can not be made, Click Cancel & Exit to close Invoice and Exit current visit, Click on Update Payment to update Collection amount.");
-
-                boolean rst = showWarningAlertIfCollectionsGraterThenTotalOutStandings(CollectionActivityNew.this.getResources().getString(R.string.CollectionAlert3));
-                return rst;
+                if(CommonInfo.hmapAppMasterFlags.get("flgControlCollection")==1) {
+                    boolean rst = showWarningAlertIfCollectionsGraterThenTotalOutStandings(CollectionActivityNew.this.getResources().getString(R.string.CollectionAlert3));
+                    return rst;
+                }
+                else {
+                    return true;
+                }
                 //Collected amount is less than the minimum collection amount , current invoice cannot be made.Click CANCEL & EXIT to close Invoice and exit current visit, Click on UPDATE PAYMENT to update Collection amount
 
                 //return false;
@@ -2124,7 +2083,14 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
 
 
             pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-            pDialogGetStores.setMessage(CollectionActivityNew.this.getResources().getString(R.string.SubmittingOrderDetails));
+            if(CommonInfo.flgDrctslsIndrctSls==1) {
+                pDialogGetStores.setMessage(CollectionActivityNew.this.getResources().getString(R.string.SubmittingOrderDetails));
+            }
+            else
+            {
+                pDialogGetStores.setMessage("Saving Order Details...");
+
+            }
             pDialogGetStores.setIndeterminate(false);
             pDialogGetStores.setCancelable(false);
             pDialogGetStores.setCanceledOnTouchOutside(false);
@@ -2210,10 +2176,11 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
             // overallOutStand=0.0;
            /* Double outstandingvalue=dbengine.fnGetStoretblLastOutstanding(storeID);
             outstandingvalue=Double.parseDouble(new DecimalFormat("##.##").format(outstandingvalue));*/
-
-            Double FinalOutStand = overallOutStand - curntCol;
-            FinalOutStand = Double.parseDouble(new DecimalFormat("##.##").format(FinalOutStand));
-            dbengine.updateOutstandingOfStore(storeID, FinalOutStand);
+            if(CommonInfo.hmapAppMasterFlags.get("flgManageCollection")==1) {
+                Double FinalOutStand = overallOutStand - curntCol;
+                FinalOutStand = Double.parseDouble(new DecimalFormat("##.##").format(FinalOutStand));
+                dbengine.updateOutstandingOfStore(storeID, FinalOutStand);
+            }
             //dbengine.updateOutstandingOfStore(storeID,0.0);
             // Double CollectionAmtAgainstStore=dbengine.fnTotCollectionAmtAgainstStore(storeID.trim(),TmpInvoiceCodePDA,StoreVisitCode);
 
