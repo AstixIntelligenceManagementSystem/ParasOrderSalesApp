@@ -1217,7 +1217,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             {
                 long syncTIMESTAMP = System.currentTimeMillis();
                 Date dateobjForDayEnd = new Date(syncTIMESTAMP);
-                SimpleDateFormat dfForDayEnd = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+                SimpleDateFormat dfForDayEnd = new SimpleDateFormat("dd-MMM-yyyy HH.mm.ss",Locale.ENGLISH);
                 String startTS = dfForDayEnd.format(dateobjForDayEnd);
 
                 int DayEndFlg=0;
@@ -3732,7 +3732,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 String [] AllFilesName= checkNumberOfFiles(del);
 
 
-                if(AllFilesName.length>0)
+                if(AllFilesName!=null && AllFilesName.length>0)
                 {
                     SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
 

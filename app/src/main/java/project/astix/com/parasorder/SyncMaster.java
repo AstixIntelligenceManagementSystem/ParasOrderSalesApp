@@ -226,9 +226,10 @@ public class SyncMaster extends Activity
 					db.reCreateDB();
 					//db.close();
 
-					Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
+					/*Intent submitStoreIntent = new Intent(SyncMaster.this, LauncherActivity.class);
 					startActivity(submitStoreIntent);
-					finish();
+					finish();*/
+						showDayEndSucess();
 					/*destroyNcleanup(1);
 					imgs = null;
 					uComments.clear();*/
@@ -682,11 +683,11 @@ public class SyncMaster extends Activity
 								}
 								db.reCreateDB();
 								//db.close();
-
-								Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
+								showDayEndSucess();
+							/*	Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 								startActivity(submitStoreIntent);
 								finish();
-
+*/
 								/*Intent i = new Intent(SyncMaster.this, WebViewActivity.class);
 								i.putExtra("comeFrom","StockIn");
 								startActivity(i);
@@ -2679,10 +2680,11 @@ if(NoOfOutletID.length>0)
 						{
 							db.deleteViewAddedStore();
 						}
-						if(getServerDate.equals(getPDADate))
+						showDayEndSucess();
+						/*if(getServerDate.equals(getPDADate))
 						{
 
-											/*try
+											*//*try
 							        		{
 							        			task3 = new SyncTextFileTaster(SyncMaster.this);
 							        			task3.execute();
@@ -2691,7 +2693,7 @@ if(NoOfOutletID.length>0)
 							        		{
 						        			// TODO Auto-generated catch block
 							        			e.printStackTrace();
-							        		}*/
+							        		}*//*
 
 							Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 							startActivity(submitStoreIntent);
@@ -2704,7 +2706,7 @@ if(NoOfOutletID.length>0)
 							Intent submitStoreIntent = new Intent(SyncMaster.this, SplashScreen.class);
 							startActivity(submitStoreIntent);
 							finish();
-						}
+						}*/
 					}
 					else
 					{
@@ -2872,6 +2874,35 @@ if(NoOfOutletID.length>0)
 
 		return inSampleSize;
 	}
+	public void showDayEndSucess() {
+		AlertDialog.Builder alertDialogSyncError = new AlertDialog.Builder(
+				SyncMaster.this);
+		alertDialogSyncError.setTitle(getText(R.string.genTermInformation));
+		alertDialogSyncError.setCancelable(false);
+		/*alertDialogSyncError
+				.setMessage("Sync was not successful! Please try again.");*/
+		if(whereTo.contentEquals("11"))
+		{
+			alertDialogSyncError.setMessage("Day End Successfully Done");
+		}
 
+		alertDialogSyncError.setNeutralButton(getText(R.string.AlertDialogOkButton),
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+
+
+						dialog.dismiss();
+
+							finishAffinity();
+
+
+					}
+				});
+		alertDialogSyncError.setIcon(R.drawable.info_icon);
+
+		AlertDialog alert = alertDialogSyncError.create();
+		alert.show();
+		// alertDialogLowbatt.show();
+	}
 }
 

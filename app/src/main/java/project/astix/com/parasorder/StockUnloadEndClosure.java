@@ -763,7 +763,7 @@ public class StockUnloadEndClosure extends BaseActivity {
 
         long syncTIMESTAMP = System.currentTimeMillis();
         Date dateobj = new Date(syncTIMESTAMP);
-        SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy.HH.mm.ss",Locale.ENGLISH);
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy.HH.mm.ss",Locale.ENGLISH);
         String startTS = df.format(dateobj);
 
         int DayEndFlg=0;

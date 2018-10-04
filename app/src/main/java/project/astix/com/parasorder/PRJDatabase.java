@@ -4402,7 +4402,7 @@ public class PRJDatabase
         long syncTIMESTAMP = System.currentTimeMillis();
         Date dateobj = new Date(syncTIMESTAMP);
         SimpleDateFormat df = new SimpleDateFormat(
-                "dd-MM-yyyy HH:mm:ss",Locale.ENGLISH);
+                "dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
         String EndTS = df.format(dateobj);
         values.put("EndTime", EndTS);
         if(btnClickFlg==1)
@@ -4425,6 +4425,8 @@ public class PRJDatabase
         else
         {
             values.put("CycleId","0");
+            int affected = db.update("tblDayStartEndDetails", values, "RouteID=?",
+                    new String[] { ""+rID });
         }
 
 
@@ -4721,6 +4723,7 @@ public class PRJDatabase
         Editor editorVanStockChanged = SplashScreen.sPrefVanStockChanged.edit();
         editorVanStockChanged.clear();
         editorVanStockChanged.commit();
+        db.execSQL("DELETE FROM tblAllServicesCalledSuccessfull");
         db.execSQL("DELETE FROM tblStoreOrderVisitDayActivity");
         db.execSQL("DELETE FROM  tblCollectionReportCashChange");
         db.execSQL("DELETE FROM  tblCollectionReportChequeChange");
@@ -36143,9 +36146,9 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
                 {
                     initialValues.put("StoreID", tblStoreListMasterData.getStoreID().toString());
                 }
-                if (hmapStoreIdSstat.containsKey(tblStoreListMasterData.getStoreID())) {
-                    Sstat = Integer.parseInt(hmapStoreIdSstat.get(tblStoreListMasterData.getStoreID()));
-                    flgOrderType= Integer.parseInt(hmapflgOrderType.get(tblStoreListMasterData.getStoreID()));
+                if (hmapStoreIdSstat.containsKey(""+tblStoreListMasterData.getStoreID())) {
+                    Sstat = Integer.parseInt(hmapStoreIdSstat.get(""+tblStoreListMasterData.getStoreID()));
+                    flgOrderType= Integer.parseInt(hmapflgOrderType.get(""+tblStoreListMasterData.getStoreID()));
                 } else {
                             Sstat = Integer.parseInt(tblStoreListMasterData.getSstat());
 

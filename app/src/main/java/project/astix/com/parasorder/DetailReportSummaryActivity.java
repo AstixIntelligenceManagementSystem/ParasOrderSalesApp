@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-public class DetailReportSummaryActivity extends BaseActivity
+public class DetailReportSummaryActivity extends BaseActivity implements  InterfaceRetrofit
 {
 	TableLayout tbl_inflate;
 
@@ -259,6 +259,15 @@ public class DetailReportSummaryActivity extends BaseActivity
 
 	}
 
+	@Override
+	public void success() {
+
+	}
+
+	@Override
+	public void failure() {
+
+	}
 
 
 	private class GetSummaryForDay extends AsyncTask<Void, Void, Void>

@@ -915,7 +915,7 @@ public class CommonFunction {
                     HashMap<String, String> hmapStoreIdSstat=new HashMap<String, String>();
                     hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
                     HashMap<String, String> hmapflgOrderType=new HashMap<String, String>();
-                    hmapStoreIdSstat=dbengine.checkForStoreflgOrderType();
+                    hmapflgOrderType=dbengine.checkForStoreflgOrderType();
                     dbengine.Delete_tblStore_for_refreshDataButNotNewStore();
                     dbengine.fndeleteStoreAddressMapDetailsMstr();
                     //deleted above
