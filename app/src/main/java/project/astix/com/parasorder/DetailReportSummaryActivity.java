@@ -23,6 +23,7 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.SimpleDateFormat;
@@ -171,7 +172,7 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 		if(isOnline())
 		{
 
-			try
+			/*try
 			{
 				GetSummaryForDay task = new GetSummaryForDay(DetailReportSummaryActivity.this);
 				task.execute();
@@ -179,6 +180,16 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 			catch (Exception e)
 			{
 				// TODO Autouuid-generated catch block
+				e.printStackTrace();
+			}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+				CommonFunction.getAllSummaryReportData(DetailReportSummaryActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
 				e.printStackTrace();
 			}
 		}
@@ -261,7 +272,7 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 
 	@Override
 	public void success() {
-
+		getDataFromDatabase();
 	}
 
 	@Override
@@ -269,6 +280,7 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 
 	}
 
+/*
 
 	private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
 	{
@@ -341,6 +353,7 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 
 		}
 	}
+*/
 
 
 	public void setUpVariable()

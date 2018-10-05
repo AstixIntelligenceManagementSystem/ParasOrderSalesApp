@@ -3,6 +3,7 @@ package project.astix.com.parasorder;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -16,17 +17,30 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
-public class StoreWiseFragmentOneTab<Context> extends Fragment 
+import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
+import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.TblStoreWiseDaySummary;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class StoreWiseFragmentOneTab<Context> extends Fragment
 {
-	
+	//implements InterfaceRetrofit
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
@@ -39,7 +53,7 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 	
 	int pos=0;
 	
-	public String[] AllDataContainer;
+	//public String[] AllDataContainer;
 	public View rootView;
 
 	public boolean isOnline()
@@ -84,7 +98,7 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 		
 		//'868087024619932','29-10-2015'  
 
-		if(isOnline()) {
+	/*	if(isOnline()) {
 			try {
 				GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay();
 				task.execute();
@@ -96,13 +110,102 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 		else
 		{
 			Toast.makeText(mContext, getResources().getString(R.string.NoDataConnectionFullMsg), Toast.LENGTH_SHORT).show();
+		}*/
+
+		try
+		{
+			// new GetRouteInfo().execute();
+
+			getAllStoreWiseSummaryReport(imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
 		}
-		 
-		
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 		
         return rootView;
     }
-    
+
+	public void getAllStoreWiseSummaryReport( final String imei, String RegistrationID, String msgToShow){
+		final ProgressDialog mProgressDialog = new ProgressDialog(getActivity());
+		mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+		mProgressDialog.setMessage(getActivity().getResources().getString(R.string.RetrivingDataMsg));
+		mProgressDialog.setIndeterminate(true);
+		mProgressDialog.setCancelable(false);
+		mProgressDialog.show();
+		final ArrayList blankTablearrayList=new ArrayList();
+		Date date1 = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+		final String fDate = sdf.format(date1).toString().trim();
+		ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+		apiService =
+				ApiClient.getClient().create(ApiInterface.class);
+
+
+		String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+		int PersonNodeId=0;
+
+		int PersonNodeType=0;
+		if(!PersonNodeIdAndNodeType.equals("0^0")) {
+			PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+			PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+		}
+
+		String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+		String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+		String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+		int FlgAllRoutesData=1;
+		String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+		ReportsInfo reportsInfo=new ReportsInfo();
+		reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+		reportsInfo.setIMEINo(imei);
+		reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+		reportsInfo.setForDate(fDate);
+		reportsInfo.setSalesmanNodeId(PersonNodeId);
+		reportsInfo.setSalesmanNodeType(PersonNodeType);
+		reportsInfo.setFlgDataScope(0);
+
+		Call<AllSummaryStoreWiseDay> call= apiService.Call_AllSummaryStoreWiseDay(reportsInfo);
+		call.enqueue(new Callback<AllSummaryStoreWiseDay>() {
+			@Override
+			public void onResponse(Call<AllSummaryStoreWiseDay> call, Response<AllSummaryStoreWiseDay> response) {
+				if(response.code()==200){
+					AllSummaryStoreWiseDay allSummaryStoreWiseDayModel=  response.body();
+					System.out.println("DATAENSERTEDSP");
+					//table 1
+					dbengine.truncateStoreWiseDataTable();
+					List<TblStoreWiseDaySummary> tblStoreWiseDaySummary=  allSummaryStoreWiseDayModel.getTblStoreWiseDaySummary();
+					if(tblStoreWiseDaySummary.size()>0){
+						dbengine.savetblStoreWiseDaySummary(tblStoreWiseDaySummary);
+					}
+					else{
+						blankTablearrayList.add("tblStoreWiseDaySummary");
+					}
+					mProgressDialog.dismiss();
+					intializeFields();
+				}
+				else{
+					mProgressDialog.dismiss();
+					// showAlertForError("Error while retreiving data from server");
+				}
+			}
+
+			@Override
+			public void onFailure(Call<AllSummaryStoreWiseDay> call, Throwable t) {
+				System.out.println();
+				mProgressDialog.dismiss();
+				//   showAlertForError("Error while retreiving data from server");
+			}
+		});
+
+
+
+	}
+
 	private class GetSKUWiseSummaryForDay extends AsyncTask<Void, Void, Void>
 	{		
 		
@@ -164,16 +267,16 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 		    	   pDialogGetStores.dismiss();
 			  }
             //dbengine.open();
-            AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
+
             //dbengine.close();
             intializeFields();
 		  
 		}
 	}
 	
-	private void intializeFields() 
+	public void intializeFields()
 	{
-		
+		String[]  AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
 		if(AllDataContainer.length>0)
 		{
 		
@@ -319,10 +422,20 @@ public class StoreWiseFragmentOneTab<Context> extends Fragment
 				
 		}
 		
-	}	
-		
-			
-			
 	}
+
+
+
+	}
+	/*@Override
+	public void success() {
+		intializeFields();
+
+	}
+
+	@Override
+	public void failure() {
+
+	}*/
  
 }

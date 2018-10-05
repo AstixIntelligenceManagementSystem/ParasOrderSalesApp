@@ -13,7 +13,7 @@ import android.widget.TableLayout;
 
 public class StoreAndSKUWiseSummaryReport_ByTab extends BaseActivity
 {
-	
+	// implements InterfaceRetrofit
 	String date_value="";
 	String imei="";
 	String pickerDate="";
@@ -96,7 +96,7 @@ public class StoreAndSKUWiseSummaryReport_ByTab extends BaseActivity
         ThreeTab = actionBar.newTab().setText(R.string.saved_not_submit);*/
         
         // Setting tab listeners.
-        OneTab.setTabListener(new TabListener(fragmentOneTab));
+        OneTab.setTabListener(new TabListener(fragmentOneTab)).setTag("fragmentOneTab");
       //  TwoTab.setTabListener(new TabListener(fragmentTwoTab));
         ThreeTab.setTabListener(new TabListener(fragmentThreeTab));
        
@@ -142,5 +142,19 @@ public class StoreAndSKUWiseSummaryReport_ByTab extends BaseActivity
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+	/*@Override
+	public void success() {
+		if(fragmentOneTab!=null)
+		{
+
+			((StoreAndSKUWiseFragmentOneTab) getFragmentManager().findFragmentByTag("fragmentOneTab")).intializeFields();
+		}
+
+	}
+
+	@Override
+	public void failure() {
+
+	}*/
 }
 

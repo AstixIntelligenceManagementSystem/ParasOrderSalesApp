@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
 import project.astix.com.parasorder.model.TblGetPDAQuestGrpMapping;
@@ -61,9 +62,12 @@ import project.astix.com.parasorder.model.TblProductListLastVisitStockOrOrderMst
 import project.astix.com.parasorder.model.TblProductListMaster;
 import project.astix.com.parasorder.model.TblProductSegementMap;
 import project.astix.com.parasorder.model.TblProductWiseInvoice;
+import project.astix.com.parasorder.model.TblSKUWiseDaySummary;
 import project.astix.com.parasorder.model.TblStoreListMaster;
 import project.astix.com.parasorder.model.TblStoreListWithPaymentAddress;
+import project.astix.com.parasorder.model.TblStoreSKUWiseDaySummary;
 import project.astix.com.parasorder.model.TblStoreSomeProdQuotePriceMstr;
+import project.astix.com.parasorder.model.TblStoreWiseDaySummary;
 
 public class PRJDatabase
 {
@@ -215,7 +219,7 @@ public class PRJDatabase
     private static final String DATABASE_TABLE_DISTRIBUTOR_LEFTPRODUCT = "tblDistributorIDOrderIDLeft";
     private static final String DATABASE_TABLE_DayAndSummary = "tblAllSummaryDay";
     private static final String DATABASE_CREATE_TABLE_DayAndSummary = "create table tblAllSummaryDay (AutoId int not null,Measures text null," +
-            "TodaysSummary text null,MTDSummary text null,TableNo text not null,ColorCode text not null);";
+            "TodaysSummary text null,MTDSummary text null,TableNo int not null,ColorCode text not null);";
     private static final String DATABASE_TABLE_Main271 = "tblLatLongDetails";
     private static final String DATABASE_CREATE_TABLE_271 = "create table tblLatLongDetails (StoreID text null,fnLati text null,fnLongi text null,fnAccuracy text null,flgLocNotFound text null,fnAccurateProvider text null,AllProvidersLocation text null,fnAddress text null,GpsLat text null, GpsLong text null, GpsAccuracy text null, GpsAddress text null, NetwLat text null, NetwLong text null, NetwAccuracy text null, NetwAddress text null, FusedLat text null, FusedLong text null, FusedAccuracy text null, FusedAddress text null,FusedLocationLatitudeWithFirstAttempt text null,FusedLocationLongitudeWithFirstAttempt text null,FusedLocationAccuracyWithFirstAttempt text null,Sstat integer null);";
     private static final String DATABASE_TABLE_tblSameLocationForStoreRestartDone = "tblsameLocationForStoreRestartDone";
@@ -491,16 +495,16 @@ public class PRJDatabase
     private static final String CREATE_TABLE_tblDistributorDayReportColumnsDesc="create table tblDistributorDayReportColumnsDesc(DistDayReportCoumnName text null, DistDayReportColumnDisplayName text null,DistributorNodeID int null,DistributorNodeType int null);";
     private static final String CREATE_TABLE_tblDistributorSavedData="create table tblDistributorSavedData(ProductName text null,ShortName text null,ProductID text null,Date text null,EnteredValue text null,DistribtrId int null,DistributorNodeType int null,ProductNodeType int null,StockDate text null,EntryType int null,StockPcsCaseType int null,Sstat int null);";
     private static final String CREATE_TABLE_tblDistributorOldStockData="create table tblDistributorOldStockData (DistribtrId text null,DistributorNodeType text null,DistribtrTag text null,EnteredValue text null);";
-    private static final String DATABASE_CREATE_TABLE_231 = "create table tblSKUWiseDaySummary (AutoId int not null,ProductId text null," +
-            "Product text null,MRP text null,Rate text null,NoofStores text null,OrderQty text null,FreeQty text null," +
-            "DiscValue text null,ValBeforeTax text null,TaxValue text null,ValAfterTax text null,Lvl text null," +
+    private static final String DATABASE_CREATE_TABLE_231 = "create table tblSKUWiseDaySummary (AutoId int not null,ProductId int null," +
+            "Product text not null,MRP real null,Rate real null,NoofStores int null,OrderQty real null,FreeQty int null," +
+            "DiscValue real null,ValBeforeTax real null,TaxValue real null,ValAfterTax real null,Lvl int null," +
             "Category text null,UOM text null);";
-    private static final String DATABASE_CREATE_TABLE_232 = "create table tblStoreWiseDaySummary (AutoId int not null,Store text null," +
-            "LinesperBill text null,StockValue text null,DiscValue text null,ValBeforeTax text null,TaxValue text null," +
-            "ValAfterTax text null,Lvl text null);";
-    private static final String DATABASE_CREATE_TABLE_233 = "create table tblStoreSKUWiseDaySummary (AutoId int not null,ProductId text null," +
-            "Product text null,MRP text null,Rate text null,OrderQty text null,FreeQty text null," +
-            "DiscValue text null,ValBeforeTax text null,TaxValue text null,ValAfterTax text null,Lvl text null,StoreId text null,StockQty text null);";
+    private static final String DATABASE_CREATE_TABLE_232 ="create table tblStoreWiseDaySummary (AutoId int not null,Store text null," +
+            "LinesperBill int null,StockValue real null,DiscValue real null,ValBeforeTax real null,TaxValue real null," +
+            "ValAfterTax real null,Lvl int null);";
+    private static final String DATABASE_CREATE_TABLE_233 =  "create table tblStoreSKUWiseDaySummary (AutoId int not null,ProductId int null," +
+            "Product text null,MRP real null,Rate real null,OrderQty int null,FreeQty int null," +
+            "DiscValue real null,ValBeforeTax real null,TaxValue real null,ValAfterTax real null,Lvl int null,StoreId int null,StockQty int null);";
     private static final String DATABASE_CREATE_TABLE_234 = "create table tblAllSummary (AutoId int not null,Measures text null," +
             "TodaysSummary text null,MTDSummary text null);";
     private static final String DATABASE_CREATE_TABLE_11 = "create table tblPdaDate (PdaDate text null);";
@@ -866,34 +870,7 @@ public class PRJDatabase
        // close();
     }
 
-    public static long savetblSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
-                                         String Rate, String NoofStores, String OrderQty, String FreeQty,String DiscValue,
-                                         String ValBeforeTax, String  TaxValue,String ValAfterTax,String Lvl,String Category,String UOM)
-    {
 
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("AutoId", AutoId);
-        initialValues.put("ProductId", ProductId.trim());
-        initialValues.put("Product", Product.trim());
-        initialValues.put("MRP", MRP.trim());
-        initialValues.put("Rate", Rate.trim());
-        initialValues.put("NoofStores", NoofStores.trim());
-        initialValues.put("OrderQty", OrderQty.trim());
-        initialValues.put("FreeQty", FreeQty.trim());
-        initialValues.put("DiscValue", DiscValue.trim());
-
-        initialValues.put("ValBeforeTax", ValBeforeTax.trim());
-        initialValues.put("TaxValue", TaxValue.trim());
-        initialValues.put("ValAfterTax", ValAfterTax.trim());
-        initialValues.put("Lvl", Lvl.trim());
-        initialValues.put("Category", Category.trim());
-        initialValues.put("UOM", UOM.trim());
-
-        //// System.out.println("Value inserting by sunil Table 231..");
-
-        return db.insert(DATABASE_TABLE_MAIN231, null, initialValues);
-    }
 
 
 	/* private static final String DATABASE_CREATE_TABLE_231 = "create table tblSKUWiseDaySummary (AutoId int not null,ProductId text null," +
@@ -1115,7 +1092,8 @@ public class PRJDatabase
     {
         int ScodecolumnIndex = 0;
 
-        Cursor cursor = db.rawQuery("SELECT *  FROM tblSKUWiseDaySummary", null);
+        Cursor cursor = db.rawQuery("SELECT AutoId,ifnull(ProductId ,0),ifnull(Product ,0),ifnull(MRP ,0),ifnull(Rate ,0),ifnull(NoofStores ,0),ifnull(OrderQty ,0),ifnull(FreeQty ,0),ifnull(DiscValue ,0),ifnull(ValBeforeTax ,0),ifnull(TaxValue ,0),ifnull(ValAfterTax ,0),ifnull(Lvl ,0),ifnull(Category ,0),ifnull(UOM ,0)  FROM tblSKUWiseDaySummary", null);
+
         try {
             String allData[]=new String[cursor.getCount()];
             if (cursor.moveToFirst()) {
@@ -1138,26 +1116,7 @@ public class PRJDatabase
 
     }
 
-    public static long savetblStoreWiseDaySummary(int AutoId,String Store, String LinesperBill, String StockValue,
-                                           String DiscValue, String ValBeforeTax, String TaxValue, String ValAfterTax,String Lvl)
-    {
 
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("AutoId", AutoId);
-        initialValues.put("Store", Store.trim());
-        initialValues.put("LinesperBill", LinesperBill.trim());
-        initialValues.put("StockValue", StockValue.trim());
-        initialValues.put("DiscValue", DiscValue.trim());
-        initialValues.put("ValBeforeTax", ValBeforeTax.trim());
-        initialValues.put("TaxValue", TaxValue.trim());
-        initialValues.put("ValAfterTax", ValAfterTax.trim());
-        initialValues.put("Lvl", Lvl.trim());
-
-        ////// System.out.println("inserting records in StoreList table..");
-
-        return db.insert(DATABASE_TABLE_MAIN232, null, initialValues);
-    }
 
 
 
@@ -1168,7 +1127,9 @@ public class PRJDatabase
     public static String[] fetchAllDataFromtblStoreWiseDaySummary()
     {
 
-        Cursor cursor = db.rawQuery("SELECT *  FROM tblStoreWiseDaySummary", null);
+        Cursor cursor = db.rawQuery("SELECT ifnull(AutoId ,0),ifnull(Store ,0),ifnull(LinesperBill ,0),ifnull(StockValue ,0),ifnull(DiscValue ,0),ifnull(ValBeforeTax ,0),ifnull(TaxValue ,0),ifnull(ValAfterTax ,0),ifnull(Lvl ,0)  FROM tblStoreWiseDaySummary", null);
+
+
         try {
             String allData[]=new String[cursor.getCount()];
             if (cursor.moveToFirst()) {
@@ -1198,32 +1159,6 @@ public class PRJDatabase
 	 		StoreId text null);";
 
 	*/
-    public static long savetblStoreSKUWiseDaySummary(int AutoId,String ProductId, String Product, String MRP,
-                                              String Rate, String OrderQty, String FreeQty,String DiscValue,
-                                              String ValBeforeTax, String  TaxValue,String ValAfterTax,String Lvl,String StoreId,String StockQty)
-    {
-
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("AutoId", AutoId);
-        initialValues.put("ProductId", ProductId.trim());
-        initialValues.put("Product", Product.trim());
-        initialValues.put("MRP", MRP.trim());
-        initialValues.put("Rate", Rate.trim());
-        initialValues.put("OrderQty", OrderQty.trim());
-        initialValues.put("FreeQty", FreeQty.trim());
-        initialValues.put("DiscValue", DiscValue.trim());
-        initialValues.put("ValBeforeTax", ValBeforeTax.trim());
-        initialValues.put("TaxValue", TaxValue.trim());
-        initialValues.put("ValAfterTax", ValAfterTax.trim());
-        initialValues.put("Lvl", Lvl.trim());
-        initialValues.put("StoreId", StoreId.trim());
-        initialValues.put("StockQty", StockQty.trim());
-
-        ////// System.out.println("inserting records in StoreList table..");
-
-        return db.insert(DATABASE_TABLE_MAIN233, null, initialValues);
-    }
 
     public static void deleteSalesQuotePersonMeetMstr(String SalesQuoteId)
     {
@@ -1354,7 +1289,8 @@ public class PRJDatabase
     public static String[] fetchAllDataFromtblStoreSKUWiseDaySummary()
     {
 
-        Cursor cursor = db.rawQuery("SELECT *  FROM tblStoreSKUWiseDaySummary", null);
+        Cursor cursor = db.rawQuery("SELECT AutoId ,ifnull(ProductId,0) ,ifnull(Product,0) ,ifnull(MRP,0) ,ifnull(Rate,0) ,ifnull(OrderQty,0) ,ifnull(FreeQty,0) ,ifnull(DiscValue,0) ,ifnull(ValBeforeTax,0) ,ifnull(TaxValue,0) ,ifnull(ValAfterTax,0) ,ifnull(Lvl,0) ,ifnull(StoreId,0) ,ifnull(StockQty,0)  FROM tblStoreSKUWiseDaySummary", null);
+
         try {
             String allData[]=new String[cursor.getCount()];
             if (cursor.moveToFirst()) {
@@ -4677,23 +4613,9 @@ public class PRJDatabase
 
     }
 
-    public static void truncateSKUDataTable()
-    {
-        db.execSQL("DELETE FROM tblSKUWiseDaySummary");
 
-    }
 
-    public static void truncateStoreWiseDataTable()
-    {
-        db.execSQL("DELETE FROM tblStoreWiseDaySummary");
 
-    }
-
-    public static void truncateStoreAndSKUWiseDataTable()
-    {
-        db.execSQL("DELETE FROM tblStoreSKUWiseDaySummary");
-
-    }
 
     public static void truncateAllSummaryDataTable()
     {
@@ -27493,33 +27415,10 @@ String fetchdate=fnGetDateTimeString();
 
 //nitika
 
-    //nitika
-    public static long savetblAllSummaryDayAndMTD(int AutoId,String Measures,String TodaysSummary,String MTDSummary, String TableNo,String ColorCode)
-    {
-//table tblAllSummaryDay (AutoId int not null,Measures text null," +
-        //"TodaysSummary text null,MTDSummary text null , TableNo text not null,ColorCode text not null);";
 
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("AutoId", AutoId);
-        initialValues.put("Measures", Measures.trim());
-        initialValues.put("TodaysSummary", TodaysSummary.trim());
-        initialValues.put("MTDSummary", MTDSummary.trim());
-
-        initialValues.put("TableNo", TableNo.trim());
-        initialValues.put("ColorCode", ColorCode.trim());
-
-        long value= db.insert(DATABASE_TABLE_DayAndSummary, null, initialValues);
-        System.out.println("Inserted ; "+value);
-        return value;
-    }
 
     //nitika
-    public static void truncateAllSummaryDayDataTable()
-    {
-        db.execSQL("DELETE FROM tblAllSummaryDay");
 
-    }
 
     public static void updateFlgCrediBal(String storeId,int flgCreditRetailBal)
     {
@@ -36576,6 +36475,142 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
         db.setTransactionSuccessful();
         db.endTransaction();
     }
+
+    public static void truncateAllSummaryDayDataTable()
+    {
+        db.execSQL("DELETE FROM tblAllSummaryDay");
+
+    }
+
+
+
+    //nitika
+    public static void savetblAllSummaryDayAndMTD(List<TblAllSummaryDay> tblAllSummaryDays)
+    {
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblAllSummaryDay tblAllSummaryDaysData:tblAllSummaryDays)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("Measures",tblAllSummaryDaysData.getMeasures());
+            initialValues.put("TodaysSummary", tblAllSummaryDaysData.getTodaysSummary());
+            initialValues.put("MTDSummary",tblAllSummaryDaysData.getMTDSummary());
+
+            initialValues.put("TableNo", tblAllSummaryDaysData.getTableNo());
+            initialValues.put("ColorCode", tblAllSummaryDaysData.getColorCode());
+
+            db.insert(DATABASE_TABLE_DayAndSummary, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+
+
+
+    public static void savetblSKUWiseDaySummary(List<TblSKUWiseDaySummary> tblSKUWiseDaySummary)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblSKUWiseDaySummary tblSKUWiseDaySummaryData:tblSKUWiseDaySummary)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("ProductId", tblSKUWiseDaySummaryData.getProductId());
+            initialValues.put("Product", tblSKUWiseDaySummaryData.getProduct());
+            initialValues.put("MRP", tblSKUWiseDaySummaryData.getMRP());
+            initialValues.put("Rate", tblSKUWiseDaySummaryData.getRate());
+            initialValues.put("NoofStores", tblSKUWiseDaySummaryData.getNoofStores());
+            initialValues.put("OrderQty", tblSKUWiseDaySummaryData.getOrderQty());
+            initialValues.put("FreeQty", tblSKUWiseDaySummaryData.getFreeQty());
+            initialValues.put("DiscValue", tblSKUWiseDaySummaryData.getDiscValue());
+
+            initialValues.put("ValBeforeTax", tblSKUWiseDaySummaryData.getValBeforeTax());
+            initialValues.put("TaxValue", tblSKUWiseDaySummaryData.getTaxValue());
+            initialValues.put("ValAfterTax", tblSKUWiseDaySummaryData.getValAfterTax());
+            initialValues.put("Lvl", tblSKUWiseDaySummaryData.getLvl());
+            initialValues.put("Category", tblSKUWiseDaySummaryData.getCategory());
+            initialValues.put("UOM", tblSKUWiseDaySummaryData.getUOM());
+            db.insert(DATABASE_TABLE_MAIN231, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+    public static void truncateSKUDataTable()
+    {
+        db.execSQL("DELETE FROM tblSKUWiseDaySummary");
+
+    }
+
+    public static void savetblStoreWiseDaySummary(List<TblStoreWiseDaySummary> tblStoreWiseDaySummary)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblStoreWiseDaySummary tblStoreWiseDaySummaryData:tblStoreWiseDaySummary)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("Store", tblStoreWiseDaySummaryData.getStore());
+            initialValues.put("LinesperBill", tblStoreWiseDaySummaryData.getLinesperBill());
+            initialValues.put("StockValue", tblStoreWiseDaySummaryData.getStockValue());
+            initialValues.put("DiscValue", tblStoreWiseDaySummaryData.getDiscValue());
+            initialValues.put("ValBeforeTax", tblStoreWiseDaySummaryData.getValBeforeTax());
+            initialValues.put("TaxValue", tblStoreWiseDaySummaryData.getTaxValue());
+            initialValues.put("ValAfterTax", tblStoreWiseDaySummaryData.getValAfterTax());
+            initialValues.put("Lvl", tblStoreWiseDaySummaryData.getLvl());
+            db.insert(DATABASE_TABLE_MAIN232, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+    public static void truncateStoreWiseDataTable()
+    {
+        db.execSQL("DELETE FROM tblStoreWiseDaySummary");
+
+    }
+
+    public static void truncateStoreAndSKUWiseDataTable()
+    {
+        db.execSQL("DELETE FROM tblStoreSKUWiseDaySummary");
+
+    }
+
+    public static void savetblStoreSKUWiseDaySummary(List<TblStoreSKUWiseDaySummary> tblStoreSKUWiseDaySummary)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblStoreSKUWiseDaySummary tblStoreSKUWiseDaySummaryData:tblStoreSKUWiseDaySummary)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("ProductId", tblStoreSKUWiseDaySummaryData.getProductId());
+            initialValues.put("Product", tblStoreSKUWiseDaySummaryData.getProduct());
+            initialValues.put("MRP", tblStoreSKUWiseDaySummaryData.getMRP());
+            initialValues.put("Rate", tblStoreSKUWiseDaySummaryData.getRate());
+            initialValues.put("OrderQty",tblStoreSKUWiseDaySummaryData.getOrderQty());
+            initialValues.put("FreeQty", tblStoreSKUWiseDaySummaryData.getFreeQty());
+            initialValues.put("DiscValue", tblStoreSKUWiseDaySummaryData.getDiscValue());
+            initialValues.put("ValBeforeTax", tblStoreSKUWiseDaySummaryData.getValBeforeTax());
+            initialValues.put("TaxValue", tblStoreSKUWiseDaySummaryData.getTaxValue());
+            initialValues.put("ValAfterTax", tblStoreSKUWiseDaySummaryData.getValAfterTax());
+            initialValues.put("Lvl", tblStoreSKUWiseDaySummaryData.getLvl());
+            initialValues.put("StoreId", tblStoreSKUWiseDaySummaryData.getStoreId());
+            initialValues.put("StockQty", tblStoreSKUWiseDaySummaryData.getStockQty());
+            db.insert(DATABASE_TABLE_MAIN233, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
 }
 
 

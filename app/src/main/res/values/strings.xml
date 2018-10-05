@@ -724,7 +724,8 @@ Click on UPDATE PAYMENT to update Collection amount.</string>
     <string name="genTermSyncErrornew">Sync Error!</string>
     <string name="genTermSyncErrorFullMsg">Sync Error! \n\n Please check your Internet Connectivity &amp; Try Again!</string>
     <string name="SubmittingDelDetails">Submitting Delivery Details...</string>
-
+    <string name="SubmittingExecutionDetails">Submitting Execution Details...</string>
+    <string name="syncAlertExecutionOKMsg"><small>Execution details submitted!</small></string>
     <!--invoice sync master ends-->
 
 

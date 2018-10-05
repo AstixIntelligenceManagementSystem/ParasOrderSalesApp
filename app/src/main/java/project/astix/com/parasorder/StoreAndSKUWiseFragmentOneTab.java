@@ -3,6 +3,7 @@ package project.astix.com.parasorder;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -16,13 +17,26 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+
+import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
+import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.TblStoreSKUWiseDaySummary;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment 
 {
@@ -85,11 +99,22 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 
 
 		if(isOnline()) {
-			try {
+			/*try {
 				GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay();
 				task.execute();
 			} catch (Exception e) {
 				// TODO Autouuid-generated catch block
+				e.printStackTrace();
+			}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+
+				getAllStoreSKUWiseSummaryReport(imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
 				e.printStackTrace();
 			}
 		}
@@ -102,7 +127,85 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		
         return rootView;
     }
-    
+	public void getAllStoreSKUWiseSummaryReport(final String imei, String RegistrationID, String msgToShow){
+		final ProgressDialog mProgressDialog = new ProgressDialog(getActivity());
+		mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+		mProgressDialog.setMessage(getActivity().getResources().getString(R.string.RetrivingDataMsg));
+		mProgressDialog.setIndeterminate(true);
+		mProgressDialog.setCancelable(false);
+		mProgressDialog.show();
+		final ArrayList blankTablearrayList=new ArrayList();
+		Date date1 = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+		final String fDate = sdf.format(date1).toString().trim();
+		ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+		apiService =
+				ApiClient.getClient().create(ApiInterface.class);
+
+
+		String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+		int PersonNodeId=0;
+
+		int PersonNodeType=0;
+		if(!PersonNodeIdAndNodeType.equals("0^0")) {
+			PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+			PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+		}
+
+		String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+		String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+		String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+		int FlgAllRoutesData=1;
+		String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+		ReportsInfo reportsInfo=new ReportsInfo();
+		reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+		reportsInfo.setIMEINo(imei);
+		reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+		reportsInfo.setForDate(fDate);
+		reportsInfo.setSalesmanNodeId(PersonNodeId);
+		reportsInfo.setSalesmanNodeType(PersonNodeType);
+		reportsInfo.setFlgDataScope(0);
+
+		Call<AllSummaryStoreSKUWiseDay> call= apiService.Call_AllSummaryStoreSKUWiseDay(reportsInfo);
+		call.enqueue(new Callback<AllSummaryStoreSKUWiseDay>() {
+			@Override
+			public void onResponse(Call<AllSummaryStoreSKUWiseDay> call, Response<AllSummaryStoreSKUWiseDay> response) {
+				if(response.code()==200){
+					AllSummaryStoreSKUWiseDay allSummaryStoreSKUWiseDayModel=  response.body();
+					System.out.println("DATAENSERTEDSP");
+					//table 1
+					dbengine.truncateStoreAndSKUWiseDataTable();
+					List<TblStoreSKUWiseDaySummary> tblStoreSKUWiseDaySummary=  allSummaryStoreSKUWiseDayModel.getTblStoreSKUWiseDaySummary();
+					if(tblStoreSKUWiseDaySummary.size()>0){
+						dbengine.savetblStoreSKUWiseDaySummary(tblStoreSKUWiseDaySummary);
+					}
+					else{
+						blankTablearrayList.add("tblStoreSKUWiseDaySummary");
+					}
+					mProgressDialog.dismiss();
+					intializeFields();
+				}
+				else{
+					mProgressDialog.dismiss();
+					// showAlertForError("Error while retreiving data from server");
+				}
+			}
+
+			@Override
+			public void onFailure(Call<AllSummaryStoreSKUWiseDay> call, Throwable t) {
+				System.out.println();
+				mProgressDialog.dismiss();
+				//   showAlertForError("Error while retreiving data from server");
+			}
+		});
+
+
+
+	}
+
 	private class GetSKUWiseSummaryForDay extends AsyncTask<Void, Void, Void>
 	{		
 		
@@ -171,9 +274,9 @@ public class StoreAndSKUWiseFragmentOneTab<Context> extends Fragment
 		}
 	}
 	
-	private void intializeFields() 
+	public void intializeFields()
 	{
-		
+		AllDataContainer= dbengine.fetchAllDataFromtblStoreSKUWiseDaySummary();
 		if(AllDataContainer.length>0)
 		{
 		

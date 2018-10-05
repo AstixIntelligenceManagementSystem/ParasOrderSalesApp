@@ -13619,9 +13619,9 @@ String RouteType="0";
 						// System.out.println("Value inserting  231 OrderQty:"+OrderQty);
 						// System.out.println("Value inserting  231 FreeQty:"+FreeQty);
 								
-						dbengine.savetblSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
+						/*dbengine.savetblSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
 								Rate,NoofStores,OrderQty,FreeQty,DiscValue,
-								ValBeforeTax,TaxValue,ValAfterTax,Lvl,Category,UOM);
+								ValBeforeTax,TaxValue,ValAfterTax,Lvl,Category,UOM);*/
 					
 						
 					}	
@@ -13860,8 +13860,8 @@ String RouteType="0";
 						
 						
 								
-						dbengine.savetblStoreWiseDaySummary(AutoId,Store,LinesperBill,StockValue,
-								DiscValue,ValBeforeTax,TaxValue,ValAfterTax,Lvl);
+					/*	dbengine.savetblStoreWiseDaySummary(AutoId,Store,LinesperBill,StockValue,
+								DiscValue,ValBeforeTax,TaxValue,ValAfterTax,Lvl);*/
 					
 						
 					}	
@@ -14171,9 +14171,9 @@ String RouteType="0";
 						AutoId= i +1;
 						
 						
-						dbengine.savetblStoreSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
+						/*dbengine.savetblStoreSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
 								Rate,OrderQty,FreeQty,DiscValue,
-								ValBeforeTax,TaxValue,ValAfterTax,Lvl,StoreId,StockQty);
+								ValBeforeTax,TaxValue,ValAfterTax,Lvl,StoreId,StockQty);*/
 					
 						
 					}	
@@ -14662,9 +14662,9 @@ String RouteType="0";
 						// System.out.println("Value inserting  231 OrderQty:"+OrderQty);
 						// System.out.println("Value inserting  231 FreeQty:"+FreeQty);
 								
-						dbengine.savetblSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
+						/*dbengine.savetblSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
 								Rate,NoofStores,OrderQty,FreeQty,DiscValue,
-								ValBeforeTax,TaxValue,ValAfterTax,Lvl,Category,UOM);
+								ValBeforeTax,TaxValue,ValAfterTax,Lvl,Category,UOM);*/
 					
 						
 					}	
@@ -14902,8 +14902,8 @@ String RouteType="0";
 						
 						
 								
-						dbengine.savetblStoreWiseDaySummary(AutoId,Store,LinesperBill,StockValue,
-								DiscValue,ValBeforeTax,TaxValue,ValAfterTax,Lvl);
+						/*dbengine.savetblStoreWiseDaySummary(AutoId,Store,LinesperBill,StockValue,
+								DiscValue,ValBeforeTax,TaxValue,ValAfterTax,Lvl);*/
 					
 						
 					}	
@@ -15216,9 +15216,9 @@ String RouteType="0";
 						AutoId= i +1;
 						
 						
-						dbengine.savetblStoreSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
+						/*dbengine.savetblStoreSKUWiseDaySummary(AutoId,ProductId,Product,MRP,
 								Rate,OrderQty,FreeQty,DiscValue,
-								ValBeforeTax,TaxValue,ValAfterTax,Lvl,StoreId,StockQty);
+								ValBeforeTax,TaxValue,ValAfterTax,Lvl,StoreId,StockQty);*/
 					
 						
 					}	
@@ -17981,7 +17981,7 @@ String RouteType="0";
 					AutoId= i +1;
 
 
-					dbengine.savetblAllSummaryDayAndMTD(AutoId,Measures,TodaysSummary,MTDSummary,TableNo,ColorCode);
+				//	dbengine.savetblAllSummaryDayAndMTD(AutoId,Measures,TodaysSummary,MTDSummary,TableNo,ColorCode);
 
 
 				}

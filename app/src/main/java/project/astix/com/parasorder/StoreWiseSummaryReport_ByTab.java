@@ -43,7 +43,7 @@ public class StoreWiseSummaryReport_ByTab extends BaseActivity
 		 getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		
 		setContentView(R.layout.mysummary_bytab);
-		
+
 		Intent extras = getIntent();
 		bck = extras.getIntExtra("bck", 0);
 		
@@ -55,9 +55,8 @@ public class StoreWiseSummaryReport_ByTab extends BaseActivity
 			imei=extras.getStringExtra("imei");
 			rID=extras.getStringExtra("rID");
 	    }
-		
-		
-		
+
+
 		try
 		{
 		
@@ -93,12 +92,14 @@ public class StoreWiseSummaryReport_ByTab extends BaseActivity
         ThreeTab = actionBar.newTab().setText(R.string.saved_not_submit);*/
         
         // Setting tab listeners.
-        OneTab.setTabListener(new TabListener(fragmentOneTab));
+        OneTab.setTabListener(new TabListener(fragmentOneTab)).setTag("fragmentOneTab");
       //  TwoTab.setTabListener(new TabListener(fragmentTwoTab));
         ThreeTab.setTabListener(new TabListener(fragmentThreeTab));
        
         // Adding tabs to the ActionBar.
         actionBar.addTab(OneTab);
+
+
        
        // actionBar.addTab(TwoTab);
         actionBar.addTab(ThreeTab);
@@ -140,5 +141,8 @@ public class StoreWiseSummaryReport_ByTab extends BaseActivity
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+
+
+
 }
 

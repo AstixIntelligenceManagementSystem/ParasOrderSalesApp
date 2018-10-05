@@ -13,6 +13,12 @@ import android.support.annotation.Nullable;
 import project.astix.com.parasorder.InterfaceRetrofit;
 import project.astix.com.parasorder.ProductEntryForm;
 import project.astix.com.parasorder.R;
+import project.astix.com.parasorder.model.AllSummaryReportDay;
+import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
+import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
+import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
+import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblBloodGroup;
 import project.astix.com.parasorder.model.TblCategoryMaster;
@@ -55,6 +61,7 @@ import project.astix.com.parasorder.model.TblProductWiseInvoice;
 import project.astix.com.parasorder.model.TblQuestIDForName;
 import project.astix.com.parasorder.model.TblQuestIDForOutChannel;
 import project.astix.com.parasorder.model.TblRouteListMaster;
+import project.astix.com.parasorder.model.TblSKUWiseDaySummary;
 import project.astix.com.parasorder.model.TblStateCityMaster;
 import project.astix.com.parasorder.model.TblStockUploadedStatus;
 import project.astix.com.parasorder.model.TblStoreCloseReasonMaster;
@@ -62,7 +69,9 @@ import project.astix.com.parasorder.model.TblStoreCountDetails;
 import project.astix.com.parasorder.model.TblStoreLastDeliveryNoteNumber;
 import project.astix.com.parasorder.model.TblStoreListMaster;
 import project.astix.com.parasorder.model.TblStoreListWithPaymentAddress;
+import project.astix.com.parasorder.model.TblStoreSKUWiseDaySummary;
 import project.astix.com.parasorder.model.TblStoreSomeProdQuotePriceMstr;
+import project.astix.com.parasorder.model.TblStoreWiseDaySummary;
 import project.astix.com.parasorder.model.TblSupplierMstrList;
 import project.astix.com.parasorder.model.TblUOMMapping;
 import project.astix.com.parasorder.model.TblUOMMaster;
@@ -1062,4 +1071,344 @@ public class CommonFunction {
 
     }
 
+
+
+
+    public static void getAllSummaryReportData(Context context, final String imei, String RegistrationID,String msgToShow){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+        int PersonNodeId=0;
+
+        int PersonNodeType=0;
+        if(!PersonNodeIdAndNodeType.equals("0^0")) {
+            PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+            PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+        }
+
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        ReportsInfo reportsInfo=new ReportsInfo();
+        reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+        reportsInfo.setIMEINo(imei);
+        reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        reportsInfo.setForDate(fDate);
+        reportsInfo.setSalesmanNodeId(PersonNodeId);
+        reportsInfo.setSalesmanNodeType(PersonNodeType);
+        reportsInfo.setFlgDataScope(0);
+
+        Call<AllSummaryReportDay> call= apiService.Call_AllSummaryReportDay(reportsInfo);
+        call.enqueue(new Callback<AllSummaryReportDay>() {
+            @Override
+            public void onResponse(Call<AllSummaryReportDay> call, Response<AllSummaryReportDay> response) {
+                if(response.code()==200){
+                    AllSummaryReportDay allSummaryReportDayModel=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+                    //table 1
+                    dbengine.truncateAllSummaryDayDataTable();
+                    List<TblAllSummaryDay> tblAllSummaryDay=  allSummaryReportDayModel.getTblAllSummaryDay();
+                    if(tblAllSummaryDay.size()>0){
+                        dbengine.savetblAllSummaryDayAndMTD(tblAllSummaryDay);
+                    }
+                    else{
+                        blankTablearrayList.add("tblAllSummaryDay");
+                    }
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllSummaryReportDay> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
+
+
+
+
+    public static void getAllSKUWiseMTDSummaryReport(Context context, final String imei, String RegistrationID,String msgToShow){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+        int PersonNodeId=0;
+
+        int PersonNodeType=0;
+        if(!PersonNodeIdAndNodeType.equals("0^0")) {
+            PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+            PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+        }
+
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        ReportsInfo reportsInfo=new ReportsInfo();
+        reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+        reportsInfo.setIMEINo(imei);
+        reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        reportsInfo.setForDate(fDate);
+        reportsInfo.setSalesmanNodeId(PersonNodeId);
+        reportsInfo.setSalesmanNodeType(PersonNodeType);
+        reportsInfo.setFlgDataScope(0);
+
+        Call<AllSummarySKUWiseDay> call= apiService.Call_AllSummarySKUWiseMTDDay(reportsInfo);
+        call.enqueue(new Callback<AllSummarySKUWiseDay>() {
+            @Override
+            public void onResponse(Call<AllSummarySKUWiseDay> call, Response<AllSummarySKUWiseDay> response) {
+                if(response.code()==200){
+                    AllSummarySKUWiseDay allSummarySKUWiseDayModel=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+                    //table 1
+                    dbengine.truncateSKUDataTable();
+                    List<TblSKUWiseDaySummary> tblSKUWiseDaySummary=  allSummarySKUWiseDayModel.getTblSKUWiseDaySummary();
+                    if(tblSKUWiseDaySummary.size()>0){
+                        dbengine.savetblSKUWiseDaySummary(tblSKUWiseDaySummary);
+                    }
+                    else{
+                        blankTablearrayList.add("tblSKUWiseDaySummary");
+                    }
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllSummarySKUWiseDay> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
+
+
+
+    public static void getAllStoreWiseMTDSummaryReport(Context context, final String imei, String RegistrationID,String msgToShow){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+        int PersonNodeId=0;
+
+        int PersonNodeType=0;
+        if(!PersonNodeIdAndNodeType.equals("0^0")) {
+            PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+            PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+        }
+
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        ReportsInfo reportsInfo=new ReportsInfo();
+        reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+        reportsInfo.setIMEINo(imei);
+        reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        reportsInfo.setForDate(fDate);
+        reportsInfo.setSalesmanNodeId(PersonNodeId);
+        reportsInfo.setSalesmanNodeType(PersonNodeType);
+        reportsInfo.setFlgDataScope(0);
+
+        Call<AllSummaryStoreWiseDay> call= apiService.Call_AllSummaryStoreWiseMTDDay(reportsInfo);
+        call.enqueue(new Callback<AllSummaryStoreWiseDay>() {
+            @Override
+            public void onResponse(Call<AllSummaryStoreWiseDay> call, Response<AllSummaryStoreWiseDay> response) {
+                if(response.code()==200){
+                    AllSummaryStoreWiseDay allSummaryStoreWiseDayModel=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+                    //table 1
+                    dbengine.truncateStoreWiseDataTable();
+                    List<TblStoreWiseDaySummary> tblStoreWiseDaySummary=  allSummaryStoreWiseDayModel.getTblStoreWiseDaySummary();
+                    if(tblStoreWiseDaySummary.size()>0){
+                        dbengine.savetblStoreWiseDaySummary(tblStoreWiseDaySummary);
+                    }
+                    else{
+                        blankTablearrayList.add("tblSKUWiseDaySummary");
+                    }
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllSummaryStoreWiseDay> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
+
+
+    public static void getAllStoreSKUWiseMTDSummaryReport(Context context, final String imei, String RegistrationID,String msgToShow){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        String PersonNodeIdAndNodeType= dbengine.fngetSalesPersonMstrData();
+
+        int PersonNodeId=0;
+
+        int PersonNodeType=0;
+        if(!PersonNodeIdAndNodeType.equals("0^0")) {
+            PersonNodeId = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[0]);
+            PersonNodeType = Integer.parseInt(PersonNodeIdAndNodeType.split(Pattern.quote("^"))[1]);
+        }
+
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        ReportsInfo reportsInfo=new ReportsInfo();
+        reportsInfo.setApplicationTypeId(CommonInfo.Application_TypeID);
+        reportsInfo.setIMEINo(imei);
+        reportsInfo.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        reportsInfo.setForDate(fDate);
+        reportsInfo.setSalesmanNodeId(PersonNodeId);
+        reportsInfo.setSalesmanNodeType(PersonNodeType);
+        reportsInfo.setFlgDataScope(0);
+
+        Call<AllSummaryStoreSKUWiseDay> call= apiService.Call_AllSummaryStoreSKUWiseMTDDay(reportsInfo);
+        call.enqueue(new Callback<AllSummaryStoreSKUWiseDay>() {
+            @Override
+            public void onResponse(Call<AllSummaryStoreSKUWiseDay> call, Response<AllSummaryStoreSKUWiseDay> response) {
+                if(response.code()==200){
+                    AllSummaryStoreSKUWiseDay allSummaryStoreSKUWiseDayModel=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+                    //table 1
+                    dbengine.truncateStoreAndSKUWiseDataTable();
+                    List<TblStoreSKUWiseDaySummary> tblStoreSKUWiseDaySummary=  allSummaryStoreSKUWiseDayModel.getTblStoreSKUWiseDaySummary();
+                    if(tblStoreSKUWiseDaySummary.size()>0){
+                        dbengine.savetblStoreSKUWiseDaySummary(tblStoreSKUWiseDaySummary);
+                    }
+                    else{
+                        blankTablearrayList.add("tblStoreSKUWiseDaySummary");
+                    }
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllSummaryStoreSKUWiseDay> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
 }

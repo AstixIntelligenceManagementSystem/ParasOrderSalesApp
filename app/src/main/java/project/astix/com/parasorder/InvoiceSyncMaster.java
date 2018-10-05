@@ -495,7 +495,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 		alertDialogSyncOK.setCancelable(false);
 		/*alertDialogSyncOK
 				.setMessage("Sync was successful!");*/
-		alertDialogSyncOK.setMessage(getText(R.string.syncAlertInvoiceOKMsg));
+		alertDialogSyncOK.setMessage(getText(R.string.syncAlertExecutionOKMsg));
 		alertDialogSyncOK.setNeutralButton(getText(R.string.AlertDialogOkButton),
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
@@ -613,7 +613,7 @@ private class SyncImgTasker extends AsyncTask<String, Void, Void> {
 	            */
 	            
 	            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-				pDialogGetStores.setMessage(getText(R.string.SubmittingDelDetails));
+				pDialogGetStores.setMessage(getText(R.string.SubmittingExecutionDetails));
 				pDialogGetStores.setIndeterminate(false);
 				pDialogGetStores.setCancelable(false);
 				pDialogGetStores.setCanceledOnTouchOutside(false);

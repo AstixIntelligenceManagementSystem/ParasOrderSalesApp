@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.TableLayout;
@@ -13,7 +14,7 @@ import android.widget.TableLayout;
 
 public class SKUWiseSummaryReport_ByTab extends BaseActivity
 {
-	
+	// implements InterfaceRetrofit
 	String date_value="";
 	String imei="";
 	String pickerDate="";
@@ -24,16 +25,17 @@ public class SKUWiseSummaryReport_ByTab extends BaseActivity
 	public int bck = 0;
 	public String Noti_text="Null";
 	public int MsgServerID=0;
-	
-	
+
+
 
 
 	
 
 	// Declaring our tabs and the corresponding fragments.
 	ActionBar.Tab OneTab, TwoTab, ThreeTab;
-	
+
 	Fragment fragmentOneTab = new SKUWiseFragmentOneTab();
+
 	Fragment fragmentTwoTab = new SKUWiseFragmentTwoTab();
 	Fragment fragmentThreeTab = new SKUWiseFragmentThreeTab();
 	
@@ -106,7 +108,7 @@ public class SKUWiseSummaryReport_ByTab extends BaseActivity
         
         
         
-        OneTab.setTabListener(new TabListener(fragmentOneTab));
+        OneTab.setTabListener(new TabListener(fragmentOneTab)).setTag("fragmentOneTab");
        // TwoTab.setTabListener(new TabListener(fragmentTwoTab));
         ThreeTab.setTabListener(new TabListener(fragmentThreeTab));
        
@@ -152,5 +154,21 @@ public class SKUWiseSummaryReport_ByTab extends BaseActivity
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+
+
+	/*@Override
+	public void success() {
+		if(fragmentOneTab!=null)
+		{
+
+			((SKUWiseFragmentOneTab) getFragmentManager().findFragmentByTag("fragmentOneTab")).intializeFields();
+		}
+
+	}
+
+	@Override
+	public void failure() {
+
+	}*/
 }
 

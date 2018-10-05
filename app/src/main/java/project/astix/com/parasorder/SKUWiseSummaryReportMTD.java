@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
@@ -22,9 +23,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-public class SKUWiseSummaryReportMTD extends BaseActivity
+public class SKUWiseSummaryReportMTD extends BaseActivity   implements InterfaceRetrofit
 {
-	
+
 	public String imei;
 	public String fDate;
 	public SimpleDateFormat sdf;
@@ -93,7 +94,7 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 		if(isOnline())
 		{
 
-			 try
+			 /*try
 			    {
 			      GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay(SKUWiseSummaryReportMTD.this);
 				  task.execute();
@@ -102,7 +103,17 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 			   {
 						// TODO Autouuid-generated catch block
 				e.printStackTrace();
-				}
+				}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+				CommonFunction.getAllSKUWiseMTDSummaryReport(SKUWiseSummaryReportMTD.this,imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 		else
 		{
@@ -200,7 +211,7 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 	
 	private void intializeFields() 
 	{
-		
+		AllDataContainer= dbengine.fetchAllDataFromtblSKUWiseDaySummary();
 		if(AllDataContainer.length>0)
 		{
 		 StringTokenizer tokens = new StringTokenizer(String.valueOf(AllDataContainer[0]), "^");
@@ -425,6 +436,14 @@ public class SKUWiseSummaryReportMTD extends BaseActivity
 			
 			
 	}
- 
+	@Override
+	public void success() {
+		intializeFields();
+	}
+
+	@Override
+	public void failure() {
+
+	}
 }
 

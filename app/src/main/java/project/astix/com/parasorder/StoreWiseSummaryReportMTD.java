@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
@@ -23,7 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-public class StoreWiseSummaryReportMTD extends BaseActivity
+public class StoreWiseSummaryReportMTD extends BaseActivity implements InterfaceRetrofit
 {
 	
 	public String imei;
@@ -89,7 +90,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 		fDate = sdf.format(date1).toString().trim();
 		if(isOnline())
 		{
-		 try
+		/* try
 		    {
 		      GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay(StoreWiseSummaryReportMTD.this);
 			  task.execute();
@@ -98,6 +99,17 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 		 {
 					// TODO Autouuid-generated catch block
 			e.printStackTrace();
+			}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+
+				CommonFunction.getAllStoreWiseMTDSummaryReport(StoreWiseSummaryReportMTD.this,imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
 			}
 		}
 		else
@@ -195,6 +207,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 	
 	private void intializeFields() 
 	{
+		AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
 		
 		if(AllDataContainer.length>0)
 		{
@@ -341,6 +354,14 @@ public class StoreWiseSummaryReportMTD extends BaseActivity
 			
 			
 	}
- 
+	@Override
+	public void success() {
+		intializeFields();
+	}
+
+	@Override
+	public void failure() {
+
+	}
 }
 
