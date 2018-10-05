@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import project.astix.com.parasorder.model.InvoiceList;
 import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
@@ -36609,6 +36610,50 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
         }
         db.setTransactionSuccessful();
         db.endTransaction();
+    }
+
+
+    public static List<InvoiceList>  getDistinctInvoiceNumbersNew()
+    {
+        //open();
+
+        Cursor cur=null;
+        ArrayList<HashMap<Object,Object>> arrDistinctInvoiceNumbersNew=new  ArrayList<HashMap<Object,Object>>();
+        HashMap<Object,Object> hmapData=new HashMap<Object,Object>();
+        //tblDistributorIDOrderIDLeft
+        //tblDistributorOrderPdaId(DistributorNodeIdNodeType text null,OrderPDAID text null,ProductId text null,OrderQntty text null,Sstat integer not null);";
+        try {
+            cur=db.rawQuery("Select DISTINCT ServingDBRId,InvoiceNumber from tblInvoiceDetails",null);
+            if(cur.getCount()>0)
+            {
+
+                if(cur.moveToFirst())
+                {
+                    for(int i=0;i<cur.getCount();i++)
+                    {
+                        InvoiceList invoiceList=new InvoiceList();
+                        invoiceList.setCustomer(cur.getString(0));
+                        invoiceList.setpDAOrderId(cur.getString(1));
+                        cur.moveToNext();
+                    }
+                }
+                arrDistinctInvoiceNumbersNew.add(hmapData);
+            }
+        }
+        catch(Exception e)
+        {
+
+        }
+        finally
+        {
+            if(cur!=null)
+            {
+                cur.close();
+            }
+            // close();
+            return arrDistinctInvoiceNumbersNew;
+        }
+
     }
 
 }

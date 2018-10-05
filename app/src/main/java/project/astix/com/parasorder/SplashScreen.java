@@ -299,10 +299,78 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
                         else
                         {
                             //dbengine.open();
-                            dbengine.reCreateDB();
+                          //  dbengine.reCreateDB();
                             //dbengine.close();
-                            CheckUpdateVersion cuv = new CheckUpdateVersion();
-                            cuv.execute();
+                          /*  CheckUpdateVersion cuv = new CheckUpdateVersion();
+                            cuv.execute();*/
+
+
+
+                                //dbengine.open();
+                                int checkUserAuthenticate = dbengine.FetchflgUserAuthenticated();
+                                //dbengine.close();
+
+                                if (checkUserAuthenticate == 0)   // 0 means-->New user        1 means-->Exist User
+                                {
+                                    showAlertForEveryOne(getResources().getString(R.string.phnRegisterError));
+                                    return;
+
+                                }
+                                else
+                                {
+                                    //dbengine.open();
+
+                                    String getServerDate = dbengine.fnGetServerDate();
+                                    //dbengine.close();
+                                    if (!getPDADate.equals(""))
+                                    {
+                                        if(!getServerDate.equals(getPDADate))
+                                        {
+
+                                            if(dbengine.fnCheckForPendingImages()==1)
+                                            {
+                                                getPrevioisDateData();
+                                                return;
+                                            }
+                                            else if(checkImagesInFolder()>0)
+                                            {
+                                                getPrevioisDateData();
+                                                return;
+                                            }
+                                            else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
+                                            {
+                                                getPrevioisDateData();
+                                                return;
+                                            }
+                                            else if(checkXMLFilesInFolder()>0)
+                                            {
+                                                getPrevioisDateData();
+                                                return;
+                                            }
+                                            else
+                                            {
+                                                afterversioncheck();
+                                            }
+
+
+                                        }
+                                        else
+                                        {
+                                            afterversioncheck();
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        afterversioncheck();
+                                    }
+
+
+
+                                }
+
+
+
                         }
 
                     }
@@ -1222,80 +1290,8 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
         {
             super.onPostExecute(result);
 
-            if(chkFlgForErrorToCloseApp==1)   // if Webservice showing exception or not excute complete properly
-            {
-                chkFlgForErrorToCloseApp=0;
-                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
-                finish();
-            }
-            else
-                {
-
-                //dbengine.open();
-                int checkUserAuthenticate = dbengine.FetchflgUserAuthenticated();
-                //dbengine.close();
-
-                if (checkUserAuthenticate == 0)   // 0 means-->New user        1 means-->Exist User
-                {
-                    showAlertForEveryOne(getResources().getString(R.string.phnRegisterError));
-                    return;
-
-                }
-                else
-                 {
-                    //dbengine.open();
-                    String getPDADate = dbengine.fnGetPdaDate();
-                    String getServerDate = dbengine.fnGetServerDate();
-                    //dbengine.close();
-                    if (!getPDADate.equals(""))
-                    {
-                        if(!getServerDate.equals(getPDADate))
-                        {
-
-                            if(dbengine.fnCheckForPendingImages()==1)
-                            {
-                                getPrevioisDateData();
-                                return;
-                            }
-                            else if(checkImagesInFolder()>0)
-                            {
-                                getPrevioisDateData();
-                                return;
-                            }
-                            else if(dbengine.fnCheckForPendingXMLFilesInTable()==1)
-                            {
-                                getPrevioisDateData();
-                                return;
-                            }
-                            else if(checkXMLFilesInFolder()>0)
-                            {
-                                getPrevioisDateData();
-                                return;
-                            }
-                            else
-                            {
-                                afterversioncheck();
-                            }
 
 
-                        }
-                        else
-                        {
-                            afterversioncheck();
-                        }
-
-                    }
-                    else
-                    {
-                        afterversioncheck();
-                    }
-
-
-
-                }
-
-
-            }
 
         }
     }
@@ -1965,7 +1961,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
             String [] AllFilesName= checkNumberOfFiles(del);
 
 
-            if(AllFilesName!=null && AllFilesName.length>0)
+            if(AllFilesName.length>0)
             {
                 SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
 

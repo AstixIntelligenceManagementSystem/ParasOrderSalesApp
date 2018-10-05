@@ -135,14 +135,14 @@ public class CommonInfo {
                     hmapAppMasterFlags.put("flgShowPaymentStageAtLastVisitPage", cursor.getInt(4));
                     hmapAppMasterFlags.put("flgShowDeliveryAddressButtonOnOrder", cursor.getInt(5));   //0=Not To be mapped Again,1=Can Map Distributor
                     hmapAppMasterFlags.put("flgShowManagerOnStoreList", cursor.getInt(6));
-                    hmapAppMasterFlags.put("flgShowTragetVsAchived", cursor.getInt(0));
-                    hmapAppMasterFlags.put("flgFilterProductOnCategoryOrSearchBasis", cursor.getInt(7));
-                    hmapAppMasterFlags.put("flgNeedStock", cursor.getInt(8));
-                    hmapAppMasterFlags.put("flgCalculateStock", cursor.getInt(9));
-                    hmapAppMasterFlags.put("flgControlStock", cursor.getInt(10));
-                    hmapAppMasterFlags.put("flgManageCollection", cursor.getInt(11));
-                    hmapAppMasterFlags.put("flgControlCollection", cursor.getInt(12));
-                    hmapAppMasterFlags.put("flgManageScheme", cursor.getInt(13));
-                    hmapAppMasterFlags.put("flgManageSalesQuotation", cursor.getInt(14));
-                    hmapAppMasterFlags.put("flgManageExecution", cursor.getInt(15));*/
+                    hmapAppMasterFlags.put("flgShowTragetVsAchived", cursor.getInt(7));
+                    hmapAppMasterFlags.put("flgFilterProductOnCategoryOrSearchBasis", cursor.getInt(8));
+                    hmapAppMasterFlags.put("flgNeedStock", cursor.getInt(9));
+                    hmapAppMasterFlags.put("flgCalculateStock", cursor.getInt(10));
+                    hmapAppMasterFlags.put("flgControlStock", cursor.getInt(11));
+                    hmapAppMasterFlags.put("flgManageCollection", cursor.getInt(12));
+                    hmapAppMasterFlags.put("flgControlCollection", cursor.getInt(13));
+                    hmapAppMasterFlags.put("flgManageScheme", cursor.getInt(14));
+                    hmapAppMasterFlags.put("flgManageSalesQuotation", cursor.getInt(15));
+                    hmapAppMasterFlags.put("flgManageExecution", cursor.getInt(16));*/
 }

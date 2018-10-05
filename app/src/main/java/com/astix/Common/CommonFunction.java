@@ -215,14 +215,13 @@ public class CommonFunction {
         final String fDate = sdf.format(date1).toString().trim();
         ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
 
-        apiService =
-                ApiClient.getClient().create(ApiInterface.class);
+        apiService=ApiClient.getClient().create(ApiInterface.class);
         String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
         String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
         String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
         int FlgAllRoutesData=1;
         String  serverDateForSPref=	dbengine.fnGetServerDate();
-
+        List<HashMap<Object,Object>> arrDistinctInvoiceNumbersNew=dbengine.getDistinctInvoiceNumbersNew();
         Data data=new Data();
         data.setApplicationTypeId(CommonInfo.Application_TypeID);
         data.setIMEINo(imei);
@@ -230,7 +229,9 @@ public class CommonFunction {
         data.setRegistrationId(RegistrationID);
         data.setForDate(fDate);
         data.setFlgAllRouteData(1);
-        // data.setInvoiceList(null);
+
+        data.setInvoiceList(arrDistinctInvoiceNumbersNew);
+
         data.setRouteNodeId(0);
         data.setRouteNodeType(0);
         data.setCoverageAreaNodeId(Integer.parseInt(CoverageNodeId));

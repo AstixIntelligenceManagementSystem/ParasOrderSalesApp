@@ -4,6 +4,8 @@ package project.astix.com.parasorder.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Data {
 
     @SerializedName("IMEINo")
@@ -29,7 +31,7 @@ public class Data {
     private Integer routeNodeType;
     @SerializedName("InvoiceList")
     @Expose
-    private InvoiceList invoiceList;
+    private  List<InvoiceList> invoiceList;
     @SerializedName("FlgAllRouteData")
     @Expose
     private Integer flgAllRouteData;
@@ -96,11 +98,11 @@ public class Data {
         this.routeNodeType = routeNodeType;
     }
 
-    public InvoiceList getInvoiceList() {
+    public List<InvoiceList> getInvoiceList() {
         return invoiceList;
     }
 
-    public void setInvoiceList(InvoiceList invoiceList) {
+    public void setInvoiceList(List<InvoiceList> invoiceList) {
         this.invoiceList = invoiceList;
     }
 

@@ -3316,7 +3316,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                                 }
                             }
                         }
-                        else
+                        else if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1)
                         {
                             newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
                             if (newservice.flagExecutedServiceSuccesfully != 39) {
