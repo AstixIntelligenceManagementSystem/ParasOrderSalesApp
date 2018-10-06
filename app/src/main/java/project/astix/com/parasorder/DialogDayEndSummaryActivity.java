@@ -70,9 +70,9 @@ public class DialogDayEndSummaryActivity extends BaseActivity  implements  Inter
 	{
 		// TODO Auto-generated method stub
 		super.onResume();
-		dbengine.open();
+		//dbengine.open();
 		String Noti_textWithMsgServerID=dbengine.fetchNoti_textFromtblPDANotificationMaster();
-		dbengine.close();
+		//dbengine.close();
 
 		if(!Noti_textWithMsgServerID.equals("Null"))
 		{
@@ -81,7 +81,7 @@ public class DialogDayEndSummaryActivity extends BaseActivity  implements  Inter
 			MsgServerID= Integer.parseInt(token.nextToken().trim());
 			Noti_text= token.nextToken().trim();
 
-			dbengine.close();
+			//dbengine.close();
 			if(Noti_text.equals("") || Noti_text.equals("Null"))
 			{
 
@@ -101,10 +101,10 @@ public class DialogDayEndSummaryActivity extends BaseActivity  implements  Inter
 								SimpleDateFormat df = new SimpleDateFormat(
 										"dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
 								String Noti_ReadDateTime = df.format(dateobj);
-								dbengine.open();
+								//dbengine.open();
 
 								dbengine.updatetblPDANotificationMaster(MsgServerID,Noti_text,0,Noti_ReadDateTime,3);
-								dbengine.close();
+								//dbengine.close();
 								dialog.dismiss();
 
 							}

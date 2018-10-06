@@ -346,10 +346,17 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             {
                 DayEndCodeAfterSummary();
             }
-            else {
-                Intent in=new Intent(AllButtonActivity.this,DialogDayEndSummaryActivity.class);
-                startActivity(in);
+            else
+            {
+                ll_DayEnd.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent in=new Intent(AllButtonActivity.this,DialogDayEndSummaryActivity.class);
+                        startActivity(in);
+                    }
+                });
             }
+
         }
         else
         {

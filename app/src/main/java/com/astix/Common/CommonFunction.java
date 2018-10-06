@@ -240,8 +240,8 @@ public class CommonFunction {
         data.setForDate(fDate);
         data.setFlgAllRouteData(1);
 
-        data.setInvoiceList(arrDistinctInvoiceNumbersNew);
-
+        //data.setInvoiceList(arrDistinctInvoiceNumbersNew);
+        data.setInvoiceList(null);
         data.setRouteNodeId(0);
         data.setRouteNodeType(0);
         data.setCoverageAreaNodeId(Integer.parseInt(CoverageNodeId));
