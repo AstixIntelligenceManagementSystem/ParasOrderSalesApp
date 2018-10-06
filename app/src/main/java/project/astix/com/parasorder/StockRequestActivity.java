@@ -925,22 +925,6 @@ public class StockRequestActivity extends BaseActivity {
             try
             {
 
-                String RouteType="0";
-
-                for(int mm = 1; mm < 2  ; mm++)
-                {
-
-
-
-                    // System.out.println("Excecuted function : "+newservice.flagExecutedServiceSuccesfully);
-                    if (mm == 1) {
-                        newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
-
-
-                    }
-
-
-                }
             }
             catch (Exception e)
             {

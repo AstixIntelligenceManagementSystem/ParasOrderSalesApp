@@ -23,6 +23,7 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.SimpleDateFormat;
@@ -33,7 +34,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-public class DialogDayEndSummaryActivity extends BaseActivity
+public class DialogDayEndSummaryActivity extends BaseActivity  implements  InterfaceRetrofit
 {
 	TableLayout tbl_inflate;
 
@@ -177,7 +178,7 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 		if(isOnline())
 		{
 
-			try
+			/*try
 			{
 				GetSummaryForDay task = new GetSummaryForDay(DialogDayEndSummaryActivity.this);
 				task.execute();
@@ -185,6 +186,16 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 			catch (Exception e)
 			{
 				// TODO Autouuid-generated catch block
+				e.printStackTrace();
+			}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+				CommonFunction.getAllSummaryReportData(DialogDayEndSummaryActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
 				e.printStackTrace();
 			}
 		}
@@ -268,80 +279,6 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 			}
 
 
-	}
-
-
-
-	private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
-	{
-
-		ProgressDialog pDialogGetStores;//=new ProgressDialog(DetailReport_Activity.this);
-		public GetSummaryForDay(DialogDayEndSummaryActivity activity)
-		{
-			pDialogGetStores = new ProgressDialog(activity);
-		}
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
-
-			dbengine.open();
-			dbengine.truncateAllSummaryDayDataTable();
-			dbengine.close();
-
-
-			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-			pDialogGetStores.setMessage(getText(R.string.genTermRetrivingSummary));
-			pDialogGetStores.setIndeterminate(false);
-			pDialogGetStores.setCancelable(false);
-			pDialogGetStores.setCanceledOnTouchOutside(false);
-			pDialogGetStores.show();
-		}
-
-		@Override
-		protected Void doInBackground(Void... args)
-		{
-			ServiceWorker newservice = new ServiceWorker();
-
-			try
-			{
-				newservice = newservice.getfnCallspPDAGetDayAndMTDSummary(getApplicationContext(), fDate , imei);
-
-			}
-			catch (Exception e)
-			{
-				Log.i("SvcMgr", "Service Execution Failed!", e);
-			}
-			finally
-			{
-				Log.i("SvcMgr", "Service Execution Completed...");
-			}
-			return null;
-		}
-
-
-		@Override
-		protected void onPostExecute(Void result)
-		{
-			super.onPostExecute(result);
-
-			Log.i("SvcMgr", "Service Execution cycle completed");
-
-			if(pDialogGetStores.isShowing())
-			{
-				pDialogGetStores.dismiss();
-			}
-			dbengine.open();
-
-			getDataFromDatabase();
-
-
-			dbengine.close();
-
-
-
-
-		}
 	}
 
 
@@ -516,4 +453,13 @@ public class DialogDayEndSummaryActivity extends BaseActivity
 
 	}
 
+	@Override
+	public void success() {
+		getDataFromDatabase();
+	}
+
+	@Override
+	public void failure() {
+
+	}
 }

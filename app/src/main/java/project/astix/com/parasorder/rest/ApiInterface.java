@@ -7,6 +7,7 @@ import project.astix.com.parasorder.model.AllSummaryReportDay;
 import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
+import project.astix.com.parasorder.model.AllTargetVsAchieved;
 import project.astix.com.parasorder.model.Data;
 import project.astix.com.parasorder.model.IMEIVersionDetails;
 import project.astix.com.parasorder.model.IMEIVersionParentModel;
@@ -47,5 +48,9 @@ public interface ApiInterface {
 
     @POST("Home/GetStoreSKUWiseMTDSummary")
     Call<AllSummaryStoreSKUWiseDay> Call_AllSummaryStoreSKUWiseMTDDay(@Body ReportsInfo reportsInfo);
+
+
+    @POST("Home/GetTargetVsAchieved")
+    Call<AllTargetVsAchieved> Call_AllTargetVsAchieved(@Body Data data);
 
 }

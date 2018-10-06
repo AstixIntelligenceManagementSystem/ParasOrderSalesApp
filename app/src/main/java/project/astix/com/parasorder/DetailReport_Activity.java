@@ -19,6 +19,7 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
@@ -28,7 +29,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-public class DetailReport_Activity extends BaseActivity
+public class DetailReport_Activity extends BaseActivity  implements  InterfaceRetrofit
 {
 
 	String date_value="";
@@ -404,16 +405,17 @@ protected void onCreate(Bundle savedInstanceState)
 							if(isOnline())
 							{
 			
-								 try
-								    {
-								      GetSummaryForDay task = new GetSummaryForDay(DetailReport_Activity.this);
-									  task.execute();
-									} 
-								 catch (Exception e) 
-								   {
-											// TODO Autouuid-generated catch block
+
+								try
+								{
+									// new GetRouteInfo().execute();
+									CommonFunction.getAllSummaryReportData(DetailReport_Activity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.");
+
+								}
+								catch (Exception e)
+								{
 									e.printStackTrace();
-									}
+								}
 							}
 							else
 							{
@@ -429,79 +431,13 @@ protected void onCreate(Bundle savedInstanceState)
           }
 
 
-private class GetSummaryForDay extends AsyncTask<Void, Void, Void>
-{		
-	
-	ProgressDialog pDialogGetStores;//=new ProgressDialog(DetailReport_Activity.this);
-	public GetSummaryForDay(DetailReport_Activity activity) 
-	{
-		pDialogGetStores = new ProgressDialog(activity);
-	}
-	@Override
-	protected void onPreExecute()
-	{
-		super.onPreExecute();
-		
-		//dbengine.open();
-		dbengine.truncateAllSummaryDataTable();
-		//dbengine.close();
-		
-		
-		pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-		pDialogGetStores.setMessage(getText(R.string.genTermRetrivingSummary));
-		pDialogGetStores.setIndeterminate(false);
-		pDialogGetStores.setCancelable(false);
-		pDialogGetStores.setCanceledOnTouchOutside(false);
-		pDialogGetStores.show();
-	}
-
-	@Override
-	protected Void doInBackground(Void... args) 
-	{
-		ServiceWorker newservice = new ServiceWorker();
-		
-	try
-  	 {
-			newservice = newservice.getCallspPDAGetDaySummary(getApplicationContext(),  imei, fDate);
-			
-	 } 
-	catch (Exception e) 
-	  {
-			Log.i("SvcMgr", "Service Execution Failed!", e);
-      }
-   finally 
-      {
-           Log.i("SvcMgr", "Service Execution Completed...");
-      }
-		return null;
-	}
-	
-
-	@Override
-	protected void onPostExecute(Void result)
-	{
-		super.onPostExecute(result);
-		
-		Log.i("SvcMgr", "Service Execution cycle completed");
-		
-        if(pDialogGetStores.isShowing()) 
-	      {
-	    	   pDialogGetStores.dismiss();
-		  }
-        //dbengine.open();
-        AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
-        //dbengine.close();
-        intializeFields();
-	  
-	}
-}
 
 public void intializeFields()
 {
-	
-	
-	
-	
+
+
+
+	AllDataContainer= dbengine.fetchAllDataFromtblAllSummary();
 	
 	TargetCallsValue=(TextView)findViewById(R.id.txtTargetCallsValue);
 	TargetCallsValueMTD=(TextView)findViewById(R.id.txtTargetCallsValueMTD);
@@ -637,4 +573,15 @@ public void intializeFields()
 	
 }
 
+	@Override
+	public void success() {
+
+		//dbengine.close();
+		intializeFields();
+	}
+
+	@Override
+	public void failure() {
+
+	}
 }

@@ -1444,248 +1444,7 @@ public void DayEndWithoutalert()
 		}
 	}
 	
-	
-	private class GetStoresForDay extends AsyncTask<Void, Void, Void> 
-	{		
-		ServiceWorker newservice = new ServiceWorker();
-		
-		
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
-		
-			mProgressDialog.show();
-			
-		
-	       
-		}
 
-		@Override
-		protected Void doInBackground(Void... params) 
-		{
-
-		try {
-			String RouteType="0";
-			//dbengine.open();
-			String rID=dbengine.GetActiveRouteID();
-			RouteType=dbengine.FetchRouteType(rID);
-			//dbengine.close();
-			for(int mm = 1; mm < 12  ; mm++)
-			{
-				System.out.println("Nitika find fault = "+mm);
-				if(mm==1)
-				{  
-					
-					/*if(isOnline())
-					{
-				        newservice = newservice.getallProduct(getApplicationContext(), fDate, imei, rID,RouteType);
-						if(newservice.flagExecutedServiceSuccesfully!=2)
-						{
-							   serviceException=true;
-								break;
-						}
-					}*/
-					/*newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
-					if (!newservice.director.toString().trim().equals("1")) {
-
-						serviceException = true;
-						break;*/
-
-				//	}
-
-					
-				}
-				
-				if(mm==2)
-				{
-				/*	newservice = newservice.fnGetVanStockData(getApplicationContext(), CommonInfo.imei);
-					if (newservice.flagExecutedServiceSuccesfully != 39) {
-						serviceException = true;
-					}*/
-					/*if(isOnline())
-					{
-					
-						Date currDateNew = new Date();
-						SimpleDateFormat currDateFormatNew = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
-						
-						String currSysDateNew = currDateFormatNew.format(currDateNew).toString();
-						newservice = newservice.getAllNewSchemeStructure(getApplicationContext(), currSysDateNew, imei, rID,RouteType);
-						if(newservice.flagExecutedServiceSuccesfully!=4)
-						{
-							   serviceException=true;
-								break;
-						}
-					
-					}
-					*/
-				}
-				if(mm==3)
-				{
-				
-						newservice = newservice.getCategory(getApplicationContext(), imei);
-						if(newservice.flagExecutedServiceSuccesfully!=3)
-						{
-							
-								serviceException=true;
-								break;
-						
-						}
-				}
-				if(mm==4)
-				{
-					/*	Date currDateNew = new Date();
-					    SimpleDateFormat currDateFormatNew = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
-					
-					    String currSysDateNew = currDateFormatNew.format(currDateNew).toString();
-						newservice = newservice.getallPDASchAppListForSecondPage(getApplicationContext(), currSysDateNew, imei, rID,RouteType);
-						if(newservice.flagExecutedServiceSuccesfully!=5)
-						{
-							    serviceException=true;
-								break;
-						}*/
-				}
-				
-				if(mm==5)
-				{
-
-				/*	//dbengine.open();
-					hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
-
-					//dbengine.close();*/
-						newservice = newservice.getallStores(getApplicationContext(), fDate, imei, rID,RouteType,2);
-						if(newservice.flagExecutedServiceSuccesfully!=1)
-						{
-							    serviceException=true;
-								break;
-						}
-					
-				}
-				if(mm==6)
-				{
-						/*newservice = newservice.getStoreTypeMstr(getApplicationContext(), fDate, imei);
-						if(newservice.flagExecutedServiceSuccesfully!=37)
-						{
-							
-								serviceException=true;
-								break;
-						
-						}*/
-					
-				}
-				if(mm==7)
-				{
-						/*newservice = newservice.gettblTradeChannelMstr(getApplicationContext(), fDate, imei);
-						if(newservice.flagExecutedServiceSuccesfully!=38)
-						{
-							    serviceException=true;
-								break;
-						}*/
-					
-				}
-				
-				
-				if(mm==8)
-				{
-						/*newservice = newservice.getStoreProductClassificationTypeListMstr(getApplicationContext(), fDate, imei);
-						if(newservice.flagExecutedServiceSuccesfully!=39)
-						{
-							    serviceException=true;
-								break;
-						}*/
-					
-					
-				}
-				
-				if(mm==9)
-				{
-                    newservice = newservice.fnGetPDACollectionMaster(getApplicationContext(), fDate, imei, rID);
-                    if(newservice.flagExecutedServiceSuccesfully!=40)
-                    {
-                        System.out.println("GRLTyre = "+mm);
-                        serviceException=true;
-                        break;
-                    }
-				}
-
-
-				if(mm==10)
-				{
-					/*newservice=newservice.fnGetVanStockData(getApplicationContext(),imei);
-					if(newservice.flagExecutedServiceSuccesfully!=39)
-					{
-						serviceException=true;
-						break;
-					}*/
-
-				}
-				if(mm==11)
-				{
-
-					newservice = newservice.getStoreWiseOutStandings(getApplicationContext(), fDate, imei, rID,RouteType);
-					/*if(newservice.flagExecutedServiceSuccesfully!=1)
-					{
-						serviceException=true;
-						break;
-					}*/
-				}
-				
-			}
-			
-			
-		} catch (Exception e) {
-				Log.i("SvcMgr", "Service Execution Failed!", e);
-
-			}
-
-			finally {
-
-				Log.i("SvcMgr", "Service Execution Completed...");
-
-			}
-			//return newservice.director;
-			return null;
-		}
-
-		@Override
-		protected void onCancelled() {
-			Log.i("SvcMgr", "Service Execution Cancelled");
-		}
-
-		@Override
-		protected void onPostExecute(Void result) 
-		{
-			super.onPostExecute(result);
-			
-			Log.i("SvcMgr", "Service Execution cycle completed");
-
-			if(mProgressDialog != null)
-			{
-			if(mProgressDialog.isShowing())
-			{
-				mProgressDialog.dismiss();
-			}
-			}
-			
-			if(serviceException)
-			{
-				showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrRetrieving));
-				serviceException=false;
-				tl2.removeAllViews();
-				setStoresList();
-
-			}
-			else
-			{
-				Intent i=new Intent(StoreSelection.this,LauncherActivity.class);
-				i.putExtra("imei", imei);
-				startActivity(i);
-				finish();
-			}
-			
-		}
-	}
-	
 	public void setUpVariable()
 	{
 
@@ -1787,69 +1546,6 @@ public void DayEndWithoutalert()
 		});
 		
 		
-		/* Button butn_refresh_data = (Button) findViewById(R.id.butn_refresh_data);
-		 butn_refresh_data.setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-				if(isOnline())
-				{
-
-				System.out.println("Testing abcs ");
-				AlertDialog.Builder alertDialogBuilderNEw11 = new AlertDialog.Builder(StoreSelection.this);
-				
-					// set title
-				alertDialogBuilderNEw11.setTitle("Information");
-		 
-					// set dialog message
-				alertDialogBuilderNEw11.setMessage("Are you sure to refresh Data?");
-				alertDialogBuilderNEw11.setCancelable(false);
-				alertDialogBuilderNEw11.setPositiveButton("Ok",new DialogInterface.OnClickListener() 
-						{
-							public void onClick(DialogInterface dialog,int id) {
-								// if this button is clicked, close
-								// current activity
-								dialog.cancel();
-								try
-		    				    {	
-		    						new GetStoresForDay().execute();
-		    						////System.out.println("SRVC-OK: "+ new GetStoresForDay().execute().get());
-		    					} catch (Exception e) {
-		    						// TODO Autouuid-generated catch block
-		    						e.printStackTrace();
-		    						//System.out.println("onGetStoresForDayCLICK: Exec(). EX: "+e);
-		    					}
-								
-								//onCreate(new Bundle());
-							}
-						  });
-					
-				alertDialogBuilderNEw11.setNegativeButton(R.string.txtNo,
-								new DialogInterface.OnClickListener() {
-
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										// System.out.println("value ofwhatTask after no button pressed by sunil"+whatTask);
-
-										dialog.dismiss();
-									}
-								});
-
-				alertDialogBuilderNEw11.setIcon(R.drawable.info_ico);
-				AlertDialog alert121 = alertDialogBuilderNEw11.create();
-				alert121.show();
-				}		
-				else
-				 {
-					 showNoConnAlert();
-					 return;
-
-				 }
-				
-			}
-		});
-		 */
 
 		 Button add_new_store = (Button) findViewById(R.id.but_add_store);
 			add_new_store.setOnClickListener(new OnClickListener()
@@ -2584,20 +2280,7 @@ public void DayEndWithoutalert()
 		imei=getIMEI();
 		pickerDate=getDateInMonthTextFormat();
 		userDate=getDateInMonthTextFormat();
-		/*Intent getStorei = getIntent();
-		if(getStorei !=null)
-		{
-		imei = getStorei.getStringExtra("imei").trim();
-			if(getStorei.hasExtra("pickerDate")){
-				pickerDate = getStorei.getStringExtra("pickerDate").trim();
-			}else{
-				pickerDate = getStorei.getStringExtra("fDateNew").trim();
-			}
-       // pickerDate = getStorei.getStringExtra("pickerDate").trim();
-			//fDateNew
-        userDate = getStorei.getStringExtra("userDate");
-		//rID = getStorei.getStringExtra("rID");
-		}*/
+
 
 		CommonInfo.ActiveRouteSM="0";
 		locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
@@ -3545,147 +3228,6 @@ else
 		}
 	}
 
-	private class GetInvoiceForDay extends AsyncTask<Void, Void, Void>
-	{
-
-
-
-
-		public GetInvoiceForDay(StoreSelection activity)
-		{
-
-		}
-
-
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
-			showProgress(getResources().getString(R.string.RetrivingDataMsg));
-
-
-		}
-
-		@Override
-		protected Void doInBackground(Void... params)
-		{
-
-			try {
-
-				HashMap<String,String> hmapInvoiceOrderIDandStatus=new HashMap<String, String>();
-				hmapInvoiceOrderIDandStatus=dbengine.fetchHmapInvoiceOrderIDandStatus();
-
-				for(int mm = 1; mm < 5  ; mm++)
-				{
-					if(mm==1)
-					{
-						newservice = newservice.callInvoiceButtonStoreMstr(getApplicationContext(), fDate, imei, rID,hmapInvoiceOrderIDandStatus);
-
-						if(!newservice.director.toString().trim().equals("1"))
-						{
-							if(chkFlgForErrorToCloseApp==0)
-							{
-								chkFlgForErrorToCloseApp=1;
-							}
-
-						}
-
-					}
-					if(mm==2)
-					{
-						newservice = newservice.callInvoiceButtonProductMstr(getApplicationContext(), fDate, imei, rID);
-
-						if(!newservice.director.toString().trim().equals("1"))
-						{
-							if(chkFlgForErrorToCloseApp==0)
-							{
-								chkFlgForErrorToCloseApp=1;
-							}
-
-						}
-
-					}
-					if(mm==3)
-					{
-						newservice = newservice.callInvoiceButtonStoreProductwiseOrder(getApplicationContext(), fDate, imei, rID,hmapInvoiceOrderIDandStatus);
-					}
-					if(mm==4)
-					{
-						//dbengine.open();
-						int check1=dbengine.counttblCatagoryMstr();
-						//dbengine.close();
-						if(check1==0)
-						{
-							newservice = newservice.getCategory(getApplicationContext(), imei);
-						}
-					}
-
-
-
-				}
-
-
-			} catch (Exception e)
-			{
-				Log.i("SvcMgr", "Service Execution Failed!", e);
-			}
-
-			finally
-			{
-				Log.i("SvcMgr", "Service Execution Completed...");
-			}
-
-			return null;
-		}
-
-
-
-		@Override
-		protected void onPostExecute(Void result)
-		{
-			super.onPostExecute(result);
-
-			dismissProgress();
-			Date currDate = new Date();
-			SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
-
-			currSysDate = currDateFormat.format(currDate).toString();
-			Intent storeIntent = new Intent(StoreSelection.this, InvoiceStoreSelection.class);
-			storeIntent.putExtra("imei", imei);
-			storeIntent.putExtra("userDate", currSysDate);
-			storeIntent.putExtra("pickerDate", fDate);
-
-
-			if(chkFlgForErrorToCloseApp==0)
-			{
-				chkFlgForErrorToCloseApp=0;
-				startActivity(storeIntent);
-				// finish();
-			}
-			else
-			{
-				android.support.v7.app.AlertDialog.Builder alertDialogNoConn = new android.support.v7.app.AlertDialog.Builder(StoreSelection.this);
-				alertDialogNoConn.setTitle(getText(R.string.genTermInformation));
-				alertDialogNoConn.setMessage(getText(R.string.txtInvoicePending));
-				alertDialogNoConn.setCancelable(false);
-				alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,
-						new DialogInterface.OnClickListener()
-						{
-							public void onClick(DialogInterface dialog, int which)
-							{
-								dialog.dismiss();
-								// but_Invoice.setEnabled(true);
-								chkFlgForErrorToCloseApp=0;
-							}
-						});
-				alertDialogNoConn.setIcon(R.drawable.info_ico);
-				android.support.v7.app.AlertDialog alert = alertDialogNoConn.create();
-				alert.show();
-				return;
-
-			}
-		}
-	}
 
 	 protected void open_pop_up() 
 	 {
@@ -3729,8 +3271,16 @@ else
 			 @Override
 			 public void onClick(View view)
 			 {
-				 GetInvoiceForDay task = new GetInvoiceForDay(StoreSelection.this);
-				 task.execute();
+				 Date currDate = new Date();
+				 SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+
+				 currSysDate = currDateFormat.format(currDate).toString();
+				 Intent storeIntent = new Intent(StoreSelection.this, InvoiceStoreSelection.class);
+				 storeIntent.putExtra("imei", imei);
+				 storeIntent.putExtra("userDate", currSysDate);
+				 storeIntent.putExtra("pickerDate", fDate);
+
+					 startActivity(storeIntent);
 			 }
 		 });
 
@@ -4243,7 +3793,7 @@ else
 							e.printStackTrace();
 						}
 
-						//////System.out.println("SRVC-OK: "+ new GetStoresForDay().execute().get());
+
 					} catch (Exception e) {
 
 					}
@@ -4662,8 +4212,18 @@ else
 	        alertDialog.setPositiveButton(getResources().getString(R.string.txtRetry), new DialogInterface.OnClickListener() {
 	            public void onClick(DialogInterface dialog,int which) {
 
-	            	new GetStoresForDay().execute();
+
 	            	dialog.dismiss();
+					try
+					{
+						// new GetRouteInfo().execute();
+						CommonFunction.getAllMasterTableModelData(StoreSelection.this,imei,CommonInfo.RegistrationID,"Please wait Refreshing data.");
+
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
 	            }
 	        });
 	 

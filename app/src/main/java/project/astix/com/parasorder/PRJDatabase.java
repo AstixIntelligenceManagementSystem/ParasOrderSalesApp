@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import project.astix.com.parasorder.model.InvoiceList;
+import project.astix.com.parasorder.model.TblActualVsTargetReport;
 import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
@@ -69,6 +70,7 @@ import project.astix.com.parasorder.model.TblStoreListWithPaymentAddress;
 import project.astix.com.parasorder.model.TblStoreSKUWiseDaySummary;
 import project.astix.com.parasorder.model.TblStoreSomeProdQuotePriceMstr;
 import project.astix.com.parasorder.model.TblStoreWiseDaySummary;
+import project.astix.com.parasorder.model.TblValueVolumeTarget;
 
 public class PRJDatabase
 {
@@ -234,7 +236,7 @@ public class PRJDatabase
     private static final String DATABASE_CREATE_TABLE_DISTRIBUTOR_LEFTPRODUCT="create table tblDistributorIDOrderIDLeft(DistributorNodeIdNodeType text not null,OrderId text not null,flgProcessedInvoice int not null);";
     private static final String DATABASE_CREATE_TABLE_23 = "create table tblStoreWiseTarget (StoreID text not null,TargetValue text null);";
     private static final String DATABASE_CREATE_TABLE_235 = "create table tblTargetVsAchievedSummary (AutoId int not null,Descr text null," +
-            "TodayTarget text null,TodayAchieved text null,TodayBal text null,Todayflg text null,MonthTarget text null,MonthAchieved text null,MonthBal text null,Monthflg text null,ValTgtOrPrdctFlg int not null);";
+            "TodayTarget int null,TodayAchieved int null,TodayBal real null,Todayflg int null,MonthTarget real null,MonthAchieved real null,MonthBal real null,Monthflg int null,ValTgtOrPrdctFlg int not null);";
     private static final String DATABASE_TABLE_MAIN236 = "tblTargetVsAchievedNote";
     private static final String DATABASE_CREATE_TABLE_236 = "create table tblTargetVsAchievedNote (MsgToDisplay text null);";
     // Tables Data Coming at Splash Screen Starts
@@ -26366,27 +26368,7 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN23, null, initialValues);
     }
 
-    public static long savetblTargetVsAchievedSummary(int AutoId,String Descr,String TodayTarget,String TodayAchieved,String TodayBal,
-                                               String Todayflg,String MonthTarget,String MonthAchieved,String MonthBal,String Monthflg,int flgValTgtOrPrdct)
-    {
-        //ValTgtOrPrdctFlg
-        ContentValues initialValues = new ContentValues();
 
-        initialValues.put("AutoId", AutoId);
-        initialValues.put("Descr", Descr.trim());
-        initialValues.put("TodayTarget", TodayTarget.trim());
-        initialValues.put("TodayAchieved", TodayAchieved.trim());
-        initialValues.put("TodayBal", TodayBal.trim());
-        initialValues.put("Todayflg", Todayflg.trim());
-        initialValues.put("MonthTarget", MonthTarget.trim());
-        initialValues.put("MonthAchieved", MonthAchieved.trim());
-        initialValues.put("MonthBal", MonthBal.trim());
-        initialValues.put("Monthflg", Monthflg.trim());
-        initialValues.put("ValTgtOrPrdctFlg", flgValTgtOrPrdct);
-
-
-        return db.insert(DATABASE_TABLE_MAIN235, null, initialValues);
-    }
 
     public static String GetActiveRouteIDSunilAgain()
     {
@@ -36613,13 +36595,12 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
     }
 
 
-    public static List<InvoiceList>  getDistinctInvoiceNumbersNew()
+    public static ArrayList<InvoiceList>  getDistinctInvoiceNumbersNew()
     {
         //open();
 
         Cursor cur=null;
-        ArrayList<HashMap<Object,Object>> arrDistinctInvoiceNumbersNew=new  ArrayList<HashMap<Object,Object>>();
-        HashMap<Object,Object> hmapData=new HashMap<Object,Object>();
+        ArrayList<InvoiceList> arrDistinctInvoiceNumbersNew=new ArrayList<InvoiceList>();
         //tblDistributorIDOrderIDLeft
         //tblDistributorOrderPdaId(DistributorNodeIdNodeType text null,OrderPDAID text null,ProductId text null,OrderQntty text null,Sstat integer not null);";
         try {
@@ -36634,10 +36615,11 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
                         InvoiceList invoiceList=new InvoiceList();
                         invoiceList.setCustomer(cur.getString(0));
                         invoiceList.setpDAOrderId(cur.getString(1));
+                        arrDistinctInvoiceNumbersNew.add(invoiceList);
                         cur.moveToNext();
                     }
                 }
-                arrDistinctInvoiceNumbersNew.add(hmapData);
+
             }
         }
         catch(Exception e)
@@ -36655,7 +36637,58 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
         }
 
     }
+    public static void savetblTargetVsAchievedSummary(List<TblActualVsTargetReport> tblActualVsTargetReport)
+    {
 
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblActualVsTargetReport tblActualVsTargetReportData:tblActualVsTargetReport)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("Descr", tblActualVsTargetReportData.getDescr());
+            initialValues.put("TodayTarget", tblActualVsTargetReportData.getTodayTarget());
+            initialValues.put("TodayAchieved", tblActualVsTargetReportData.getTodayAchieved());
+            initialValues.put("TodayBal", tblActualVsTargetReportData.getTodayBal());
+            initialValues.put("Todayflg", tblActualVsTargetReportData.getTodayflg());
+            initialValues.put("MonthTarget", tblActualVsTargetReportData.getMonthTarget());
+            initialValues.put("MonthAchieved", tblActualVsTargetReportData.getMonthAchieved());
+            initialValues.put("MonthBal", tblActualVsTargetReportData.getMonthBal());
+            initialValues.put("Monthflg", tblActualVsTargetReportData.getMonthflg());
+            initialValues.put("ValTgtOrPrdctFlg", 1);
+            db.insert(DATABASE_TABLE_MAIN235, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+
+    public static void saveValueVolumeTarget(List<TblValueVolumeTarget> tblValueVolumeTarget)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblValueVolumeTarget tblValueVolumeTargetData:tblValueVolumeTarget)
+        {
+            initialValues.put("AutoId", AutoId);
+            initialValues.put("Descr", tblValueVolumeTargetData.getDescr());
+            initialValues.put("TodayTarget", tblValueVolumeTargetData.getTodayTarget());
+            initialValues.put("TodayAchieved", tblValueVolumeTargetData.getTodayAchieved());
+            initialValues.put("TodayBal", tblValueVolumeTargetData.getTodayBal());
+            initialValues.put("Todayflg", tblValueVolumeTargetData.getTodayflg());
+            initialValues.put("MonthTarget", tblValueVolumeTargetData.getMonthTarget());
+            initialValues.put("MonthAchieved", tblValueVolumeTargetData.getMonthAchieved());
+            initialValues.put("MonthBal", tblValueVolumeTargetData.getMonthBal());
+            initialValues.put("Monthflg", tblValueVolumeTargetData.getMonthflg());
+            initialValues.put("ValTgtOrPrdctFlg", 0);
+            db.insert(DATABASE_TABLE_MAIN235, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
 }
 
 

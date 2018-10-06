@@ -42,6 +42,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -97,7 +98,7 @@ import java.util.zip.ZipOutputStream;
 //import java.text.SimpleDateFormat;
 
 
-public class StorelistActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener {
+public class StorelistActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,InterfaceRetrofit {
     //spinner variables
     String slctdRouteName="All";
     View convertView;
@@ -1779,159 +1780,6 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
 
 
 
-    private class GetStoreAllData extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if(pDialog2STANDBY == null)
-            {
-                pDialog2STANDBY=new ProgressDialog(StorelistActivity.this);
-            }
-            pDialog2STANDBY.setTitle("Please Wait");
-            pDialog2STANDBY.setMessage("Refreshing Complete data...");
-            pDialog2STANDBY.setIndeterminate(false);
-            pDialog2STANDBY.setCancelable(false);
-            pDialog2STANDBY.setCanceledOnTouchOutside(false);
-            pDialog2STANDBY.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-
-                int DatabaseVersion = dbEngine.DATABASE_VERSION;
-                int ApplicationID = dbEngine.Application_TypeID;
-                //newservice = newservice.getAvailableAndUpdatedVersionOfApp(getApplicationContext(), imei,fDate,DatabaseVersion,ApplicationID);
-
-
-                for(int mm = 1; mm<5; mm++)
-                {
-                    if(mm==1)
-                    {
-                        newservice = newservice.getStoreAllDetails(getApplicationContext(), imei, fDate, DatabaseVersion, ApplicationID,"NA");
-                        if (!newservice.director.toString().trim().equals("1")) {
-                            if (chkFlgForErrorToCloseApp == 0) {
-                                chkFlgForErrorToCloseApp = 1;
-                                break;
-                            }
-
-                        }
-                      }
-                    if(mm==2)
-                    {
-                        newservice = newservice.callfnSingleCallAllWebService(getApplicationContext(),ApplicationID,imei);
-                        if (!newservice.director.toString().trim().equals("1")) {
-                            if (chkFlgForErrorToCloseApp == 0) {
-                                chkFlgForErrorToCloseApp = 1;
-                                break;
-                            }
-
-                        }
-
-                    }
-                    if(mm==3)
-                    {
-                        /*newservice = newservice.getQuotationDataFromServer(getApplicationContext(), fDate, imei, "0");
-                        if (!newservice.director.toString().trim().equals("1")) {
-                            if (chkFlgForErrorToCloseApp == 0) {
-                                chkFlgForErrorToCloseApp = 1;
-                                break;
-                            }
-
-                        }*/
-
-                    }
-                    if(mm==4)
-                    {
-
-
-                       /* newservice = newservice.fnGetStateCityListMstr(StorelistActivity.this,imei, fDate,ApplicationID);
-                        if(!newservice.director.toString().trim().equals("1"))
-                        {
-                            if(chkFlgForErrorToCloseApp==0)
-                            {
-                                chkFlgForErrorToCloseApp=1;
-                                break;
-                            }
-
-                        }*/
-                    }
-                }
-
-
-
-
-
-
-            } catch (Exception e) {
-            } finally {
-            }
-
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-
-
-
-            if(pDialog2STANDBY.isShowing())
-            {
-                pDialog2STANDBY.dismiss();
-            }
-            if (chkFlgForErrorToCloseApp == 1)   // if Webservice showing exception or not excute complete properly
-            {
-                chkFlgForErrorToCloseApp = 0;
-               /* SharedPreferences sharedPreferences=getSharedPreferences("MyPref", MODE_PRIVATE);
-                SharedPreferences.Editor ed;
-                if(sharedPreferences.contains("ServerDate"))
-                {
-                    ed = sharedPreferences.edit();
-                    ed.putString("ServerDate", "0");
-                    ed.commit();
-                }*/
-                alertRefreshOrFinish();
-                //clear sharedpreferences
-
-            }
-            else {
-                SharedPreferences sharedPreferences=getSharedPreferences("MyPref", MODE_PRIVATE);
-                SharedPreferences.Editor ed;
-                ed = sharedPreferences.edit();
-                //dbEngine.open();
-                String getServerDate = dbEngine.fnGetServerDate();
-                //dbEngine.close();
-                ed.putString("ServerDate", getServerDate);
-                ed.commit();
-                String userName=   dbEngine.getUsername();
-                String storeCountDeatails=   dbEngine.getTodatAndTotalStores();
-                String   TotalStores = storeCountDeatails.split(Pattern.quote("^"))[0];
-                String   TodayStores = storeCountDeatails.split(Pattern.quote("^"))[1];
-
-
-                //if
-
-                Intent intent =new Intent(StorelistActivity.this,StorelistActivity.class);
-                StorelistActivity.this.startActivity(intent);
-                finish();
-
-
-
-                //intentPassToLauncherActivity("0", userName, TotalStores, TodayStores);
-                //else
-
-
-                //send to storelist or launcher
-                //next code is here
-            }
-        }
-
-    }
-
-
 
     private class FullSyncDataNow extends AsyncTask<Void, Void, Integer>
     {
@@ -2726,17 +2574,20 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
                 // if this button is clicked, close
                 // current activity
                 dialogintrfc.cancel();
-                try
+                if(CommonInfo.VanLoadedUnloaded==1)
                 {
+                    showAlertSingleWareHouseStockconfirButtonInfo("Stock is updated, please confirm the warehouse stock first.");
 
-
-                    GetStoreAllData getStoreAllDataAsync= new GetStoreAllData();
-                    getStoreAllDataAsync.execute();
-                    //////System.out.println("SRVC-OK: "+ new GetStoresForDay().execute().get());
                 }
-                catch(Exception e)
-                {
+                else {
+                    if (isOnline()) {
+                        fnStartProcedureOfRefreshData();
 
+                    } else {
+                        showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
+                        return;
+
+                    }
                 }
 
                 //onCreate(new Bundle());
@@ -2913,4 +2764,133 @@ public class StorelistActivity extends BaseActivity implements LocationListener,
         });
 
     }
+
+    public void showAlertSingleWareHouseStockconfirButtonInfo(String msg)
+    {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.AlertDialogHeaderMsg))
+                .setMessage(msg)
+                .setCancelable(false)
+                .setIcon(R.drawable.info_ico)
+                .setPositiveButton(getResources().getString(R.string.AlertDialogOkButton), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.dismiss();
+                        Intent intent=new Intent(StorelistActivity.this,AllButtonActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).create().show();
+    }
+
+
+    public void fnStartProcedureOfRefreshData()
+    {
+        AlertDialog.Builder alertDialogBuilderNEw11 = new AlertDialog.Builder(StorelistActivity.this);
+
+        // set title
+        alertDialogBuilderNEw11.setTitle(getResources().getString(R.string.genTermNoDataConnection));
+
+        // set dialog message
+        alertDialogBuilderNEw11.setMessage(getResources().getString(R.string.RefreshDataMsg));
+        alertDialogBuilderNEw11.setCancelable(false);
+        alertDialogBuilderNEw11.setPositiveButton(getResources().getString(R.string.AlertDialogYesButton), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogintrfc, int id) {
+                // if this button is clicked, close
+                // current activity
+                dialogintrfc.cancel();
+                try {
+                    try
+                    {
+                        // new GetRouteInfo().execute();
+                        CommonFunction.getAllMasterTableModelData(StorelistActivity.this,imei,CommonInfo.RegistrationID,"Please wait Refreshing data.");
+
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+
+                } catch (Exception e) {
+
+                }
+
+                //onCreate(new Bundle());
+            }
+        });
+
+        alertDialogBuilderNEw11.setNegativeButton(getResources().getString(R.string.AlertDialogNoButton),
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialogintrfc, int which) {
+                        // //System.out.println("value ofwhatTask after no button pressed by sunil"+whatTask);
+
+                        dialogintrfc.dismiss();
+                    }
+                });
+
+        alertDialogBuilderNEw11.setIcon(R.drawable.info_ico);
+        AlertDialog alert121 = alertDialogBuilderNEw11.create();
+        alert121.show();
+    }
+
+    @Override
+    public void success() {
+        Intent intent = new Intent(StorelistActivity.this, StorelistActivity.class);
+        intent.putExtra("activityFrom", "AllButtonActivity");
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void failure() {
+        showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrRetrieving));
+    }
+
+    public void showAlertException(String title,String msg)
+    {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(StorelistActivity.this);
+
+        // Setting Dialog Title
+        alertDialog.setTitle(title);
+
+        // Setting Dialog Message
+        alertDialog.setMessage(msg);
+        alertDialog.setIcon(R.drawable.error);
+        alertDialog.setCancelable(false);
+        // Setting Positive "Yes" Button
+        alertDialog.setPositiveButton(getResources().getString(R.string.txtRetry), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+
+
+                dialog.dismiss();
+                try
+                {
+                    // new GetRouteInfo().execute();
+                    CommonFunction.getAllMasterTableModelData(StorelistActivity.this,imei,CommonInfo.RegistrationID,"Please wait Refreshing data.");
+
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Setting Negative "NO" Button
+        alertDialog.setNegativeButton(getResources().getString(R.string.AlertDialogCancelButton), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to invoke NO event
+                dialog.dismiss();
+            }
+        });
+
+        // Showing Alert Message
+        alertDialog.show();
+    }
+
 }

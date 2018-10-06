@@ -652,6 +652,7 @@
                     android:textColor="#ffffff"
                     android:text="Target vs Achieved"
                     android:textSize="13sp"
+                    android:visibility="gone"
                     android:background="@drawable/custom_button"/>
 
                 <LinearLayout

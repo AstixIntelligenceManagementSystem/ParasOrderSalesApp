@@ -346,6 +346,10 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             {
                 DayEndCodeAfterSummary();
             }
+            else {
+                Intent in=new Intent(AllButtonActivity.this,DialogDayEndSummaryActivity.class);
+                startActivity(in);
+            }
         }
         else
         {
@@ -376,11 +380,11 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                         if(CommonInfo.flgDrctslsIndrctSls==1) {
                             showDayEndProcess(getString(R.string.AlertDialogHeaderMsg), getString(R.string.alrtDayEndDone));
                         }
-                        else
+                       /* else
                         {
                             Intent in=new Intent(AllButtonActivity.this,DialogDayEndSummaryActivity.class);
                             startActivity(in);
-                        }
+                        }*/
                     }
                 });
             }
@@ -3277,58 +3281,6 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             try
             {
 
-                String RouteType="0";
-
-                for(int mm = 1; mm < 4  ; mm++)
-                {
-
-
-
-                    // System.out.println("Excecuted function : "+newservice.flagExecutedServiceSuccesfully);
-                    if (mm == 1) {
-                        if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
-                            newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
-
-                            if (!newservice.director.toString().trim().equals("1")) {
-                                chkFlgForErrorToCloseApp = 1;
-                                serviceException = true;
-                                break;
-
-                            }
-                        }
-                    }
-                    if (mm == 2) {
-                        if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
-                            flgStockOut = dbengine.fetchtblStockUploadedStatus();
-                            if (flgStockOut != 0) {
-                                int flgCycleId = dbengine.fetchtblStockUploadedCycleId();
-                                int vanCycleId = dbengine.fetchtblVanCycleId();
-                                String vanCycleTime = dbengine.fetchtblVanCycleTime();
-                                String StatusCycleTime = dbengine.fetchtblStatusCycleTime();
-                                if ((flgCycleId != vanCycleId) || (!vanCycleTime.equals(StatusCycleTime))) {
-                                    newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
-                                    if (newservice.flagExecutedServiceSuccesfully != 39) {
-                                        chkFlgForErrorToCloseApp = 1;
-                                        serviceExceptionCode = " for Van stock and Error Code is : " + newservice.exceptionCode;
-                                        serviceException = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1)
-                        {
-                            newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
-                            if (newservice.flagExecutedServiceSuccesfully != 39) {
-                                chkFlgForErrorToCloseApp = 1;
-                                serviceExceptionCode = " for Van stock and Error Code is : " + newservice.exceptionCode;
-                                serviceException = true;
-                                break;
-                            }
-                        }
-                    }
-
-                }
             }
             catch (Exception e)
             {
@@ -4064,54 +4016,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             try
             {
 
-                String RouteType="0";
 
-                for(int mm = 1; mm < 3  ; mm++)
-                {
-
-
-
-                    // System.out.println("Excecuted function : "+newservice.flagExecutedServiceSuccesfully);
-                    if (mm == 1) {
-                        newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
-
-                        if (!newservice.director.toString().trim().equals("1")) {
-                            chkFlgForErrorToCloseApp = 1;
-                            serviceException = true;
-                            break;
-
-                        }
-                    }
-                    if (mm == 2) {
-                        flgStockOut = dbengine.fetchtblStockUploadedStatus();
-                        if (flgStockOut != 0) {
-                            int flgCycleId= dbengine.fetchtblStockUploadedCycleId();
-                            int vanCycleId= dbengine.fetchtblVanCycleId();
-                            String vanCycleTime=dbengine.fetchtblVanCycleTime();
-                            String StatusCycleTime=dbengine.fetchtblStatusCycleTime();
-                            if((flgCycleId!=vanCycleId) || (!vanCycleTime.equals(StatusCycleTime)) )
-                            {
-
-
-                              /*  //dbengine.open();
-                                dbengine.deleteVanConfirmFlag();
-                                //dbengine.close();*/
-                                newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
-                                if (newservice.flagExecutedServiceSuccesfully != 39) {
-                                    chkFlgForErrorToCloseApp = 1;
-                                    serviceExceptionCode=" for Van stock and Error Code is : "+newservice.exceptionCode;
-                                    serviceException=true;
-                                    break;
-                                }
-                            }
-
-
-                        }
-                    }
-
-
-
-                }
             }
             catch (Exception e)
             {

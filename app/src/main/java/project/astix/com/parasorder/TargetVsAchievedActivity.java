@@ -18,12 +18,15 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
+import com.astix.Common.CommonInfo;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-public class TargetVsAchievedActivity extends BaseActivity
+public class TargetVsAchievedActivity extends BaseActivity  implements InterfaceRetrofit
 {
 
 	String date_value="";
@@ -66,7 +69,7 @@ public class TargetVsAchievedActivity extends BaseActivity
 		if(isOnline())
 		{
 
-			 try
+			/* try
 			    {
 			      GetSKUWiseSummaryForDay task = new GetSKUWiseSummaryForDay();
 				  task.execute();
@@ -75,7 +78,18 @@ public class TargetVsAchievedActivity extends BaseActivity
 			   {
 						// TODO Autouuid-generated catch block
 				e.printStackTrace();
-				}
+				}*/
+			try
+			{
+				// new GetRouteInfo().execute();
+
+				CommonFunction.getAllTargetVsAcheivedData(TargetVsAchievedActivity.this,imei, CommonInfo.RegistrationID,"Please wait generating report.");
+
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 		else
 		{
@@ -142,82 +156,7 @@ public class TargetVsAchievedActivity extends BaseActivity
 			}
 		});
 	}
-	
-	private class GetSKUWiseSummaryForDay extends AsyncTask<Void, Void, Void>
-	{		
-		
-		ProgressDialog pDialogGetStores=new ProgressDialog(TargetVsAchievedActivity.this);
-		
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
-			
-			//dbengine.open();
-			dbengine.truncatetblTargetVsAchievedSummary();
-			//dbengine.close();
-			
-			
-			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-			if(strIntentValuePageFrom.equals("2"))
-			{
-			pDialogGetStores.setMessage(getText(R.string.genTermRetrivingSummary));
-			}
-			if(strIntentValuePageFrom.equals("1"))
-			{
-			pDialogGetStores.setMessage(getText(R.string.genTermRetrivingTargetVsAchievedSummary));
-			}
-			pDialogGetStores.setIndeterminate(false);
-			pDialogGetStores.setCancelable(false);
-			pDialogGetStores.setCanceledOnTouchOutside(false);
-			pDialogGetStores.show();
-		}
 
-		@Override
-		protected Void doInBackground(Void... args) 
-		{
-			ServiceWorker newservice = new ServiceWorker();
-			
-		try
-	  	 {
-				newservice = newservice.getCallfnGetActualVsTargetReport(TargetVsAchievedActivity.this,  imei, fDate);
-				
-		 } 
-		catch (Exception e) 
-		  {
-				Log.i("SvcMgr", "Service Execution Failed!", e);
-          }
-       finally 
-          {
-               Log.i("SvcMgr", "Service Execution Completed...");
-          }
-			return null;
-		}
-		
-	
-		@Override
-		protected void onPostExecute(Void result)
-		{
-			super.onPostExecute(result);
-			
-			Log.i("SvcMgr", "Service Execution cycle completed");
-			
-
-          
-           AllDataContainer= dbengine.fetchAllDataFromtblTargetVsAchievedSummary();
-         
-          
-           note= dbengine.fetchNoteFromtblTargetVsAchievedNote();
-            intializeFields();
-        if(pDialogGetStores!=null)
-        {
-            if (pDialogGetStores.isShowing()) {
-                pDialogGetStores.dismiss();
-            }
-        }
-		  
-		}
-	}
 
 	private void intializeFields() 
 	{
@@ -349,5 +288,17 @@ public class TargetVsAchievedActivity extends BaseActivity
 				
 			}
 	}
-	
+	@Override
+	public void success() {
+		AllDataContainer= dbengine.fetchAllDataFromtblTargetVsAchievedSummary();
+
+
+		note= dbengine.fetchNoteFromtblTargetVsAchievedNote();
+		intializeFields();
+	}
+
+	@Override
+	public void failure() {
+
+	}
 }

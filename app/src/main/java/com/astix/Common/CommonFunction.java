@@ -17,7 +17,11 @@ import project.astix.com.parasorder.model.AllSummaryReportDay;
 import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
+import project.astix.com.parasorder.model.AllTargetVsAchieved;
+import project.astix.com.parasorder.model.InvoiceList;
 import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.TblActualVsTargetNote;
+import project.astix.com.parasorder.model.TblActualVsTargetReport;
 import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblBloodGroup;
@@ -99,6 +103,7 @@ import project.astix.com.parasorder.model.TblDayStartAttendanceOption;
 import project.astix.com.parasorder.model.TblEducationQuali;
 import project.astix.com.parasorder.model.TblGetPDAQuestionDependentMstr;
 import project.astix.com.parasorder.model.TblRouteListMaster;
+import project.astix.com.parasorder.model.TblValueVolumeTarget;
 import project.astix.com.parasorder.rest.ApiClient;
 import project.astix.com.parasorder.rest.ApiInterface;
 import retrofit2.Call;
@@ -221,7 +226,7 @@ public class CommonFunction {
         String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
         int FlgAllRoutesData=1;
         String  serverDateForSPref=	dbengine.fnGetServerDate();
-        List<HashMap<Object,Object>> arrDistinctInvoiceNumbersNew=dbengine.getDistinctInvoiceNumbersNew();
+        ArrayList<InvoiceList> arrDistinctInvoiceNumbersNew=dbengine.getDistinctInvoiceNumbersNew();
         Data data=new Data();
         data.setApplicationTypeId(CommonInfo.Application_TypeID);
         data.setIMEINo(imei);
@@ -1412,4 +1417,114 @@ public class CommonFunction {
 
 
     }
+
+    public static void getAllTargetVsAcheivedData(Context context, final String imei, String RegistrationID,String msgToShow){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        Data data=new Data();
+        data.setApplicationTypeId(CommonInfo.Application_TypeID);
+        data.setIMEINo(imei);
+        data.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        data.setRegistrationId(RegistrationID);
+        data.setForDate(fDate);
+        data.setFlgAllRouteData(1);
+        // data.setInvoiceList(null);
+        data.setRouteNodeId(0);
+        data.setRouteNodeType(0);
+        data.setCoverageAreaNodeId(Integer.parseInt(CoverageNodeId));
+        data.setCoverageAreaNodeType(Integer.parseInt(CoverageNodeType));
+
+        Call<AllTargetVsAchieved> call= apiService.Call_AllTargetVsAchieved(data);
+        call.enqueue(new Callback<AllTargetVsAchieved>() {
+            @Override
+            public void onResponse(Call<AllTargetVsAchieved> call, Response<AllTargetVsAchieved> response) {
+                if(response.code()==200){
+                    AllTargetVsAchieved allTargetVsAchievedModel=  response.body();
+
+
+                    dbengine.truncatetblTargetVsAchievedSummary();
+
+                    List<TblActualVsTargetReport> tblActualVsTargetReport=  allTargetVsAchievedModel.getTblActualVsTargetReport();
+
+                    if(tblActualVsTargetReport.size()>0){
+                        dbengine.savetblTargetVsAchievedSummary(tblActualVsTargetReport);
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblActualVsTargetReport");
+                    }
+
+                    //table 29-------------------------------
+
+                    List<TblValueVolumeTarget> tblValueVolumeTarget=  allTargetVsAchievedModel.getTblValueVolumeTarget();
+
+                    if(tblValueVolumeTarget.size()>0){
+                        dbengine.saveValueVolumeTarget(tblValueVolumeTarget);
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblValueVolumeTarget");
+                    }
+
+                    List<TblActualVsTargetNote> tblActualVsTargetNote=  allTargetVsAchievedModel.getTblActualVsTargetNote();
+
+                    if(tblValueVolumeTarget.size()>0){
+                        for(TblActualVsTargetNote tblActualVsTargetNoteData:tblActualVsTargetNote)
+                        {
+                            dbengine.savetblTargetVsAchievedNote(tblActualVsTargetNoteData.getMsgToDisplay());
+                        }
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblActualVsTargetNote");
+                    }
+
+
+
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                    // sendIntentToOtherActivityAfterAllDataFetched();
+
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllTargetVsAchieved> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
+
+
 }

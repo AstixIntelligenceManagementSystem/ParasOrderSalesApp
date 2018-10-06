@@ -768,49 +768,8 @@ void conFirmBtn(){
             try
             {
 
-                String RouteType="0";
-
-                for(int mm = 1; mm < 4  ; mm++)
-                {
 
 
-
-                    // System.out.println("Excecuted function : "+newservice.flagExecutedServiceSuccesfully);
-                    if (mm == 1) {
-                        newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(), fDate, imei);
-
-                        if (!newservice.director.toString().trim().equals("1")) {
-
-                            serviceException = true;
-                            break;
-
-                        }
-                    }
-                    if (mm == 2) {
-
-
-
-                        newservice = newservice.fnGetVanStockData(getApplicationContext(), imei);
-
-
-                        if (newservice.flagExecutedServiceSuccesfully != 39) {
-
-                            serviceException=true;
-                            break;
-                        }
-                    }
-
-
-                    if (mm == 3) {
-                        //dbengine.open();
-                        int check1 = dbengine.counttblCatagoryMstr();
-                       // dbengine.close();
-                        if (check1 == 0) {
-                            newservice = newservice.getCategory(getApplicationContext(), imei);
-                        }
-                    }
-
-                }
             }
             catch (Exception e)
             {

@@ -137,73 +137,7 @@ public class StoreWiseSummaryReportMTD extends BaseActivity implements Interface
 		
     }
     
-	private class GetSKUWiseSummaryForDay extends AsyncTask<Void, Void, Void>
-	{		
-		
-		ProgressDialog pDialogGetStores;//=new ProgressDialog(mContext);
-		public GetSKUWiseSummaryForDay(StoreWiseSummaryReportMTD activity) 
-		{
-			pDialogGetStores = new ProgressDialog(activity);
-		}
-		@Override
-		protected void onPreExecute()
-		{
-			super.onPreExecute();
-			
 
-			//dbengine.open();
-			dbengine.truncateStoreWiseDataTable();
-			//dbengine.close();
-			
-			
-			pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-			pDialogGetStores.setMessage(getText(R.string.genTermRetrivingSummary));
-			pDialogGetStores.setIndeterminate(false);
-			pDialogGetStores.setCancelable(false);
-			pDialogGetStores.setCanceledOnTouchOutside(false);
-			pDialogGetStores.show();
-		}
-
-		@Override
-		protected Void doInBackground(Void... args) 
-		{
-			ServiceWorker newservice = new ServiceWorker();
-			
-		try
-	  	 {
-				newservice = newservice.getCallspRptGetStoreWiseMTDSummary(getApplicationContext(),  imei, fDate);
-				
-		 } 
-		catch (Exception e) 
-		  {
-				Log.i("SvcMgr", "Service Execution Failed!", e);
-          }
-       finally 
-          {
-               Log.i("SvcMgr", "Service Execution Completed...");
-          }
-			return null;
-		}
-		
-	
-		@Override
-		protected void onPostExecute(Void result)
-		{
-			super.onPostExecute(result);
-			
-			Log.i("SvcMgr", "Service Execution cycle completed");
-			
-            if(pDialogGetStores.isShowing()) 
-		      {
-		    	   pDialogGetStores.dismiss();
-			  }
-            //dbengine.open();
-            AllDataContainer= dbengine.fetchAllDataFromtblStoreWiseDaySummary();
-            //dbengine.close();
-            intializeFields();
-		  
-		}
-	}
 	
 	private void intializeFields() 
 	{

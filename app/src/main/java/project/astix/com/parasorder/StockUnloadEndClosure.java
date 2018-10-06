@@ -697,7 +697,7 @@ public class StockUnloadEndClosure extends BaseActivity {
                     if (mm == 2) {
 
 
-                        newservice = newservice.fnGetStockUploadedStatus(getApplicationContext(),fDate, imei);
+
 
                     }
 
