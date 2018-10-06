@@ -87,7 +87,7 @@ public class PRJDatabase
 
 
     private static final String DATABASE_TABLE_tblDAGetAddedOutletSummaryReport = "tblDAGetAddedOutletSummaryReport";
-    private static final String DATABASE_CREATE_TABLE_tblDAGetAddedOutletSummaryReport = "create table tblDAGetAddedOutletSummaryReport (Header text null,Child text null,TotalStores text null,Validated text null,Pending text null,FlgNormalOverall int null);";
+    private static final String DATABASE_CREATE_TABLE_tblDAGetAddedOutletSummaryReport = "create table tblDAGetAddedOutletSummaryReport (Header text null,Child text null,TotalStores int null,Validated int null,Pending int null,FlgNormalOverall int null);";
 
 
     private static final String TABLE_tblAppMasterFlags = "tblAppMasterFlags";
