@@ -2,6 +2,7 @@ package project.astix.com.parasorder.rest;
 
 
 
+import project.astix.com.parasorder.model.AllAddedOutletSummaryReportModel;
 import project.astix.com.parasorder.model.AllMasterTablesModel;
 import project.astix.com.parasorder.model.AllSummaryReportDay;
 import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
@@ -11,6 +12,7 @@ import project.astix.com.parasorder.model.AllTargetVsAchieved;
 import project.astix.com.parasorder.model.Data;
 import project.astix.com.parasorder.model.IMEIVersionDetails;
 import project.astix.com.parasorder.model.IMEIVersionParentModel;
+import project.astix.com.parasorder.model.ReportsAddedOutletSummary;
 import project.astix.com.parasorder.model.ReportsInfo;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -52,5 +54,9 @@ public interface ApiInterface {
 
     @POST("Home/GetTargetVsAchieved")
     Call<AllTargetVsAchieved> Call_AllTargetVsAchieved(@Body Data data);
+
+
+    @POST("Home/GetPDAGetAddedOutletSummaryReport")
+    Call<AllAddedOutletSummaryReportModel> Call_AllPDAGetAddedOutletSummaryReport(@Body ReportsAddedOutletSummary reportsAddedOutletSummary);
 
 }

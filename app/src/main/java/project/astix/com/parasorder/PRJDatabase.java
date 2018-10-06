@@ -43,6 +43,8 @@ import project.astix.com.parasorder.model.InvoiceList;
 import project.astix.com.parasorder.model.TblActualVsTargetReport;
 import project.astix.com.parasorder.model.TblAllSummaryDay;
 import project.astix.com.parasorder.model.TblBankMaster;
+import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryOverallReport;
+import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryReport;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
 import project.astix.com.parasorder.model.TblGetPDAQuestGrpMapping;
 import project.astix.com.parasorder.model.TblGetPDAQuestMstr;
@@ -35258,23 +35260,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         }
     }
 
-    //outlet summary
-    public static long savetblDAGetAddedOutletSummaryReport(String Header,String Child,String TotalStores,String Validated,String Pending,int FlgNormalOverall)
-    {
 
-       /*create table tblDAGetAddedOutletSummaryReport (Header text null,Child text null,TotalStores text null,
-       Validated text null,Pending text null);";*/
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("Header", Header.trim());
-        initialValues.put("Child", Child.trim());
-        initialValues.put("TotalStores", TotalStores.trim());
-        initialValues.put("Validated", Validated.trim());
-        initialValues.put("Pending", Pending.trim());
-        initialValues.put("FlgNormalOverall", FlgNormalOverall);
-
-        return db.insert(DATABASE_TABLE_tblDAGetAddedOutletSummaryReport, null, initialValues);
-    }
     public static void createtblDAGetAddedOutletSummaryReport()
     {
         try
@@ -36684,6 +36670,50 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
             initialValues.put("Monthflg", tblValueVolumeTargetData.getMonthflg());
             initialValues.put("ValTgtOrPrdctFlg", 0);
             db.insert(DATABASE_TABLE_MAIN235, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+
+
+    //outlet summary
+    public static void savetblDAGetAddedOutletSummaryReport(List<TblDAGetAddedOutletSummaryReport> tblDAGetAddedOutletSummaryReport)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblDAGetAddedOutletSummaryReport tblDAGetAddedOutletSummaryReportData:tblDAGetAddedOutletSummaryReport)
+        {
+            initialValues.put("Header", tblDAGetAddedOutletSummaryReportData.getHeader());
+            initialValues.put("Child", tblDAGetAddedOutletSummaryReportData.getChild());
+            initialValues.put("TotalStores", tblDAGetAddedOutletSummaryReportData.getTotalStores());
+            initialValues.put("Validated", tblDAGetAddedOutletSummaryReportData.getValidated());
+            initialValues.put("Pending", tblDAGetAddedOutletSummaryReportData.getPending());
+            initialValues.put("FlgNormalOverall", 0);
+            db.insert(DATABASE_TABLE_tblDAGetAddedOutletSummaryReport, null, initialValues);
+            AutoId=AutoId+1;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+    public static void savetblDAGetAddedOutletSummaryOverallReport(List<TblDAGetAddedOutletSummaryOverallReport> tblDAGetAddedOutletSummaryOverallReport)
+    {
+
+        db.beginTransaction();
+        ContentValues initialValues=new ContentValues();
+        int AutoId=0;
+        for(TblDAGetAddedOutletSummaryOverallReport tblDAGetAddedOutletSummaryOverallReportData:tblDAGetAddedOutletSummaryOverallReport)
+        {
+            initialValues.put("Header", tblDAGetAddedOutletSummaryOverallReportData.getHeader());
+            initialValues.put("Child", tblDAGetAddedOutletSummaryOverallReportData.getChild());
+            initialValues.put("TotalStores", tblDAGetAddedOutletSummaryOverallReportData.getTotalStores());
+            initialValues.put("Validated", tblDAGetAddedOutletSummaryOverallReportData.getValidated());
+            initialValues.put("Pending", tblDAGetAddedOutletSummaryOverallReportData.getPending());
+            initialValues.put("FlgNormalOverall", 1);
+            db.insert(DATABASE_TABLE_tblDAGetAddedOutletSummaryReport, null, initialValues);
             AutoId=AutoId+1;
         }
         db.setTransactionSuccessful();

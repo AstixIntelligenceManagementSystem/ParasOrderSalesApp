@@ -8,17 +8,20 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 
 import project.astix.com.parasorder.InterfaceRetrofit;
 import project.astix.com.parasorder.ProductEntryForm;
 import project.astix.com.parasorder.R;
+import project.astix.com.parasorder.model.AllAddedOutletSummaryReportModel;
 import project.astix.com.parasorder.model.AllSummaryReportDay;
 import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
 import project.astix.com.parasorder.model.AllTargetVsAchieved;
 import project.astix.com.parasorder.model.InvoiceList;
+import project.astix.com.parasorder.model.ReportsAddedOutletSummary;
 import project.astix.com.parasorder.model.ReportsInfo;
 import project.astix.com.parasorder.model.TblActualVsTargetNote;
 import project.astix.com.parasorder.model.TblActualVsTargetReport;
@@ -27,6 +30,8 @@ import project.astix.com.parasorder.model.TblBankMaster;
 import project.astix.com.parasorder.model.TblBloodGroup;
 import project.astix.com.parasorder.model.TblCategoryMaster;
 import project.astix.com.parasorder.model.TblCycleID;
+import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryOverallReport;
+import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryReport;
 import project.astix.com.parasorder.model.TblDayStartAttendanceOption;
 import project.astix.com.parasorder.model.TblDistributorIDOrderIDLeft;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
@@ -1526,5 +1531,93 @@ public class CommonFunction {
 
     }
 
+    public static void getAllAddedOutletSummaryReportModel(Context context, final String imei, String RegistrationID, String msgToShow, Integer flgDrillLevel){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+
+        ReportsAddedOutletSummary reportsAddedOutletSummary=new ReportsAddedOutletSummary();
+        reportsAddedOutletSummary.setApplicationTypeId(CommonInfo.Application_TypeID);
+        reportsAddedOutletSummary.setIMEINo(imei);
+        reportsAddedOutletSummary.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        reportsAddedOutletSummary.setFlgDrillLevel(flgDrillLevel);
+        reportsAddedOutletSummary.setForDate(fDate);
+
+        Call<AllAddedOutletSummaryReportModel> call= apiService.Call_AllPDAGetAddedOutletSummaryReport(reportsAddedOutletSummary);
+        call.enqueue(new Callback<AllAddedOutletSummaryReportModel>() {
+            @Override
+            public void onResponse(Call<AllAddedOutletSummaryReportModel> call, Response<AllAddedOutletSummaryReportModel> response) {
+                if(response.code()==200){
+                    AllAddedOutletSummaryReportModel allAddedOutletSummaryReportModelModel=  response.body();
+
+
+                    dbengine.droptblDAGetAddedOutletSummaryReport();
+                    dbengine.createtblDAGetAddedOutletSummaryReport();
+
+                    List<TblDAGetAddedOutletSummaryReport> tblDAGetAddedOutletSummaryReport=  allAddedOutletSummaryReportModelModel.getTblDAGetAddedOutletSummaryReport();
+
+                    if(tblDAGetAddedOutletSummaryReport.size()>0){
+                        dbengine.savetblDAGetAddedOutletSummaryReport(tblDAGetAddedOutletSummaryReport);
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblDAGetAddedOutletSummaryReport");
+                    }
+
+                    //table 29-------------------------------
+
+                    List<TblDAGetAddedOutletSummaryOverallReport> tblDAGetAddedOutletSummaryOverallReport=  allAddedOutletSummaryReportModelModel.getTblDAGetAddedOutletSummaryOverallReport();
+
+                    if(tblDAGetAddedOutletSummaryOverallReport.size()>0){
+                        dbengine.savetblDAGetAddedOutletSummaryOverallReport(tblDAGetAddedOutletSummaryOverallReport);
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblDAGetAddedOutletSummaryOverallReport");
+                    }
+
+
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                    // sendIntentToOtherActivityAfterAllDataFetched();
+
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AllAddedOutletSummaryReportModel> call, Throwable t) {
+                System.out.println();
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
 
 }

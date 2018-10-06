@@ -23,6 +23,7 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class AddedOutletSummaryReportActivity extends AppCompatActivity
+public class AddedOutletSummaryReportActivity extends AppCompatActivity  implements InterfaceRetrofit
 {
     private ImageView img_back;
     private RadioGroup radioGrp;
@@ -172,9 +173,17 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
                     flgToCall=1; //1 for route
                 }
 
-                    //callWebServiceFromRadioBtns(2);
-                    CheckSummaryReport callData=new CheckSummaryReport();
-                    callData.execute();
+                    try
+                    {
+                        header.setVisibility(View.GONE);
+                        ll_overallDetails.setVisibility(View.GONE);
+                        CommonFunction.getAllAddedOutletSummaryReportModel(AddedOutletSummaryReportActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.",flgToCall);
+
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -194,9 +203,17 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
                         flgToCall=2; //2 for catgory
                     }
 
-                    //callWebServiceFromRadioBtns(1);
-                    CheckSummaryReport callData=new CheckSummaryReport();
-                    callData.execute();
+                    try
+                    {
+                        header.setVisibility(View.GONE);
+                        ll_overallDetails.setVisibility(View.GONE);
+                        CommonFunction.getAllAddedOutletSummaryReportModel(AddedOutletSummaryReportActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.",flgToCall);
+
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -220,8 +237,17 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
                     {
                         flgToCall=2;
                     }
-                    CheckSummaryReport callData=new CheckSummaryReport();
-                    callData.execute();
+                    try
+                    {
+                        header.setVisibility(View.GONE);
+                        ll_overallDetails.setVisibility(View.GONE);
+                        CommonFunction.getAllAddedOutletSummaryReportModel(AddedOutletSummaryReportActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.",flgToCall);
+
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -231,53 +257,6 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
 
     }
 
-    private class CheckSummaryReport extends AsyncTask<Void, Void, Void> {
-
-        final ProgressDialog dialog=new ProgressDialog(AddedOutletSummaryReportActivity.this);
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            dialog.setTitle("Please wait");
-            dialog.setMessage("Fetching summary details...");
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-
-            header.setVisibility(View.GONE);
-            ll_overallDetails.setVisibility(View.GONE);
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                //flgToCall=params[0];
-                //359473079352536
-                worker.getPDAAddedOutletSummaryReport(AddedOutletSummaryReportActivity.this,imei,flgToCall);
-
-            } catch (Exception e) {
-            } finally {
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-
-         //   dbengine.open();
-            hmapSummaryDataByHeader=dbengine.fetchtblDAGetAddedOutletSummaryReport();
-            overAllSummaryDetail=dbengine.fetchtblDAGetAddedOutletOverAllData();
-          //  dbengine.close();
-            inflateRows();
-
-            if(dialog.isShowing())
-            {
-                dialog.dismiss();
-            }
-        }
-    }
 
     private void inflateRows()
     {
@@ -406,7 +385,29 @@ public class AddedOutletSummaryReportActivity extends AppCompatActivity
         btn_refresh.setVisibility(View.VISIBLE);
         flgToCall=1; //1 for route
 
-        CheckSummaryReport callData=new CheckSummaryReport();
-        callData.execute();
+        try
+        {
+            header.setVisibility(View.GONE);
+            ll_overallDetails.setVisibility(View.GONE);
+            CommonFunction.getAllAddedOutletSummaryReportModel(AddedOutletSummaryReportActivity.this,imei,CommonInfo.RegistrationID,"Please wait generating report.",flgToCall);
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
+
+    @Override
+    public void success() {
+        hmapSummaryDataByHeader=dbengine.fetchtblDAGetAddedOutletSummaryReport();
+        overAllSummaryDetail=dbengine.fetchtblDAGetAddedOutletOverAllData();
+        inflateRows();
+    }
+
+    @Override
+    public void failure() {
+
+    }
+
 }
