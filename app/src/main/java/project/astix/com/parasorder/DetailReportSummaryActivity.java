@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 public class DetailReportSummaryActivity extends BaseActivity implements  InterfaceRetrofit
 {
 	TableLayout tbl_inflate;
-
+	Button btn_done;
 	LinkedHashMap<String, LinkedHashMap<String, String>> hmapSummaryDataNew=new LinkedHashMap<String, LinkedHashMap<String, String>>();
 
 	String date_value="";
@@ -165,7 +165,8 @@ public class DetailReportSummaryActivity extends BaseActivity implements  Interf
 
 		TextView txtSalessumuryDate=(TextView)findViewById(R.id.txtSalessumuryDate);
 		txtSalessumuryDate.setText(getResources().getString(R.string.txtSummaryAsOn)+fDate);
-
+		btn_done= (Button) findViewById(R.id.btn_done);
+		btn_done.setVisibility(View.GONE);
 
 		setUpVariable();
 
