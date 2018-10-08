@@ -470,32 +470,36 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
         }
         else
         {
-
-            int flgcheckCheckRetrofitApiCalledSucessfullyOrNot= dbengine.fnCheckRetrofitApiCalledSucessfullyOrNot();
-            if (flgcheckCheckRetrofitApiCalledSucessfullyOrNot == 0)
-            {
-                //dbengine.open();
-                String rID = dbengine.GetActiveRouteID();
-                //dbengine.close();
-
-                // Date date=new Date();
-                Date date3 = new Date();
-                sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-                String fDateNew = sdf.format(date3).toString();
-                //fDate = passDate.trim().toString();
-                // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
-                // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
-                Intent storeIntent = new Intent(SplashScreen.this, AllButtonActivity.class);
-                storeIntent.putExtra("imei", imei);
-                storeIntent.putExtra("userDate", fDate);
-                storeIntent.putExtra("pickerDate", fDateNew);
-                storeIntent.putExtra("rID", rID);
-                startActivity(storeIntent);
-                finish();
-            }
-            else
+            int flgHasRecordsRetrofitApiCalledSucessfullyOrNot= dbengine.fnhasRecodsRetrofitApiCalledSucessfullyOrNot();
+            if(flgHasRecordsRetrofitApiCalledSucessfullyOrNot==0)
             {
                 showNoConnAlert();
+            }
+            else {
+
+                int flgcheckCheckRetrofitApiCalledSucessfullyOrNot = dbengine.fnCheckRetrofitApiCalledSucessfullyOrNot();
+                if (flgcheckCheckRetrofitApiCalledSucessfullyOrNot == 0) {
+                    //dbengine.open();
+                    String rID = dbengine.GetActiveRouteID();
+                    //dbengine.close();
+
+                    // Date date=new Date();
+                    Date date3 = new Date();
+                    sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+                    String fDateNew = sdf.format(date3).toString();
+                    //fDate = passDate.trim().toString();
+                    // In Splash Screen SP, we are sending this Format "dd-MMM-yyyy"
+                    // But InLauncher Screen SP, we are sending this Format "dd-MM-yyyy"
+                    Intent storeIntent = new Intent(SplashScreen.this, AllButtonActivity.class);
+                    storeIntent.putExtra("imei", imei);
+                    storeIntent.putExtra("userDate", fDate);
+                    storeIntent.putExtra("pickerDate", fDateNew);
+                    storeIntent.putExtra("rID", rID);
+                    startActivity(storeIntent);
+                    finish();
+                } else {
+                    showNoConnAlert();
+                }
             }
 
         }

@@ -27793,29 +27793,29 @@ String fetchdate=fnGetDateTimeString();
         // tblDistributorProductStock(PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null);";
         LinkedHashMap<String,String> hmapDistPrdctStockCount=new LinkedHashMap<>();
         int flgVal=flgConfirmedWareHouse();
-        //open();
-      //  updateInvoiceExecuted();
-       // try {
 
-            //tblTmpDistributorStock
-            //PrdctId text null,StockQntty text null,DistributorNodeIdNodeType text null,SKUName text null,OpeningStock text null,AddedStock text null,NetSalesQty text null,StockOutQty text null,CategoryID text null
-            //  Cursor cur=db.rawQuery("Select PrdctId,SKUName,StockQntty,OpeningStock,AddedStock,CategoryID from tblDistributorProductStock",null);
             Cursor cur=null;
             if(flgVal==0)//tblTmpDistributorStock
             {
-                //avinash
-              //  cur=db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,(S.StockQntty-ifnull(X.OrderQty,0)) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(X.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT join tblDistributorProductStock ST ON S.PrdctId=ST.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblDistributorIDOrderIDLeft AS D INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=D.OrderId WHERE D.flgProcessedInvoice=0 GROUP BY ID.ProdID) X",null);
-           //   cur=db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,(S.StockQntty-ifnull(X.OrderQty,0)) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(X.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT join tblDistributorProductStock ST ON S.PrdctId=ST.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblDistributorIDOrderIDLeft AS D INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=D.OrderId WHERE D.flgProcessedInvoice=0 GROUP BY ID.ProdID) X ON S.PrdctId=X.ProdID ",null);
-                cur=db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,(S.StockQntty-ifnull(X.OrderQty,0)) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(X.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT join tblDistributorProductStock ST ON S.PrdctId=ST.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceDetails AS ID WHERE ID.InvoiceNumber NOT IN (SELECT D.OrderId FROM tblDistributorIDOrderIDLeft AS D WHERE D.flgProcessedInvoice=1) GROUP BY ID.ProdID) X ON S.PrdctId=X.ProdID ",null);
-                /*  cur=db.rawQuery(       " SELECT DISTINCT S.PrdctId,S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(D.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT OUTER JOIN \n" +
-                        " (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId",null);*/
+                if(CommonInfo.flgDrctslsIndrctSls==1) {
+                    cur = db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,(S.StockQntty-ifnull(X.OrderQty,0)) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(X.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT join tblDistributorProductStock ST ON S.PrdctId=ST.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceDetails AS ID WHERE ID.InvoiceNumber NOT IN (SELECT D.OrderId FROM tblDistributorIDOrderIDLeft AS D WHERE D.flgProcessedInvoice=1) GROUP BY ID.ProdID) X ON S.PrdctId=X.ProdID ", null);
+                }
+                else
+                {
+                    cur = db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,(S.StockQntty-ifnull(X.OrderQty,0)) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(X.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblTmpDistributorStock S LEFT join tblDistributorProductStock ST ON S.PrdctId=ST.PrdctId LEFT OUTER JOIN (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceDetails AS ID WHERE ID.TmpInvoiceCodePDA NOT IN (SELECT D.OrderId FROM tblDistributorIDOrderIDLeft AS D WHERE D.flgProcessedInvoice=1) GROUP BY ID.ProdID) X ON S.PrdctId=X.ProdID ", null);
+                }
             }
             else
             {
-               // cur=db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty-ifnull(D.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblDistributorProductStock S\n" +
-                        cur=db.rawQuery(       " SELECT DISTINCT S.PrdctId,S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(D.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblDistributorProductStock S LEFT OUTER JOIN \n" +
-                                " (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId",null);
-                //cur=db.rawQuery("Select  tblDistributorProductStock.PrdctId,tblDistributorProductStock.SKUName,(ifnull(tblDistributorProductStock.StockQntty,0) - ifnull(SUM(tblInvoiceDetails.OrderQty),0)) AS StockQntty1,OpeningStock,CycleAddedStock,(ifnull(tblDistributorProductStock.NetSalesQty,0) + ifnull(SUM(tblInvoiceDetails.OrderQty),0))  AS NetSalesQty1,tblDistributorProductStock.CategoryID,CycleUnloadStk from tblDistributorProductStock left outer join  tblInvoiceDetails on  tblDistributorProductStock.PrdctId=tblInvoiceDetails.ProdID  left outer join tblInvoiceHeader ON  tblInvoiceDetails.InvoiceNumber=tblInvoiceHeader.InvoiceNumber AND  tblInvoiceHeader.flgProcessedInvoice=0",null);
+                if(CommonInfo.flgDrctslsIndrctSls==1) {
+                    cur = db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(D.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblDistributorProductStock S LEFT OUTER JOIN \n" +
+                            " (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+                }
+                else
+                {
+                    cur = db.rawQuery(" SELECT DISTINCT S.PrdctId,S.SKUName,S.StockQntty-ifnull(D.OrderQty,0) AS Stqty,S.OpeningStock,S.CycleAddedStock,S.NetSalesQty+ifnull(D.OrderQty,0) AS OrdQty,S.CategoryID,S.CycleUnloadStk FROM tblDistributorProductStock S LEFT OUTER JOIN \n" +
+                            " (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.TmpInvoiceCodePDA=I.TmpInvoiceCodePDA  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+                }
             }
             if(cur.getCount()>0)
             {
@@ -29381,8 +29381,14 @@ String fetchdate=fnGetDateTimeString();
        // flgProcessedInvoice,InvoiceNumber
         //tblDistributorIDOrderIDLeft(DistributorNodeIdNodeType text null,OrderId text null,flgProcessedInvoice int not null);";
         //tblInvoiceHeader (StoreVisitCode text not null,InvoiceNumber int not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgProcessedInvoice int not null,CycleID  int not null);";
-        db.execSQL("UPDATE tblInvoiceHeader SET flgProcessedInvoice=(Select flgProcessedInvoice from tblDistributorIDOrderIDLeft Where (tblInvoiceHeader.InvoiceNumber=tblDistributorIDOrderIDLeft.OrderId))");
 
+        if(CommonInfo.flgDrctslsIndrctSls==1) {
+            db.execSQL("UPDATE tblInvoiceHeader SET flgProcessedInvoice=(Select flgProcessedInvoice from tblDistributorIDOrderIDLeft Where (tblInvoiceHeader.InvoiceNumber=tblDistributorIDOrderIDLeft.OrderId))");
+        }
+        else
+        {
+            db.execSQL("UPDATE tblInvoiceHeader SET flgProcessedInvoice=(Select flgProcessedInvoice from tblDistributorIDOrderIDLeft Where (tblInvoiceHeader.TmpInvoiceCodePDA=tblDistributorIDOrderIDLeft.OrderId))");
+        }
     }
 
     public static void deleteVanConfirmFlag()
@@ -31327,6 +31333,7 @@ String fetchdate=fnGetDateTimeString();
              InvoiceNumber = fnFetchInvoiceNumber();
              CycleID = fetchtblVanCycleIdForInvoiceHeader();
         }
+
     try {
         int flgTransferStatus=1;
         fnUpdateflgTransferStatusInInvoiceHeader(storeID,StoreVisitCode,TmpInvoiceCodePDA,flgTransferStatus);
@@ -36325,6 +36332,25 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
     }
 
 
+    public static int fnhasRecodsRetrofitApiCalledSucessfullyOrNot()
+    {
+        Cursor cursorE2 = db.rawQuery("SELECT Count(*) FROM tblAllServicesCalledSuccessfull", null);
+        int chkI = 0;
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                cursorE2.moveToFirst();
+                chkI=Integer.parseInt(cursorE2.getString(0).toString());
+            }
+
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
+        return chkI;
+    }
+
     public static int fnCheckRetrofitApiCalledSucessfullyOrNot()
     {
         Cursor cursorE2 = db.rawQuery("SELECT ifnull(flgAllServicesCalledOrNot,0) FROM tblAllServicesCalledSuccessfull", null);
@@ -36553,7 +36579,13 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
         //tblDistributorIDOrderIDLeft
         //tblDistributorOrderPdaId(DistributorNodeIdNodeType text null,OrderPDAID text null,ProductId text null,OrderQntty text null,Sstat integer not null);";
         try {
-            cur=db.rawQuery("Select DISTINCT ServingDBRId,InvoiceNumber from tblInvoiceDetails",null);
+           if(CommonInfo.flgDrctslsIndrctSls==1) {
+               cur = db.rawQuery("Select DISTINCT ServingDBRId,InvoiceNumber from tblInvoiceDetails", null);
+           }
+           else
+           {
+                   cur = db.rawQuery("Select DISTINCT ServingDBRId,TmpInvoiceCodePDA from tblInvoiceDetails", null);
+           }
             if(cur.getCount()>0)
             {
 

@@ -706,12 +706,9 @@ public class CommonFunction {
                         blankTablearrayList.add("tblAppMasterFlags");
                     }
 
-
-
                     List<TblDistributorProductStock> tblDistributorProductStock=  allMasterTablesModel.getTblDistributorProductStock();
 
                     if(tblDistributorProductStock.size()>0){
-
                         if(CommonInfo.flgDrctslsIndrctSls==1) {
                             dbengine.insertDistributorStock(tblDistributorProductStock);
                             if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
