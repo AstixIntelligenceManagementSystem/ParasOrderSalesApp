@@ -82,7 +82,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import project.astix.com.parasorder.model.IMEIVersionDetails;
+import project.astix.com.parasorder.model.IMEIVersionParentModel;
+import project.astix.com.parasorder.model.PersonInfo;
+import project.astix.com.parasorder.model.RegistrationValidation;
+import project.astix.com.parasorder.model.TblMessageDisplaySetting;
+import project.astix.com.parasorder.model.TblPersonDetailsForRegistration;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class DSR_Registration extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
+    ApiInterface apiService;
     RelativeLayout parent_of_image_holder;
     LinearLayout LL_banner_image,parentOf_questionLayout,parentOf_validationLayout,parentOf_registrationformLayout,parent_of_marriedSection,mContent;
     RadioButton radio_yes,radio_no, radio_Male,radio_Female,radio_married,radio_unmarried;
@@ -153,7 +166,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
     String userNodetypeGlobal="0";
     SharedPreferences sPrefAttandance;
     public  String  fDate;
-
+    ProgressDialog pDialogGetStores;
 
     @Override
     protected void onResume() {
@@ -968,8 +981,8 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
 
                   try
                   {
-                      ValidateAndGetDsrData cuv = new ValidateAndGetDsrData(DSR_Registration.this);
-                      cuv.execute();
+
+                      ValidateAndGetDsrDataRetrofit();
                   }
                   catch (Exception e) {
                       e.printStackTrace();
@@ -2136,147 +2149,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
 
    }
 
-    private class ValidateAndGetDsrData extends AsyncTask<Void, Void, Void>
-    {
 
-        ProgressDialog pDialogGetStores;
-        public ValidateAndGetDsrData(DSR_Registration activity)
-        {
-            pDialogGetStores = new ProgressDialog(activity);
-        }
-
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-            pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
-            pDialogGetStores.setMessage(getText(R.string.ValidatingMsg));
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-            ServiceWorker newservice = new ServiceWorker();
-
-            try
-            {
-                newservice = newservice.getDsrRegistrationData(getApplicationContext(), CommonInfo.imei,mobNumberForService,dobForService);
-                if(!newservice.director.toString().trim().equals("1"))
-                {
-                    if(chkFlgForErrorToCloseApp==0)
-                    {
-                        chkFlgForErrorToCloseApp=1;
-                    }
-
-                }
-            }
-            catch(Exception e)
-            {}
-
-            finally
-            {}
-
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-            if(pDialogGetStores.isShowing())
-            {
-                pDialogGetStores.dismiss();
-            }
-            if(chkFlgForErrorToCloseApp==1)   // if Webservice showing exception or not excute complete properly
-            {
-                chkFlgForErrorToCloseApp=0;
-                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
-               // finish();
-            }
-            else
-            {
-                String flag="0";
-                String message="0";
-              String FlagAndMessage=  dbengine.fnGettblUserRegistarationStatus();
-                if(!FlagAndMessage.equals("0"))
-                {
-                    flag    =   FlagAndMessage.split(Pattern.quote("^"))[0];
-                    message =   FlagAndMessage.split(Pattern.quote("^"))[1];
-
-
-                }
-
-                if(flag.equals("0"))
-                {
-                    parentOf_validationLayout.setVisibility(View.GONE);
-                    parentOf_registrationformLayout.setVisibility(View.VISIBLE);
-                    LL_banner_image.setVisibility(View.GONE);
-                    Submit_btn.setVisibility(View.VISIBLE);
-                    BtnCancel.setVisibility(View.VISIBLE);
-                    userNodeIdGlobal="0";
-                    userNodetypeGlobal="0";
-
-                }
-                if(flag.equals("1"))
-                {
-                    AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(DSR_Registration.this);
-                    alertDialogNoConn.setTitle(getResources().getString(R.string.genTermNoDataConnection));
-
-                    alertDialogNoConn.setMessage(message);
-                    alertDialogNoConn.setCancelable(false);
-                    alertDialogNoConn.setNeutralButton(getResources().getString(R.string.AlertDialogOkButton),new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-                            dialog.dismiss();
-                           /* Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
-                            i.putExtra("IntentFrom", 0);
-                            startActivity(i);
-                            finish();*/
-                           /* Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
-                            i.putExtra("imei", imei);
-                            i.putExtra("CstmrNodeId", 0);
-                            i.putExtra("CstomrNodeType", 0);
-                            i.putExtra("fDate", fDate);
-                            startActivity(i);
-                            finish();*/
-                            Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
-                            startActivity(i);
-                            finish();
-
-                        }
-                    });
-                    alertDialogNoConn.setIcon(R.drawable.info_ico);
-                    AlertDialog alert = alertDialogNoConn.create();
-                    alert.show();
-
-                }
-                if(flag.equals("2"))
-                {
-                    FillDsrDetailsToLayout();
-                    parentOf_validationLayout.setVisibility(View.GONE);
-                    parentOf_registrationformLayout.setVisibility(View.VISIBLE);
-                    LL_banner_image.setVisibility(View.GONE);
-                    Submit_btn.setVisibility(View.VISIBLE);
-                    BtnCancel.setVisibility(View.VISIBLE);
-
-
-                }
-
-
-            }
-
-
-        }
-    }
     public void FillDsrDetailsToLayout()
     {
 
@@ -2421,6 +2294,208 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
         textviewSignhere.setText(text_Value11);
 
 
+
+    }
+
+    public void ValidateAndGetDsrDataRetrofit(){
+
+        pDialogGetStores = new ProgressDialog(DSR_Registration.this);
+        pDialogGetStores.setTitle(getText(R.string.genTermPleaseWaitNew));
+        pDialogGetStores.setMessage(getText(R.string.ValidatingMsg));
+        pDialogGetStores.setIndeterminate(false);
+        pDialogGetStores.setCancelable(false);
+        pDialogGetStores.setCanceledOnTouchOutside(false);
+        pDialogGetStores.show();
+        apiService =
+                ApiClient.getClient().create(ApiInterface.class);
+
+
+        PersonInfo personInfo=new PersonInfo();
+        personInfo.setIMEINo(CommonInfo.imei);
+        personInfo.setDOB(dobForService);
+        personInfo.setMobileNo(mobNumberForService);
+        Call<RegistrationValidation> call= apiService.Call_GetRegistrationDetails(personInfo);
+        call.enqueue(new Callback<RegistrationValidation>() {
+            @Override
+            public void onResponse(Call<RegistrationValidation> call, Response<RegistrationValidation> response) {
+                if(pDialogGetStores.isShowing())
+                {
+                    pDialogGetStores.dismiss();
+                }
+
+                if(response.code()==200){
+                    dbengine.Delete_tblUserRegistarationStatus();
+                    dbengine.Delete_tblDsrRegDetails();
+                    RegistrationValidation registrationValidation= response.body();
+                   if(registrationValidation!=null){
+                       List<TblMessageDisplaySetting> tblMessageDisplaySettings= registrationValidation.getTblMessageDisplaySetting();
+                       if(tblMessageDisplaySettings.size()>0){
+                           TblMessageDisplaySetting tblMessageDisplaySetting=  tblMessageDisplaySettings.get(0);
+                           Integer Flag=0;
+                           String MsgToDisplay="0";
+                           if(tblMessageDisplaySetting.getFlag()!=null){
+                               MsgToDisplay=  tblMessageDisplaySetting.getMsgToDisplay();
+                           }
+                           Flag=  tblMessageDisplaySetting.getFlag();
+                           if(tblMessageDisplaySetting.getMsgToDisplay()!=null){
+                               MsgToDisplay=  tblMessageDisplaySetting.getMsgToDisplay();
+                           }
+                           dbengine.savetblUserRegistarationStatus(Flag,MsgToDisplay);
+                       }
+                       List<TblPersonDetailsForRegistration> tblPersonDetailsForRegistrations=  registrationValidation.getTblPersonDetailsForRegistration();
+                       if(tblPersonDetailsForRegistrations.size()>0){
+                           String IMEI_string="0";
+                           String ClickedDateTime_string="0";
+                           String FirstName="0";
+                           String LastName="0";
+                           String ContactNo="0";
+                           String DOB_string="0";
+                           String Gender="0";
+                           String IsMarried="0";
+                           String MarriageDate="0";
+                           String Qualification="0";
+                           String SelfieName_string="0";
+                           String SelfiePath_string="0";
+                           String EmailId="0";
+                           String BloodGroup="0";
+                           String SignName_string="0";
+                           String SignPath_string="0";
+                           String PhotoName="0";
+                           Integer PersonNodeId=0;
+                           Integer PersonNodeType=0;
+                           TblPersonDetailsForRegistration tblPersonDetailsForRegistration=   tblPersonDetailsForRegistrations.get(0);
+                           if(tblPersonDetailsForRegistration.getFirstName()!=null){
+                               FirstName=  tblPersonDetailsForRegistration.getFirstName();
+                           }
+                           if(tblPersonDetailsForRegistration.getLastName()!=null){
+                               LastName=  tblPersonDetailsForRegistration.getLastName();
+                           }
+                           if(tblPersonDetailsForRegistration.getContactNo()!=null){
+                               ContactNo=  tblPersonDetailsForRegistration.getContactNo();
+                           }
+                           if(tblPersonDetailsForRegistration.getDOB()!=null){
+                               DOB_string=  tblPersonDetailsForRegistration.getDOB();
+                           }
+                           if(tblPersonDetailsForRegistration.getGender()!=null){
+                               Gender=  tblPersonDetailsForRegistration.getGender();
+                           }
+                           if(tblPersonDetailsForRegistration.getIsMarried()!=null){
+                               IsMarried=  tblPersonDetailsForRegistration.getIsMarried();
+                           }
+                           if(tblPersonDetailsForRegistration.getMarriageDate()!=null){
+                               MarriageDate=  tblPersonDetailsForRegistration.getMarriageDate();
+                           }
+                           if(tblPersonDetailsForRegistration.getQualification()!=null){
+                               Qualification=  tblPersonDetailsForRegistration.getQualification();
+                           }
+                           if(tblPersonDetailsForRegistration.getSelfieName()!=null){
+                               SelfieName_string=  tblPersonDetailsForRegistration.getSelfieName();
+                           }
+                           if(tblPersonDetailsForRegistration.getEmailId()!=null){
+                               EmailId=  tblPersonDetailsForRegistration.getEmailId();
+                           }
+                           if(tblPersonDetailsForRegistration.getBloodGroup()!=null){
+                               BloodGroup=  tblPersonDetailsForRegistration.getBloodGroup();
+                           }
+                           if(tblPersonDetailsForRegistration.getPhotoName()!=null){
+                               PhotoName=  tblPersonDetailsForRegistration.getPhotoName();
+                           }
+                           if(tblPersonDetailsForRegistration.getPersonNodeId()!=null){
+                               PersonNodeId=  tblPersonDetailsForRegistration.getPersonNodeId();
+                           }
+                           if(tblPersonDetailsForRegistration.getPersonNodeType()!=null){
+                               PersonNodeType=  tblPersonDetailsForRegistration.getPersonNodeType();
+                           }
+                           dbengine.savetblDsrRegDetails(IMEI_string,ClickedDateTime_string,FirstName,LastName,ContactNo,DOB_string,Gender,IsMarried,MarriageDate,Qualification,SelfieName_string,SelfiePath_string,EmailId,BloodGroup,SignName_string,SignPath_string,0,PhotoName,""+PersonNodeId,""+PersonNodeType);
+
+                       }
+                   }
+
+                }
+                //setting data to layout
+
+                setDataToLayoutAfterResponce();
+
+            }
+
+            @Override
+            public void onFailure(Call<RegistrationValidation> call, Throwable t) {
+                if(pDialogGetStores.isShowing())
+                {
+                    pDialogGetStores.dismiss();
+                }
+            }
+        });
+    }
+    public void setDataToLayoutAfterResponce(){
+
+        String flag="0";
+        String message="0";
+        String FlagAndMessage=  dbengine.fnGettblUserRegistarationStatus();
+        if(!FlagAndMessage.equals("0"))
+        {
+            flag    =   FlagAndMessage.split(Pattern.quote("^"))[0];
+            message =   FlagAndMessage.split(Pattern.quote("^"))[1];
+
+
+        }
+
+        if(flag.equals("0"))
+        {
+            parentOf_validationLayout.setVisibility(View.GONE);
+            parentOf_registrationformLayout.setVisibility(View.VISIBLE);
+            LL_banner_image.setVisibility(View.GONE);
+            Submit_btn.setVisibility(View.VISIBLE);
+            BtnCancel.setVisibility(View.VISIBLE);
+            userNodeIdGlobal="0";
+            userNodetypeGlobal="0";
+
+        }
+        if(flag.equals("1"))
+        {
+            AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(DSR_Registration.this);
+            alertDialogNoConn.setTitle(getResources().getString(R.string.genTermNoDataConnection));
+
+            alertDialogNoConn.setMessage(message);
+            alertDialogNoConn.setCancelable(false);
+            alertDialogNoConn.setNeutralButton(getResources().getString(R.string.AlertDialogOkButton),new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    dialog.dismiss();
+	                               /* Intent i=new Intent(DSR_Registration.this,SalesValueTarget.class);
+	                                i.putExtra("IntentFrom", 0);
+	                                startActivity(i);
+	                                finish();*/
+	                               /* Intent i=new Intent(DSR_Registration.this,WarehouseCheckInFirstActivity.class);
+	                                i.putExtra("imei", imei);
+	                                i.putExtra("CstmrNodeId", 0);
+	                                i.putExtra("CstomrNodeType", 0);
+	                                i.putExtra("fDate", fDate);
+	                                startActivity(i);
+	                                finish();*/
+                    Intent i=new Intent(DSR_Registration.this,AllButtonActivity.class);
+                    startActivity(i);
+                    finish();
+
+                }
+            });
+            alertDialogNoConn.setIcon(R.drawable.info_ico);
+            AlertDialog alert = alertDialogNoConn.create();
+            alert.show();
+
+        }
+        if(flag.equals("2"))
+        {
+            FillDsrDetailsToLayout();
+            parentOf_validationLayout.setVisibility(View.GONE);
+            parentOf_registrationformLayout.setVisibility(View.VISIBLE);
+            LL_banner_image.setVisibility(View.GONE);
+            Submit_btn.setVisibility(View.VISIBLE);
+            BtnCancel.setVisibility(View.VISIBLE);
+
+
+        }
 
     }
 }

@@ -12,6 +12,8 @@ import project.astix.com.parasorder.model.AllTargetVsAchieved;
 import project.astix.com.parasorder.model.Data;
 import project.astix.com.parasorder.model.IMEIVersionDetails;
 import project.astix.com.parasorder.model.IMEIVersionParentModel;
+import project.astix.com.parasorder.model.PersonInfo;
+import project.astix.com.parasorder.model.RegistrationValidation;
 import project.astix.com.parasorder.model.ReportsAddedOutletSummary;
 import project.astix.com.parasorder.model.ReportsInfo;
 import retrofit2.Call;
@@ -58,5 +60,8 @@ public interface ApiInterface {
 
     @POST("Home/GetPDAGetAddedOutletSummaryReport")
     Call<AllAddedOutletSummaryReportModel> Call_AllPDAGetAddedOutletSummaryReport(@Body ReportsAddedOutletSummary reportsAddedOutletSummary);
+
+    @POST("Home/GetPersonDetail")
+    Call<RegistrationValidation> Call_GetRegistrationDetails(@Body PersonInfo personInfo);
 
 }

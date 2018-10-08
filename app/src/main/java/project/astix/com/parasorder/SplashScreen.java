@@ -413,7 +413,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
        //imei="863408031291603";  // paras imei like Godrej
 
        // imei="868622032054183";
-        imei="352801088236109";
+        //imei="352801088236109";
         CommonInfo.imei = imei;
 
         if(dbengine.isDBOpen()==false)

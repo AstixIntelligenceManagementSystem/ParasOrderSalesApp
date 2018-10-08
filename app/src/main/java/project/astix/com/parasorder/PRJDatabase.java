@@ -18622,18 +18622,7 @@ public class PRJDatabase
         return db.insert(TABLE_tblBloodGroup_Define, null, initialValues);
     }
 
-    public static long savetblUserRegistarationStatus(String Flag,String MsgToDisplay)
-    {
 
-        ContentValues initialValues = new ContentValues();
-
-        initialValues.put("Flag", Flag.trim());
-        initialValues.put("MsgToDisplay", MsgToDisplay.trim());
-
-        // System.out.println("Data Insert in Table MAIN1User");
-
-        return db.insert(TABLE_tblUserRegistarationStatus, null, initialValues);
-    }
 
     public static LinkedHashMap<String, String> fnGettblBloodGroup()
     {
@@ -18779,33 +18768,7 @@ public class PRJDatabase
         return db.insert(TABLE_tblEducationQuali, null, initialValues);
     }
 
-    public static long savetblDsrRegDetails(String IMEI,String ClickedDateTime,String FirstName,String LastName,String ContactNo,String DOB,String Sex,String MaritalStatus,String MarriedDate,String Qualification,String SelfieName,String SelfiePath,String EmailID,String BloodGroup,String SignName,String SignPath,int Sstat,String PhotoName,String PersonNodeId,String PersonNodeType)
-    {
 
-        ContentValues initialValues = new ContentValues();
-        initialValues.put("IMEI", IMEI.trim());
-        initialValues.put("ClickedDateTime", ClickedDateTime.trim());
-        initialValues.put("FirstName", FirstName.trim());
-        initialValues.put("LastName", LastName.trim());
-        initialValues.put("ContactNo", ContactNo.trim());
-        initialValues.put("DOB", DOB.trim());
-        initialValues.put("Sex", Sex.trim());
-        initialValues.put("MaritalStatus", MaritalStatus.trim());
-        initialValues.put("MarriedDate", MarriedDate.trim());
-        initialValues.put("Qualification", Qualification.trim());
-        initialValues.put("SelfieName", SelfieName.trim());
-        initialValues.put("SelfiePath", SelfiePath.trim());
-        initialValues.put("EmailID", EmailID.trim());
-        initialValues.put("BloodGroup", BloodGroup.trim());
-        initialValues.put("SignName", SignName.trim());
-        initialValues.put("SignPath", SignPath.trim());
-        initialValues.put("Sstat", Sstat);
-        initialValues.put("PhotoName", PhotoName.trim());
-        initialValues.put("PersonNodeId", PersonNodeId.trim());
-        initialValues.put("PersonNodeType", PersonNodeType.trim());
-
-        return db.insert(TABLE_tblDsrRegDetails, null, initialValues);
-    }
 
     public static int fngetcounttblDsrRegDetails()
     {
@@ -36718,6 +36681,48 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
         }
         db.setTransactionSuccessful();
         db.endTransaction();
+    }
+
+
+    public static long savetblDsrRegDetails(String IMEI,String ClickedDateTime,String FirstName,String LastName,String ContactNo,String DOB,String Sex,String MaritalStatus,String MarriedDate,String Qualification,String SelfieName,String SelfiePath,String EmailID,String BloodGroup,String SignName,String SignPath,int Sstat,String PhotoName,String PersonNodeId,String PersonNodeType)
+    {
+
+        ContentValues initialValues = new ContentValues();
+        initialValues.put("IMEI", IMEI.trim());
+        initialValues.put("ClickedDateTime", ClickedDateTime.trim());
+        initialValues.put("FirstName", FirstName.trim());
+        initialValues.put("LastName", LastName.trim());
+        initialValues.put("ContactNo", ContactNo.trim());
+        initialValues.put("DOB", DOB.trim());
+        initialValues.put("Sex", Sex.trim());
+        initialValues.put("MaritalStatus", MaritalStatus.trim());
+        initialValues.put("MarriedDate", MarriedDate.trim());
+        initialValues.put("Qualification", Qualification.trim());
+        initialValues.put("SelfieName", SelfieName.trim());
+        initialValues.put("SelfiePath", SelfiePath.trim());
+        initialValues.put("EmailID", EmailID.trim());
+        initialValues.put("BloodGroup", BloodGroup.trim());
+        initialValues.put("SignName", SignName.trim());
+        initialValues.put("SignPath", SignPath.trim());
+        initialValues.put("Sstat", Sstat);
+        initialValues.put("PhotoName", PhotoName.trim());
+        initialValues.put("PersonNodeId", PersonNodeId.trim());
+        initialValues.put("PersonNodeType", PersonNodeType.trim());
+
+        return db.insert(TABLE_tblDsrRegDetails, null, initialValues);
+    }
+
+    public static long savetblUserRegistarationStatus(Integer Flag,String MsgToDisplay)
+    {
+
+        ContentValues initialValues = new ContentValues();
+
+        initialValues.put("Flag", Flag);
+        initialValues.put("MsgToDisplay", MsgToDisplay.trim());
+
+        // System.out.println("Data Insert in Table MAIN1User");
+
+        return db.insert(TABLE_tblUserRegistarationStatus, null, initialValues);
     }
 }
 
