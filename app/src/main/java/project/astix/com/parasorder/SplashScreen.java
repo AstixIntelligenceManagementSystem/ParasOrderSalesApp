@@ -413,7 +413,8 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
        //imei="863408031291603";  // paras imei like Godrej
 
        // imei="868622032054183";
-        //imei="352801088236109";
+        //imei="352801088236109";//Order Book App
+        imei="354733070991110";//Direct Sales
         CommonInfo.imei = imei;
 
         if(dbengine.isDBOpen()==false)
@@ -430,9 +431,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
             CommonInfo.VanLoadedUnloaded = 1;
         }
 
-      /*  int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
-
-
+      /*int checkDataNotSync = dbengine.CheckUserDoneGetStoreOrNot();
        if (checkDataNotSync == 1)
         {
             //dbengine.open();

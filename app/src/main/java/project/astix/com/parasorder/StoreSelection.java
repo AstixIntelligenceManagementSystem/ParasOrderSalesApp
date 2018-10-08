@@ -84,6 +84,7 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -2266,8 +2267,13 @@ public void DayEndWithoutalert()
 
 				}
 			});
-			
 
+		if(CommonInfo.flgDrctslsIndrctSls==1)
+		{
+			TextView tv_SoreCalHead=(TextView) findViewById(R.id.tv_SoreCalHead);
+			tv_SoreCalHead.setVisibility((View.GONE));
+			btn_telephonic.setVisibility(View.GONE);
+		}
 
 	}
 	
@@ -2302,6 +2308,7 @@ public void DayEndWithoutalert()
 		{
 			imei= CommonInfo.imei.trim();
 		}
+
 
 if(CommonInfo.VanLoadedUnloaded==1)
 {

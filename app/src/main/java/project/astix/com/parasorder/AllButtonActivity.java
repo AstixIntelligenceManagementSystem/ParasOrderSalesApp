@@ -3328,20 +3328,32 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 }
                 else
                 {
-                    Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
+                    if(CommonInfo.flgDrctslsIndrctSls==0) {
+                        Intent i = new Intent(AllButtonActivity.this, DistributorCheckInFirstActivity.class);
+                        i.putExtra("imei", imei);
+                        i.putExtra("CstmrNodeId", CstmrNodeId);
+                        i.putExtra("CstomrNodeType", CstomrNodeType);
+                        i.putExtra("fDate", fDate);
+                        startActivity(i);
+                        finish();
+                    }
+                    else
+                    {
+                        Intent i=new Intent(AllButtonActivity.this,WarehouseCheckInFirstActivity.class);
 
-                    i.putExtra("imei", imei);
-                    i.putExtra("CstmrNodeId", CstmrNodeId);
-                    i.putExtra("CstomrNodeType", CstomrNodeType);
-                    i.putExtra("fDate", fDate);
-                    startActivity(i);
-                    finish();
+                        i.putExtra("imei", imei);
+                        i.putExtra("CstmrNodeId", CstmrNodeId);
+                        i.putExtra("CstomrNodeType", CstomrNodeType);
+                        i.putExtra("fDate", fDate);
+
+                        startActivity(i);
+                        finish();
+                    }
                 }
             }
             else
             {
                 Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
-
                 i.putExtra("imei", imei);
                 i.putExtra("CstmrNodeId", CstmrNodeId);
                 i.putExtra("CstomrNodeType", CstomrNodeType);

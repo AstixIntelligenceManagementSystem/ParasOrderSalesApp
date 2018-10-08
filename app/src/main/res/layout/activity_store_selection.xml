@@ -326,7 +326,8 @@
 				android:gravity="center"
 				android:textColor="#015db4"
 				android:textStyle="bold"
-				android:text="@string/store_call"/>
+				android:text="@string/store_call"
+				android:id="@+id/tv_SoreCalHead"/>
 
 			<LinearLayout
 				android:layout_width="match_parent"

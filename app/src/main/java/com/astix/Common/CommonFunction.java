@@ -693,6 +693,20 @@ public class CommonFunction {
                     }
 
                     //table 31-------------------------------
+                    dbengine.Delete_tblAppMasterFlags();
+                    List<TblAppMasterFlags> tblAppMasterFlags=  allMasterTablesModel.getTblAppMasterFlags();
+
+                    if(tblAppMasterFlags.size()>0){
+                        for(TblAppMasterFlags AppMasterFlags:tblAppMasterFlags){
+                            dbengine.saveAppMasterFlags(AppMasterFlags.getFlgShowSalesTargetValue(),AppMasterFlags.getFlgShowDistributorStock(),AppMasterFlags.getFlgShowInvoice(),AppMasterFlags.getFlgShowPOSM(),AppMasterFlags.getFlgShowPaymentStageAtLastVisitPage(),AppMasterFlags.getFlgShowDeliveryAddressButtonOnOrder(),AppMasterFlags.getFlgShowManagerOnStoreList(),AppMasterFlags.getFlgShowTragetVsAchived(),AppMasterFlags.getFlgFilterProductOnCategoryOrSearchBasis(),AppMasterFlags.getFlgNeedStock(),AppMasterFlags.getFlgCalculateStock(),AppMasterFlags.getFlgControlStock(),AppMasterFlags.getFlgManageCollection(),AppMasterFlags.getFlgControlCollection(),AppMasterFlags.getFlgManageScheme(),AppMasterFlags.getFlgManageSalesQuotation(),AppMasterFlags.getFlgManageExecution());
+                        }
+                        CommonInfo.hmapAppMasterFlags=dbengine.fnGetAppMasterFlags();
+                    }
+                    else{
+                        blankTablearrayList.add("tblAppMasterFlags");
+                    }
+
+
 
                     List<TblDistributorProductStock> tblDistributorProductStock=  allMasterTablesModel.getTblDistributorProductStock();
 
@@ -766,17 +780,6 @@ public class CommonFunction {
                         blankTablearrayList.add("tblIsSchemeApplicable");
                     }
                     //table 35-------------------------------
-                    dbengine.Delete_tblAppMasterFlags();
-                    List<TblAppMasterFlags> tblAppMasterFlags=  allMasterTablesModel.getTblAppMasterFlags();
-
-                    if(tblAppMasterFlags.size()>0){
-                        for(TblAppMasterFlags AppMasterFlags:tblAppMasterFlags){
-                            dbengine.saveAppMasterFlags(AppMasterFlags.getFlgShowSalesTargetValue(),AppMasterFlags.getFlgShowDistributorStock(),AppMasterFlags.getFlgShowInvoice(),AppMasterFlags.getFlgShowPOSM(),AppMasterFlags.getFlgShowPaymentStageAtLastVisitPage(),AppMasterFlags.getFlgShowDeliveryAddressButtonOnOrder(),AppMasterFlags.getFlgShowManagerOnStoreList(),AppMasterFlags.getFlgShowTragetVsAchived(),AppMasterFlags.getFlgFilterProductOnCategoryOrSearchBasis(),AppMasterFlags.getFlgNeedStock(),AppMasterFlags.getFlgCalculateStock(),AppMasterFlags.getFlgControlStock(),AppMasterFlags.getFlgManageCollection(),AppMasterFlags.getFlgControlCollection(),AppMasterFlags.getFlgManageScheme(),AppMasterFlags.getFlgManageSalesQuotation(),AppMasterFlags.getFlgManageExecution());
-                        }
-                    }
-                    else{
-                        blankTablearrayList.add("tblAppMasterFlags");
-                    }
 
                     //table 36-------------------------------
                     dbengine.Delete_tblSupplierMstrList();

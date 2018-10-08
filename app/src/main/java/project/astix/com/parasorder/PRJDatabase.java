@@ -36206,7 +36206,7 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
             values.put("StockQntty",tblDistributorProductStockData.getFinalStockQty());
             values.put("NetSalesQty",tblDistributorProductStockData.getNetSalesQty());
             values.put("TodaysUnloadStk",tblDistributorProductStockData.getTodaysUnloadStock());
-            values.put("CycleUnloadStk",tblDistributorProductStockData.getCycleAddedStock());
+            values.put("CycleUnloadStk",tblDistributorProductStockData.getCycleUnloadStock());
 
             values.put("CategoryID",tblDistributorProductStockData.getCategoryID());
 

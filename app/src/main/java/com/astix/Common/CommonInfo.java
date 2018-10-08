@@ -71,13 +71,13 @@ public class CommonInfo {
 	public static int AnyVisit = 0;
 	public static String AppLatLngJsonFile = "ParasOrderSFALatLngJson";
 
-	public static int Application_TypeID = 2;
+	public static int Application_TypeID = 8;
 	public static final String AttandancePreference = "ParasOrderAttandancePreference";
 	public static int CoverageAreaNodeID = 0;
 	public static int CoverageAreaNodeType = 0;
 	public static String DATABASE_NAME = "PRJDatabase";
-	public static int DATABASE_VERSIONID = 2;
-	public static String AppVersionID = "1.0";
+	public static int DATABASE_VERSIONID = 16;
+	public static String AppVersionID = "1.12";
 	public static int DayStartClick = 0;
 	public static int DistanceRange = 3000;
 	public static final String DistributorCheckInXMLFolder = "ParasOrderDistributorCheckInXML";
@@ -122,7 +122,7 @@ public class CommonInfo {
 	public static Uri uriSavedImage_savedInstance = null;
 	public static String TextFileName="ParasAllDetails";
 	public static String TextFileArrayName="AllDetails";
-	public static int flgDrctslsIndrctSls=0;
+	public static int flgDrctslsIndrctSls=1;
 	public static final String BASE_URL = "http://103.20.212.194/ParasDataAPI_Dev/";
 	public static String RegistrationID="NotGettingFromServer";
 	public static LinkedHashMap<String,Integer> hmapAppMasterFlags=new LinkedHashMap<String,Integer>();//Filled from All Button Activicty On onCreate Method
