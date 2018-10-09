@@ -51,6 +51,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -107,7 +108,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
-public class AllButtonActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener{
+public class AllButtonActivity extends BaseActivity implements LocationListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,MultipleInterfaceRetrofit{
 
 
     public static boolean isDayEndClicked=false;
@@ -685,8 +686,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         ll_StkRqst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new GetRqstStockForDay(AllButtonActivity.this).execute();
 
+                CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",1);
 
             }
         });
@@ -1050,6 +1051,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
 
 
     }
+
+
 
     private class bgTasker extends AsyncTask<Void, Void, Void> {
 
@@ -1786,8 +1789,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     }
                     else {
 
-                        GetVanStockForDay taskVanStock = new GetVanStockForDay(AllButtonActivity.this);
-                        taskVanStock.execute();
+                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+
                     }
                 }
                 else
@@ -3253,119 +3256,6 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
         alertDialog.show();
     }
 
-
-
-
-
-
-    private class GetVanStockForDay extends AsyncTask<Void, Void, Void>
-    {
-
-        int flgStockOut=0;
-        public GetVanStockForDay(AllButtonActivity activity)
-        {
-
-        }
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-
-
-
-            // Base class method for Creating ProgressDialog
-            showProgress(getResources().getString(R.string.RetrivingDataMsg));
-
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... args)
-        {
-
-
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                Log.i("SvcMgr", "Service Execution Failed!", e);
-            }
-            finally
-            {
-                Log.i("SvcMgr", "Service Execution Completed...");
-            }
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-
-            dismissProgress();   // Base class method for dismissing ProgressDialog
-            if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 )
-            {
-                flgStockOut= dbengine.fetchtblStockUploadedStatus();
-                int statusId = dbengine.confirmedStock();
-                //  flgStockOut=1;
-                if(serviceException)
-                {
-                    serviceException=false;
-                    showAlertStockOut("Error","Error While Retrieving Data.");
-                }
-                else if(flgStockOut==0)
-                {
-                    showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockStockOutWareHouse)+" "+tv_Warehouse.getText().toString());
-                }
-                else if(statusId==3)
-                {
-                    showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockConfrmDstrbtr));
-                }
-                else
-                {
-                    if(CommonInfo.flgDrctslsIndrctSls==0) {
-                        Intent i = new Intent(AllButtonActivity.this, DistributorCheckInFirstActivity.class);
-                        i.putExtra("imei", imei);
-                        i.putExtra("CstmrNodeId", CstmrNodeId);
-                        i.putExtra("CstomrNodeType", CstomrNodeType);
-                        i.putExtra("fDate", fDate);
-                        startActivity(i);
-                        finish();
-                    }
-                    else
-                    {
-                        Intent i=new Intent(AllButtonActivity.this,WarehouseCheckInFirstActivity.class);
-
-                        i.putExtra("imei", imei);
-                        i.putExtra("CstmrNodeId", CstmrNodeId);
-                        i.putExtra("CstomrNodeType", CstomrNodeType);
-                        i.putExtra("fDate", fDate);
-
-                        startActivity(i);
-                        finish();
-                    }
-                }
-            }
-            else
-            {
-                Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
-                i.putExtra("imei", imei);
-                i.putExtra("CstmrNodeId", CstmrNodeId);
-                i.putExtra("CstomrNodeType", CstomrNodeType);
-                i.putExtra("fDate", fDate);
-                startActivity(i);
-                finish();
-            }
-        }
-    }
-
-
-
     private class ImageSync extends AsyncTask<Void,Void,Boolean>
     {
         // ProgressDialog pDialogGetStores;
@@ -3446,8 +3336,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             else {
                 if (CommonInfo.flgDrctslsIndrctSls == 1) {
                     if (flgClkdBtn == 1) {
-                        GetVanStockForDay taskVanStock = new GetVanStockForDay(AllButtonActivity.this);
-                        taskVanStock.execute();
+                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+
                     } else {
 
 
@@ -3779,8 +3669,8 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 dbengine.UpdateStoreVisitWiseTablesAfterSync(4);
                 if(CommonInfo.flgDrctslsIndrctSls==1) {
                     if (flgClkdBtn == 1) {
-                        GetVanStockForDay taskVanStock = new GetVanStockForDay(AllButtonActivity.this);
-                        taskVanStock.execute();
+                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+
                     } else {
 
 
@@ -4005,91 +3895,7 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
     }
 
 
-    private class GetRqstStockForDay extends AsyncTask<Void, Void, Void>
-    {
 
-        int flgStockOut=0;
-        public GetRqstStockForDay(AllButtonActivity activity)
-        {
-
-        }
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-
-
-
-            // Base class method for Creating ProgressDialog
-            showProgress(getResources().getString(R.string.RetrivingDataMsg));
-
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... args)
-        {
-
-
-            try
-            {
-
-
-            }
-            catch (Exception e)
-            {
-                Log.i("SvcMgr", "Service Execution Failed!", e);
-            }
-            finally
-            {
-                Log.i("SvcMgr", "Service Execution Completed...");
-            }
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-
-            dismissProgress();   // Base class method for dismissing ProgressDialog
-
-           int flgStockRqst = dbengine.fetchtblStockUploadedStatusForRqstStatus();
-            //  flgStockOut=1;
-            if(serviceException)
-            {
-                serviceException=false;
-                showAlertStockOut("Error","Error While Retrieving Data.");
-                // showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrorRetrievingData));
-                //    Toast.makeText(AllButtonActivity.this,"Please fill Stock out first for starting your market visit.",Toast.LENGTH_SHORT).show();
-                //  showSyncError();
-            }
-
-            else if (flgStockRqst == 0 || flgStockRqst == 2) {
-              Intent intent=new Intent(AllButtonActivity.this,StockRequestActivity.class);
-                    startActivity(intent);
-                    finish();
-
-
-            }
-           else if(flgStockRqst==4)
-            {
-
-                showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertDayEndCnfrmForRqstStk));
-
-            }
-            else
-            {
-                showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockForRqstStk));
-            }
-
-
-
-        }
-    }
     public void DayEndCodeAfterSummary()
     {
         isDayEndClicked=false;
@@ -4160,6 +3966,104 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             }
 
         }
+    }
+
+
+    @Override
+    public void success(int flgCalledFrom) {
+        if(flgCalledFrom==0)
+        {
+            if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 )
+            {
+                int flgStockOut= dbengine.fetchtblStockUploadedStatus();
+                int statusId = dbengine.confirmedStock();
+                //  flgStockOut=1;
+
+                if(flgStockOut==0)
+                {
+                    showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockStockOutWareHouse)+" "+tv_Warehouse.getText().toString());
+                }
+                else if(statusId==3)
+                {
+                    showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockConfrmDstrbtr));
+                }
+                else
+                {
+                    if(CommonInfo.flgDrctslsIndrctSls==0) {
+                        Intent i = new Intent(AllButtonActivity.this, DistributorCheckInFirstActivity.class);
+                        i.putExtra("imei", imei);
+                        i.putExtra("CstmrNodeId", CstmrNodeId);
+                        i.putExtra("CstomrNodeType", CstomrNodeType);
+                        i.putExtra("fDate", fDate);
+                        startActivity(i);
+                        finish();
+                    }
+                    else
+                    {
+                        Intent i=new Intent(AllButtonActivity.this,WarehouseCheckInFirstActivity.class);
+
+                        i.putExtra("imei", imei);
+                        i.putExtra("CstmrNodeId", CstmrNodeId);
+                        i.putExtra("CstomrNodeType", CstomrNodeType);
+                        i.putExtra("fDate", fDate);
+
+                        startActivity(i);
+                        finish();
+                    }
+                }
+            }
+            else
+            {
+                Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
+                i.putExtra("imei", imei);
+                i.putExtra("CstmrNodeId", CstmrNodeId);
+                i.putExtra("CstomrNodeType", CstomrNodeType);
+                i.putExtra("fDate", fDate);
+                startActivity(i);
+                finish();
+            }
+        }
+        else  if(flgCalledFrom==1)
+        {
+            int flgStockRqst = dbengine.fetchtblStockUploadedStatusForRqstStatus();
+            //  flgStockOut=1;
+            if(serviceException)
+            {
+                serviceException=false;
+                showAlertStockOut("Error","Error While Retrieving Data.");
+                // showAlertException(getResources().getString(R.string.txtError),getResources().getString(R.string.txtErrorRetrievingData));
+                //    Toast.makeText(AllButtonActivity.this,"Please fill Stock out first for starting your market visit.",Toast.LENGTH_SHORT).show();
+                //  showSyncError();
+            }
+
+            else if (flgStockRqst == 0 || flgStockRqst == 2) {
+                Intent intent=new Intent(AllButtonActivity.this,StockRequestActivity.class);
+                startActivity(intent);
+                finish();
+
+
+            }
+            else if(flgStockRqst==4)
+            {
+
+                showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertDayEndCnfrmForRqstStk));
+
+            }
+            else
+            {
+                showAlertStockOut(getResources().getString(R.string.genTermNoDataConnection),getResources().getString(R.string.AlertVANStockForRqstStk));
+            }
+
+
+        }
+    }
+
+    @Override
+    public void failure(int flgCalledFrom) {
+
+
+            showAlertStockOut("Error","Error While Retrieving Data.");
+
     }
 
 }

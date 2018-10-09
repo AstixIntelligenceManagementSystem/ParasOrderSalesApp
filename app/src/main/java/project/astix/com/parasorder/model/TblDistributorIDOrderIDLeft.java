@@ -11,7 +11,7 @@ public class TblDistributorIDOrderIDLeft {
     private String customer;
     @SerializedName("PDAOrderId")
     @Expose
-    private Integer pDAOrderId;
+    private String pDAOrderId;
     @SerializedName("flgInvExists")
     @Expose
     private Integer flgInvExists;
@@ -24,11 +24,11 @@ public class TblDistributorIDOrderIDLeft {
         this.customer = customer;
     }
 
-    public Integer getPDAOrderId() {
+    public String getPDAOrderId() {
         return pDAOrderId;
     }
 
-    public void setPDAOrderId(Integer pDAOrderId) {
+    public void setPDAOrderId(String pDAOrderId) {
         this.pDAOrderId = pDAOrderId;
     }
 

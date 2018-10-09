@@ -12,6 +12,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 
 import project.astix.com.parasorder.InterfaceRetrofit;
+import project.astix.com.parasorder.MultipleInterfaceRetrofit;
 import project.astix.com.parasorder.ProductEntryForm;
 import project.astix.com.parasorder.R;
 import project.astix.com.parasorder.model.AllAddedOutletSummaryReportModel;
@@ -20,9 +21,12 @@ import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
 import project.astix.com.parasorder.model.AllTargetVsAchieved;
+import project.astix.com.parasorder.model.DistributorStockData;
+import project.astix.com.parasorder.model.DistributorTodaysStock;
 import project.astix.com.parasorder.model.InvoiceList;
 import project.astix.com.parasorder.model.ReportsAddedOutletSummary;
 import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.StockData;
 import project.astix.com.parasorder.model.TblActualVsTargetNote;
 import project.astix.com.parasorder.model.TblActualVsTargetReport;
 import project.astix.com.parasorder.model.TblAllSummaryDay;
@@ -33,6 +37,9 @@ import project.astix.com.parasorder.model.TblCycleID;
 import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryOverallReport;
 import project.astix.com.parasorder.model.TblDAGetAddedOutletSummaryReport;
 import project.astix.com.parasorder.model.TblDayStartAttendanceOption;
+import project.astix.com.parasorder.model.TblDistributorDayReport;
+import project.astix.com.parasorder.model.TblDistributorDayReportColumnsDesc;
+import project.astix.com.parasorder.model.TblDistributorDayReportDisplayMessage;
 import project.astix.com.parasorder.model.TblDistributorIDOrderIDLeft;
 import project.astix.com.parasorder.model.TblDistributorProductStock;
 import project.astix.com.parasorder.model.TblDistributorStockOutFlg;
@@ -241,7 +248,7 @@ public class CommonFunction {
         data.setFlgAllRouteData(1);
 
         data.setInvoiceList(arrDistinctInvoiceNumbersNew);
-        data.setInvoiceList(null);
+       // data.setInvoiceList(null);
         data.setRouteNodeId(0);
         data.setRouteNodeType(0);
         data.setCoverageAreaNodeId(Integer.parseInt(CoverageNodeId));
@@ -1620,4 +1627,272 @@ public class CommonFunction {
 
     }
 
+    public static void getStockData(Context context, final String imei, String RegistrationID, String msgToShow, final int flgCldFrm){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        //final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final MultipleInterfaceRetrofit multplinterfaceRetrofit = (MultipleInterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService=ApiClient.getClient().create(ApiInterface.class);
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+        ArrayList<InvoiceList> arrDistinctInvoiceNumbersNew=dbengine.getDistinctInvoiceNumbersNew();
+        Data data=new Data();
+        data.setApplicationTypeId(CommonInfo.Application_TypeID);
+        data.setIMEINo(imei);
+        data.setVersionId(CommonInfo.DATABASE_VERSIONID);
+        data.setRegistrationId(RegistrationID);
+        data.setForDate(fDate);
+        data.setFlgAllRouteData(1);
+
+        data.setInvoiceList(arrDistinctInvoiceNumbersNew);
+
+        data.setRouteNodeId(0);
+        data.setRouteNodeType(0);
+        data.setCoverageAreaNodeId(Integer.parseInt(CoverageNodeId));
+        data.setCoverageAreaNodeType(Integer.parseInt(CoverageNodeType));
+
+        Call<StockData> call= apiService.Call_StockData(data);
+        call.enqueue(new Callback<StockData>() {
+            @Override
+            public void onResponse(Call<StockData> call, Response<StockData> response) {
+                if(response.code()==200){
+                    StockData stockData=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+
+
+                    //table 28-------------------------------
+
+                    dbengine.Delete_tblStockUploadedStatus();
+
+                    List<TblStockUploadedStatus> tblStockUploadedStatus=  stockData.getTblStockUploadedStatus();
+
+                    if(tblStockUploadedStatus.size()>0){
+                        for(TblStockUploadedStatus StockUploadedStatus:tblStockUploadedStatus){
+                            dbengine.inserttblStockUploadedStatus(StockUploadedStatus.getFlgStockTrans(),StockUploadedStatus.getVanLoadUnLoadCycID(),StockUploadedStatus.getCycleTime(),StockUploadedStatus.getStatusID(),StockUploadedStatus.getFlgDayEnd());
+                        }
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblStockUploadedStatus");
+                    }
+
+                    //table 29-------------------------------
+
+                    dbengine.deleteCompleteDataDistStock();
+
+                    List<TblCycleID> tblCycleID=  stockData.getTblCycleID();
+                    if(CommonInfo.flgDrctslsIndrctSls==1) {
+                        if (tblCycleID.size() > 0) {
+                            for (TblCycleID CycleID : tblCycleID) {
+                                dbengine.insertCycleId(CycleID.getCycleID(), CycleID.getCycStartTime(), CycleID.getCycleTime());
+                            }
+                        } else {
+                            blankTablearrayList.add("tblCycleID");
+                        }
+                    }
+
+                    //table 30-------------------------------
+                    //deleted above
+                    List<TblDistributorStockOutFlg> tblDistributorStockOutFlg=  stockData.getTblDistributorStockOutFlg();
+
+                    if(tblDistributorStockOutFlg.size()>0){
+                        for(TblDistributorStockOutFlg DistributorStockOutFlg:tblDistributorStockOutFlg){
+                            dbengine.insertStockOut(DistributorStockOutFlg.getFlgStockOutEntryDone());
+                        }
+                    }
+                    else{
+                        blankTablearrayList.add("tblDistributorStockOutFlg");
+                    }
+                    //table 31-------------------------------
+
+                    List<TblDistributorProductStock> tblDistributorProductStock=  stockData.getTblDistributorProductStock();
+
+                    if(tblDistributorProductStock.size()>0){
+
+                        if(CommonInfo.flgDrctslsIndrctSls==1) {
+                            dbengine.insertDistributorStock(tblDistributorProductStock);
+                            if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 ) {
+                                int statusId = dbengine.confirmedStock();
+                                if (statusId == 2) {
+                                    dbengine.insertConfirmWArehouse(tblDistributorProductStock.get(0).getCustomer(), "1");
+                                    dbengine.inserttblDayCheckIn(1);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            dbengine.insertDistributorStockPermanetTableDirectly(tblDistributorProductStock);
+                        }
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblDistributorProductStock");
+                    }
+
+                    //deleted above
+                    List<TblDistributorIDOrderIDLeft> tblDistributorIDOrderIDLeft=  stockData.getTblDistributorIDOrderIDLeft();
+
+                    if(tblDistributorIDOrderIDLeft.size()>0){
+                        for(TblDistributorIDOrderIDLeft DistributorIDOrderIDLeft:tblDistributorIDOrderIDLeft){
+                            dbengine.insertDistributorLeftOrderId(DistributorIDOrderIDLeft.getCustomer(),DistributorIDOrderIDLeft.getPDAOrderId(),DistributorIDOrderIDLeft.getFlgInvExists());
+                        }
+                    }
+                    else{
+                        blankTablearrayList.add("tblDistributorIDOrderIDLeft");
+                    }
+
+
+                    dbengine.fnInsertOrUpdate_tblAllServicesCalledSuccessfull(1);
+                    mProgressDialog.dismiss();
+                    //  interfaceRetrofit.success();
+                    multplinterfaceRetrofit.success(flgCldFrm);
+                    // sendIntentToOtherActivityAfterAllDataFetched();
+
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    //  interfaceRetrofit.failure();
+                    multplinterfaceRetrofit.success(flgCldFrm);
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StockData> call, Throwable t) {
+
+                dbengine.fnInsertOrUpdate_tblAllServicesCalledSuccessfull(0);
+                mProgressDialog.dismiss();
+                // interfaceRetrofit.failure();
+                multplinterfaceRetrofit.success(flgCldFrm);
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
+
+
+    public static void getDistributorTodayStock(Context context, final String imei, final int customerNodeId, final int customerNodeType){
+        final  PRJDatabase dbengine = new PRJDatabase(context);
+        final ProgressDialog mProgressDialog = new ProgressDialog(context);
+        //mProgressDialog.setTitle(msgToShow);//context.getResources().getString(R.string.Loading));
+        mProgressDialog.setMessage(context.getResources().getString(R.string.RetrivingDataMsg));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        final InterfaceRetrofit interfaceRetrofit = (InterfaceRetrofit) context;
+        final ArrayList blankTablearrayList=new ArrayList();
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        final String fDate = sdf.format(date1).toString().trim();
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+        apiService=ApiClient.getClient().create(ApiInterface.class);
+        String prsnCvrgId_NdTyp=  dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+        String  CoverageNodeId= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0];
+        String   CoverageNodeType= prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1];
+        int FlgAllRoutesData=1;
+        String  serverDateForSPref=	dbengine.fnGetServerDate();
+        ArrayList<InvoiceList> arrDistinctInvoiceNumbersNew=dbengine.getDistinctInvoiceNumbersNew();
+        DistributorTodaysStock data=new DistributorTodaysStock();
+
+        data.setiMEINo(imei);
+        data.setCustomerNodeId(customerNodeId);
+        data.setCustomerNodeType(customerNodeType);
+
+
+        Call<DistributorStockData> call= apiService.Call_DistributorTodayStockData(data);
+        call.enqueue(new Callback<DistributorStockData>() {
+            @Override
+            public void onResponse(Call<DistributorStockData> call, Response<DistributorStockData> response) {
+                if(response.code()==200){
+                    DistributorStockData stockData=  response.body();
+                    System.out.println("DATAENSERTEDSP");
+
+
+
+
+
+
+                    List<TblDistributorDayReport> tblDistributorDayReport=  stockData.getTblDistributorDayReport();
+
+                    if(tblDistributorDayReport.size()>0){
+                        for(TblDistributorDayReport tblDistributorDayReportData:tblDistributorDayReport){
+//   savetblDistributorDayReport(ProductNodeID, ProductNodeType, SKUName, FlvShortName,StockDate,CustomerNodeID,CustomerNodeType);
+                            dbengine.savetblDistributorDayReport(tblDistributorDayReportData.getProductNodeID(),tblDistributorDayReportData.getProductNodeType(),tblDistributorDayReportData.getSKUName(),tblDistributorDayReportData.getFlvShortName(),tblDistributorDayReportData.getStockDate(),customerNodeId,customerNodeType);
+                        }
+
+                    }
+                    else{
+                        blankTablearrayList.add("tblDistributorDayReport");
+                    }
+
+
+                    List<TblDistributorDayReportColumnsDesc> tblDistributorDayReportColumnsDesc=  stockData.getTblDistributorDayReportColumnsDesc();
+
+                    if (tblDistributorDayReportColumnsDesc.size() > 0) {
+                        for (TblDistributorDayReportColumnsDesc tblDistributorDayReportColumnsDescData : tblDistributorDayReportColumnsDesc) {
+                            //savetblDistributorDayReportColumnsDesc(DistDayReportCoumnName, DistDayReportColumnDisplayName,CustomerNodeID,CustomerNodeType);
+                            dbengine.savetblDistributorDayReportColumnsDesc(tblDistributorDayReportColumnsDescData.getDistDayReportCoumnName(), tblDistributorDayReportColumnsDescData.getDistDayReportColumnDisplayName(), customerNodeId,customerNodeType);
+                        }
+                    } else {
+                        blankTablearrayList.add("tblDistributorDayReportColumnsDesc");
+                    }
+
+
+                    //table 30-------------------------------
+                    //deleted above
+                    List<TblDistributorDayReportDisplayMessage> tblDistributorDayReportDisplayMessage=  stockData.getTblDistributorDayReportDisplayMessage();
+
+                    if(tblDistributorDayReportDisplayMessage.size()>0){
+                        /*for(TblDistributorDayReportDisplayMessage tblDistributorDayReportDisplayMessageData:tblDistributorDayReportDisplayMessage){
+                            dbengine.insertStockOut(DistributorStockOutFlg.getFlgStockOutEntryDone());
+                        }*/
+                    }
+                    else{
+                        blankTablearrayList.add("tblDistributorDayReportDisplayMessage");
+                    }
+
+
+                    dbengine.fnInsertOrUpdate_tblAllServicesCalledSuccessfull(1);
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.success();
+                    // sendIntentToOtherActivityAfterAllDataFetched();
+
+                }
+                else{
+                    mProgressDialog.dismiss();
+                    interfaceRetrofit.failure();
+                    // showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DistributorStockData> call, Throwable t) {
+
+                dbengine.fnInsertOrUpdate_tblAllServicesCalledSuccessfull(0);
+                mProgressDialog.dismiss();
+                interfaceRetrofit.failure();
+                //   showAlertForError("Error while retreiving data from server");
+            }
+        });
+
+
+
+    }
 }

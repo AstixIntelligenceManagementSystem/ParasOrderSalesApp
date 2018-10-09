@@ -649,9 +649,10 @@ public class DayStartActivity extends BaseActivity implements InterfaceClass,OnM
 
 
         spinner_for_filter=(Spinner)findViewById(R.id.spinner_for_filter);
-        spinner_for_filter.setVisibility(View.GONE);
+       // if( CommonInfo.hmapAppMasterFlags.get("flgDistributorCheckIn")==0) {
+            spinner_for_filter.setVisibility(View.GONE);
 
-
+       // }
 
 
         ll_comment=(LinearLayout) findViewById(R.id.ll_comment);

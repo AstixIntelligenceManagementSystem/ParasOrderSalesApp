@@ -35,6 +35,7 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.io.BufferedInputStream;
@@ -57,7 +58,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class DistributorCheckInSecondActivity extends BaseActivity
+public class DistributorCheckInSecondActivity extends BaseActivity implements InterfaceRetrofit
 {
     SharedPreferences sharedPref;
 
@@ -405,8 +406,10 @@ public class DistributorCheckInSecondActivity extends BaseActivity
                             if(isOnline())
                             {
                                 dbengine.deleteDistributorStockTblesOnDistributorIDBasic(StrDistribtrId_Global,StrDistributorNodeType_Global);
-                                GetDistributorStockEntryData getData= new GetDistributorStockEntryData();
-                                getData.execute();
+                               //DistribtrId_Global, DistributorNodeType_Global,fDate, imei
+                                CommonFunction.getDistributorTodayStock(DistributorCheckInSecondActivity.this,imei,DistribtrId_Global,DistributorNodeType_Global);
+                               /* GetDistributorStockEntryData getData= new GetDistributorStockEntryData();
+                                getData.execute();*/
                             }
                             else
                             {
@@ -1349,123 +1352,39 @@ public class DistributorCheckInSecondActivity extends BaseActivity
 
     }
 
-    public class GetDistributorStockEntryData extends AsyncTask<Void, Void, Void>
-    {
-        ProgressDialog pDialogGetStores = new ProgressDialog(DistributorCheckInSecondActivity.this);
+    @Override
+    public void success() {
+        HmapDistribtrReport = dbengine.fetchtblDistribtrReport(DistribtrId_Global,DistributorNodeType_Global);
 
-        @Override
-        protected void onPreExecute()
+        DistribtrReportColumnDesc = dbengine.fetchtblDistribtrReportColumnDesc(DistribtrId_Global,DistributorNodeType_Global);
+        fnForStaticDates();
+        fnGetSavedDataFromPDA();
+        ll_forSearchBox.setVisibility(View.GONE);
+        ll_forTableHeaderName.setVisibility(View.VISIBLE);
+        txt_stockDate.setVisibility(View.VISIBLE);
+        //	LLparentOfInPcsCs.setVisibility(View.VISIBLE);
+
+        fnToAddRows();
+
+        String stockDate= dbengine.getDistinctStockDate();
+        // txt_stockDate.setText("Stock as on- "+stockDate);
+        txt_stockDate.setText(getText(R.string.StockAsOn)+stockDate);
+
+        if(lLayout_main.getChildCount()>0)
         {
-            super.onPreExecute();
-            pDialogGetStores.setMessage(getText(R.string.genTermLoadData));
-            pDialogGetStores.setIndeterminate(false);
-            pDialogGetStores.setCancelable(false);
-            pDialogGetStores.setCanceledOnTouchOutside(false);
-            pDialogGetStores.show();
+            btn_save.setVisibility(View.VISIBLE);
         }
-
-        @Override
-        protected Void doInBackground(Void... params)
+        else
         {
-            try
-            {
-                int DatabaseVersion = dbengine.DATABASE_VERSION;
-                int ApplicationID = dbengine.Application_TypeID;
-                ServiceWorker newservice = new ServiceWorker();
-
-                newservice = newservice.fnGetDistributorTodaysStock(getApplicationContext(), DistribtrId_Global, DistributorNodeType_Global,fDate, imei, fDate, ApplicationID);
-                if (!newservice.director.toString().trim().equals("1"))
-                {
-                    if (chkFlgForErrorToCloseApp == 0)
-                    {
-                        chkFlgForErrorToCloseApp = 1;
-                    }
-                }
-            } catch (Exception e) {
-            }
-
-            finally {
-            }
-
-            return null;
+            btn_save.setVisibility(View.INVISIBLE);
         }
+    }
 
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
+    @Override
+    public void failure() {
+        showAlertSingleButtonError("Error while fetching data.");
+    }
 
-            if (chkFlgForErrorToCloseApp == 1)
-            {
-                chkFlgForErrorToCloseApp = 0;
-                try
-                {
-                    if (pDialogGetStores.isShowing())
-                    {
-                        pDialogGetStores.dismiss();
-                    }
-                }
-                catch (Exception e)
-                {
-
-                }
-            }
-            else
-            {
-
-                try
-                {
-                    if (pDialogGetStores.isShowing())
-                    {
-                        pDialogGetStores.dismiss();
-                    }
-                }
-                catch (Exception e)
-                {
-
-                }
-                //dbengine.open();
-                HmapDistribtrReport = dbengine.fetchtblDistribtrReport(DistribtrId_Global,DistributorNodeType_Global);
-
-                DistribtrReportColumnDesc = dbengine.fetchtblDistribtrReportColumnDesc(DistribtrId_Global,DistributorNodeType_Global);
-                //System.out.println("SIZE 1:" + DistribtrReportColumnDesc.size());
-                //dbengine.close();
-
-                fnForStaticDates();
-
-				/*int flg=dbengine.CheckIfSavedDataExist(3);
-				if(flg == 1)
-				{
-					FullSyncDataNow task = new FullSyncDataNow(DistributorEntryActivity.this);
-					 task.execute();
-				}*/
-
-                ////fnGetSavedDataFromPDA();
-
-                //fnGetDistributorList();
-                fnGetSavedDataFromPDA();
-                ll_forSearchBox.setVisibility(View.GONE);
-                ll_forTableHeaderName.setVisibility(View.VISIBLE);
-                txt_stockDate.setVisibility(View.VISIBLE);
-                //	LLparentOfInPcsCs.setVisibility(View.VISIBLE);
-
-                fnToAddRows();
-
-                String stockDate= dbengine.getDistinctStockDate();
-               // txt_stockDate.setText("Stock as on- "+stockDate);
-                txt_stockDate.setText(getText(R.string.StockAsOn)+stockDate);
-
-                if(lLayout_main.getChildCount()>0)
-                {
-                    btn_save.setVisibility(View.VISIBLE);
-                }
-                else
-                {
-                    btn_save.setVisibility(View.INVISIBLE);
-                }
-
-            }
-        }
-    }// async closed
 
 
     private class FullSyncDataNow extends AsyncTask<Void, Void, Void>

@@ -159,7 +159,7 @@ public class PRJDatabase
     private static final String DATABASE_TABLE_MAIN210 = "tblTmpInvoiceDetails";//DATABASE_TABLE_TMPINVOICE_DETAILS
 
     private static final String  DATABASE_TABLE_INVOICE_HEADER = "tblInvoiceHeader";//DATABASE_TABLE_MAIN32,DATABASE_CREATE_TABLE_32
-    private static final String DATABASE_CREATE_TABLE_INVOICE_HEADER = "create table tblInvoiceHeader (StoreVisitCode text not null,InvoiceNumber int not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgProcessedInvoice int not null,CycleID  int not null);";
+    private static final String DATABASE_CREATE_TABLE_INVOICE_HEADER = "create table tblInvoiceHeader (StoreVisitCode text not null,InvoiceNumber int not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgProcessedInvoice int not null,CycleID  int not null,flgDrctslsIndrctSls int null);";
     private static final String DATABASE_TABLE_STOREVISIT="tblStoreVisitMstr";
     private static final String DATABASE_CREATE_TABLE_STOREVISIT="create table tblStoreVisitMstr(IMEINumber text null,StoreVisitCode text null,StoreID text not null, Sstat integer not null, ForDate string not null, ActualLatitude text null, ActualLongitude text null,VisitTimeOutSideStore text null,VisitTimeInSideStore text null,VisitTimeCheckStore text null, VisitEndTS text null, LocProvider text null, Accuracy text null,BateryLeftStatus text null,StoreClose integer null,StoreNextDay integer null,ISNewStore int null,IsNewStoreDataCompleteSaved int null,flgFromWhereSubmitStatus int null,flgSubmitFromQuotation int null,flgLocationServicesOnOff int null,flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null,flgStoreOrder int null,flgRetailerCreditBalnce integer null,VisitTypeStatus text null,flgVisitCollectionMarkedStatus int null,SelfCreditNote real null);";
     private static final String  DATABASE_TABLE_DayCheckIn = "tblDayCheckIn";//DATABASE_TABLE_MAIN32,DATABASE_CREATE_TABLE_32
@@ -167,11 +167,11 @@ public class PRJDatabase
     private static final String DATABASE_TABLE_NewAddedStoreLocationDetails="tblNewAddedStoreLocationDetails";
     private static final String DATABASE_CREATE_TABLE_NewAddedStoreLocationDetails="create table tblNewAddedStoreLocationDetails(StoreID text not null, VisitEndTS text null, LocProvider text null, Accuracy text null, BateryLeftStatus text null,flgLocationServicesOnOff int null,flgGPSOnOff int null,flgNetworkOnOff int null,flgFusedOnOff int null,flgInternetOnOffWhileLocationTracking int null, Sstat integer not null);";
     //
-    private static final String DATABASE_CREATE_TABLE_INVOICE_DETAILS = "create table tblInvoiceDetails (InvoiceNumber int not null,TmpInvoiceCodePDA text null,StoreID text not null,CatID text  null,ProdID text not null,ProductPrice real null, TaxRate real null,flgRuleTaxVal integer null,OrderQty integer not null,UOMId integer not null,LineValBfrTxAftrDscnt real not null,LineValAftrTxAftrDscnt real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,TaxValue real null,OrderIDPDA text null,flgIsQuoteRateApplied int null,ServingDBRId text null,flgWholeSellApplicable int null,ProductExtraOrder int null);";
+    private static final String DATABASE_CREATE_TABLE_INVOICE_DETAILS = "create table tblInvoiceDetails (InvoiceNumber int not null,TmpInvoiceCodePDA text null,StoreID text not null,CatID text  null,ProdID text not null,ProductPrice real null, TaxRate real null,flgRuleTaxVal integer null,OrderQty integer not null,UOMId integer not null,LineValBfrTxAftrDscnt real not null,LineValAftrTxAftrDscnt real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,TaxValue real null,OrderIDPDA text null,flgIsQuoteRateApplied int null,ServingDBRId text null,flgWholeSellApplicable int null,ProductExtraOrder int null,flgDrctslsIndrctSls int null);";
     private static final String DATABASE_CREATE_TABLE_210 = "create table tblTmpInvoiceDetails (TmpInvoiceCodePDA text null,StoreID text not null,CatID text  null,ProdID text not null,ProductPrice real null, TaxRate real null,flgRuleTaxVal integer null,OrderQty integer not null,UOMId integer not null,LineValBfrTxAftrDscnt real not null,LineValAftrTxAftrDscnt real not null,FreeQty integer not null,DisVal real not null,Sstat integer not null,SampleQuantity int null,ProductShortName text null,TaxValue real null,OrderIDPDA text null,flgIsQuoteRateApplied int null,ServingDBRId text null,flgWholeSellApplicable int null,ProductExtraOrder int null);";
     private static final String DATABASE_CREATE_TABLE_32 = "create table tblTmpInvoiceHeader (StoreVisitCode text not null,TmpInvoiceCodePDA text null, StoreID text not null, InvoiceDate string not null, TotalBeforeTaxDis real not null, TaxAmt real not null, TotalDis real not null, InvoiceVal real not null, FreeTotal integer not null, Sstat integer not null, InvAfterDis real not null, AddDis real not null,  NoCoupon int null, TotalCoupunAmount real null,TransDate string not null,FlgInvoiceType text not null,flgWholeSellApplicable int null,flgTransferStatus int not null);";
     private static final String DATABASE_TABLE_tblInvoiceCaption = "tblInvoiceCaption";
-    private static final String DATABASE_CREATE_TABLE_tblInvoiceCaption = "create table tblInvoiceCaption(INVPrefix text null,VanIntialInvoiceIds int not null,INVSuffix int null);";
+    private static final String DATABASE_CREATE_TABLE_tblInvoiceCaption = "create table tblInvoiceCaption(INVPrefix text null,VanIntialInvoiceIds int not null,INVSuffix text null);";
     private static final String DATABASE_TABLE_tblPriceApplyType = "tblPriceApplyType";
     private static final String DATABASE_CREATE_TABLE_tblPriceApplyType =  "create table tblPriceApplyType(DiscountLevelType int not null,cutoffvalue real not null);";
     private static final String DATABASE_TABLE_tblLastOutstanding = "tblLastOutstanding";
@@ -180,7 +180,7 @@ public class PRJDatabase
     private static final String DATABASE_CREATE_TABLE_tblInvoiceLastVisitDetails = "create table tblInvoiceLastVisitDetails(StoreID text not null,InvCode text null,InvDate text null,OutstandingAmt text not null,AmtOverdue text null);";
     //setock out flg by Sunil, we are using below table
     private static final String DATABASE_TABLE_tblStockUploadedStatus="tblStockUploadedStatus";
-    private static final String DATABASE_CREATE_TABLE_tblStockUploadedStatus="create table tblStockUploadedStatus(flgStockTrans int null,VanLoadUnLoadCycID int null,CycleTime text null,StatusID int null,flgDayEnd int null);";
+    private static final String DATABASE_CREATE_TABLE_tblStockUploadedStatus="create table tblStockUploadedStatus(flgStockTrans int null,VanLoadUnLoadCycID int null,CycleTime int null,StatusID int null,flgDayEnd int null);";
     private static final String DATABASE_TABLE_TMP_DISTRIBUTOR_STOCK = "tblTmpDistributorStock";
     private static final String DATABASE_CREATE_TABLE_TEMP_DISTRIBUTOR_STOCK="create table tblTMPDistributorStock(PrdctId text not null,StockQntty text not null,DistributorNodeIdNodeType text not null,SKUName text not null,OpeningStock text not null,TodaysAddedStock text not null,CycleAddedStock text not null,NetSalesQty text not null,TodaysUnloadStk text not null,CycleUnloadStk text not null,CategoryID text not null);";
     private static final String DATABASE_TABLE_tblStockConfirm="tblStockConfirm";
@@ -243,7 +243,7 @@ public class PRJDatabase
     private static final String DATABASE_CREATE_TABLE_236 = "create table tblTargetVsAchievedNote (MsgToDisplay text null);";
     // Tables Data Coming at Splash Screen Starts
     private static final String TABLE_tblUserAuthenticationMstr_Define = "tblUserAuthenticationMstr";
-    private static final String TABLE_tblUserAuthenticationMstr_Definition = "create table tblUserAuthenticationMstr (flgUserAuthenticated text not null,PersonName  text not null,PersonNodeID integer not null,PersonNodeType integer not null,FlgRegistered text not null,flgPersonTodaysAtt text null,ContactNo text null,DOB text null,SelfieName text null,SelfieNameURL text null,SalesAreaName text null,CoverageNodeId int not null,CoverageNodeType int not null,WorkingType int nol null,flgToShowAllRoutesData int not null);";
+    private static final String TABLE_tblUserAuthenticationMstr_Definition = "create table tblUserAuthenticationMstr (flgUserAuthenticated text not null,PersonName  text not null,PersonNodeID integer not null,PersonNodeType integer not null,FlgRegistered text not null,flgPersonTodaysAtt text null,ContactNo text null,DOB text null,SelfieName text null,SelfieNameURL text null,SalesAreaName text null,CoverageNodeId int not null,CoverageNodeType int not null,WorkingType int nol null,flgToShowAllRoutesData int not null,flgDrctslsIndrctSls int null);";
 
    // private static final String TABLE_tblUserAuthenticationMstr_Definition = "create table tblUserAuthenticationMstr (flgUserAuthenticated text null,PersonName text null,FlgRegistered text null,PersonNodeID text null,PersonNodeType text null,flgPersonTodaysAtt text null);";
     private static final String TABLE_tblBloodGroup_Define = "tblBloodGroup";
@@ -16176,27 +16176,7 @@ public class PRJDatabase
         }
     }
 
-    public static String[] fnGetProductPurchaseList(String StoreID,String pdaOrderID,String TmpInvoiceCodePDA)
-    {
-        //open();
-        Cursor cursor = db.rawQuery("SELECT ProdID,0 AS Stock,OrderQty,LineValAftrTxAftrDscnt AS OrderVal,FreeQty,DisVal,SampleQuantity,ProductPrice,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,ProductExtraOrder From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
-        try {
-            String CompleteResult[] = new String[cursor.getCount()];
-            if (cursor.getCount() > 0) {
-                if (cursor.moveToFirst()) {
-                    for (int i = 0; i <= (cursor.getCount() - 1); i++) {
-                        CompleteResult[i] = (String) cursor.getString(0).toString()+"^"+(String) cursor.getString(1).toString()+"^"+(String) cursor.getString(2).toString()+"^"+(String) cursor.getString(3).toString()+"^"+(String) cursor.getString(4).toString()+"^"+(String) cursor.getString(5).toString()+"^"+(String) cursor.getString(6).toString()+"^"+(String) cursor.getString(7).toString()+"^"+(String) cursor.getString(8).toString()+"^"+(String) cursor.getString(9).toString()+"^"+(String) cursor.getString(10).toString()+"^"+(String) cursor.getString(11).toString();
-                        cursor.moveToNext();
-                    }
-                }
-            }
-            return CompleteResult;
 
-        } finally {
-            cursor.close();
-           // close();
-        }
-    }
 
     public static String fngetOrderIDAganistStore(String StoreID,String TmpInvoiceCodePDA)
     {
@@ -16222,31 +16202,7 @@ public class PRJDatabase
         return chkI;
     }
 
-    public static int fnCheckIfStoreExistInStoreProdcutPurchaseDetails(String StoreID,String TmpInvoiceCodePDA)
-    {
-        // System.out.println("Abhinav Nitish Ankit New While Fetching Records Store Id:"+StoreID);
-        //open();
-        //Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' and (Sstat=1 or Sstat=2)", null);
-        Cursor cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
-        int chkI = 0;
-        try {
-            if(cursorE2.getCount()>0)
-            {
-                if (cursorE2.moveToFirst()) {
 
-                    if (cursorE2.getInt(0) > 0) {
-                        chkI = 1;
-                    } else {
-                        chkI = 0;
-                    }
-                }
-            }
-        } finally {
-            cursorE2.close();
-            //close();
-        }
-        return chkI;
-    }
 
     public static int fnCheckIfStoreExistInStoreProdcutInvoiceDetails(String StoreID,String TmpInvoiceCodePDA)
     {
@@ -18561,7 +18517,7 @@ public class PRJDatabase
                                               String MessageForInvalid,String flgPersonTodaysAtt,
                                               int PersonNodeID,int PersonNodeType,
                                               String ContactNo,String DOB,String SelfieName,
-                                              String SelfieNameURL,String SalesAreaName,int CoverageNodeId,int CoverageNodeType,int FlgToShowAllRoutesData)
+                                              String SelfieNameURL,String SalesAreaName,int CoverageNodeId,int CoverageNodeType,int FlgToShowAllRoutesData,int flgDrctslsIndrctSls)
     {
 
         ContentValues initialValues = new ContentValues();
@@ -18585,6 +18541,7 @@ public class PRJDatabase
         initialValues.put("SalesAreaName", SalesAreaName);
         initialValues.put("CoverageNodeId", CoverageNodeId);
         initialValues.put("CoverageNodeType", CoverageNodeType);
+        initialValues.put("flgDrctslsIndrctSls",flgDrctslsIndrctSls);
 
         return db.insert(TABLE_tblUserAuthenticationMstr_Define, null, initialValues);
     }
@@ -20980,41 +20937,6 @@ public class PRJDatabase
         }
     }
 
-    public static LinkedHashMap<String, String> getFileredOrderReviewProductListMap(String StoreId,String TmpInvoiceCodePDA)
-    {
-        //tblProductListMaster (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
-        //open();
-        String searchString="";
-        LinkedHashMap<String, String> hmapFilterProductList=new LinkedHashMap<String, String>();
-        try {
-
-
-
-
-            Cursor cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblTmpInvoiceDetails on tblProductListMaster.ProductID=tblTmpInvoiceDetails.ProdID  where tblTmpInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
-            if(cur.getCount()>0)
-            {
-                if(cur.moveToFirst())
-                {
-                    for(int i=0;i<cur.getCount();i++)
-                    {
-                        hmapFilterProductList.put(cur.getString(0), cur.getString(1));
-                        cur.moveToNext();
-                    }
-                }
-
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.toString());
-            // TODO: handle exception
-        }
-        finally
-        {
-           // close();
-            return hmapFilterProductList;
-        }
-    }
 
     public static LinkedHashMap<String, String> getUOMMstr()
     {
@@ -26231,12 +26153,12 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(TABLE_tblDistributorDayReportColumnsDesc, null, initialValues);
     }
 
-    public static long savetblDistributorDayReport(String ProductNodeID,String ProductNodeType,String SKUName,String FlvShortName,String StockDate,int CustomerNodeID,int CustomerNodeType)
+    public static long savetblDistributorDayReport(int ProductNodeID,int ProductNodeType,String SKUName,String FlvShortName,String StockDate,int CustomerNodeID,int CustomerNodeType)
     {
         ContentValues initialValues = new ContentValues();
 
-        initialValues.put("ProductNodeID", ProductNodeID);
-        initialValues.put("ProductNodeType", ProductNodeType.trim());
+        initialValues.put("ProductNodeID", String.valueOf(ProductNodeID));
+        initialValues.put("ProductNodeType", String.valueOf(ProductNodeType).trim());
         initialValues.put("SKUName", SKUName.trim());
         initialValues.put("FlvShortName", FlvShortName.trim());
         initialValues.put("StockDate", StockDate.trim());
@@ -29114,7 +29036,7 @@ String fetchdate=fnGetDateTimeString();
         }
     }
 
-    public static void inserttblStockUploadedStatus(Integer flgStockTrans,Integer VanLoadUnLoadCycID,String CycleTime,Integer statusId,Integer flgDayEnd)
+    public static void inserttblStockUploadedStatus(Integer flgStockTrans,Integer VanLoadUnLoadCycID,Integer CycleTime,Integer statusId,Integer flgDayEnd)
     {
 
         ContentValues values=new ContentValues();
@@ -29664,108 +29586,8 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public static int fnCheckForNewInvoiceOrPreviousValue(String StoreID,String StoreVisitCode)
-    {
-        //open();
-        Cursor cursorE2 = db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
-        int chkI = 0;
-        try {
-            if(cursorE2.getCount()>0)
-            {
-                if (cursorE2.moveToFirst()) {
-                    chkI = 1;
-                }
-            }
-        } finally {
-            if(cursorE2!=null) {
-                cursorE2.close();
-            }
-           // close();
-        }
-        return chkI;
-    }
 
-  /*  public static String fnGettblInvoiceCaption(String StoreID)
-    {
-        //open();
-        String VanInvoiceGeneratedNumber="";
-        Cursor cursor=db.rawQuery("Select INVPrefix,VanIntialInvoiceIds from tblInvoiceCaption",null);
 
-        if(cursor.getCount()>0)
-        {
-            if(cursor.moveToFirst())
-            {
-                VanInvoiceGeneratedNumber=(cursor.getString(0))+(Integer.parseInt(cursor.getString(1)));
-            }
-        }
-        if(cursor!=null) {
-            cursor.close();
-        }
-        close();
-        return VanInvoiceGeneratedNumber;
-    }
-*/
-
-    /*public static int fnGettblInvoiceIds()
-    {
-        //open();
-        int VanInvoiceIds=0;
-        Cursor cursor=null;
-        try {
-            cursor   =db.rawQuery("Select VanIntialInvoiceIds from tblInvoiceCaption",null);
-
-            if(cursor.getCount()>0)
-            {
-                if(cursor.moveToFirst())
-                {
-                    VanInvoiceIds=Integer.parseInt(cursor.getString(0));
-                }
-            }
-        }
-        catch(Exception ex)
-        {
-
-        }
-        finally
-        {
-            if(cursor!=null) {
-                cursor.close();
-            }
-            close();
-        }
-
-        return VanInvoiceIds;
-    }*/
-   /* public static void updatetblInvoiceCaption(String VanID)
-    {
-        int VanInvoiceIds=fnGettblInvoiceIds();
-        //open();
-//tblInvoiceCaption(INVPrefix text null,VanIntialInvoiceIds int null,FinalAllotedInvoiceIds int null);";
-        db.execSQL("Update tblInvoiceCaption Set  VanIntialInvoiceIds="+(VanInvoiceIds+1));
-
-        close();
-    }*/
-
-  /*  public static int fnCheckForNewInvoiceOrPreviousValue(String StoreID)
-    {
-        //open();
-        Cursor cursorE2 = db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND Sstat=1", null);
-        int chkI = 0;
-        try {
-            if(cursorE2.getCount()>0)
-            {
-                if (cursorE2.moveToFirst()) {
-                    chkI = 1;
-                }
-            }
-        } finally {
-            if(cursorE2!=null) {
-                cursorE2.close();
-            }
-            close();
-        }
-        return chkI;
-    }*/
     public static String fnGetExistingInvoiceNumber (String StoreID)
     {
         //open();
@@ -30362,8 +30184,42 @@ String fetchdate=fnGetDateTimeString();
 
     public static String fnGetInvoiceCodePDA (String StoreID,String StoreVisitCode)
     {
+
+
+        int flginvoiceAnyInPErmanentTable=fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(StoreID,StoreVisitCode);
+        Cursor cursorE2=null;
+        String InvoiceCodePDA = "0";
+        if(CommonInfo.flgDrctslsIndrctSls==0)
+        {
+            if(flginvoiceAnyInPErmanentTable==0)
+            {
+                cursorE2=  db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
+            }
+            else
+            {
+                cursorE2=  db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"'", null);
+            }
+        }
+        else
+        {
+            cursorE2= db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
+        }
+
+        int chkI = 0;
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                if (cursorE2.moveToFirst()) {
+                    InvoiceCodePDA = cursorE2.getString(0).toString();
+                }
+            }
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
         //open();
-        Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
+      /*  Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
         String InvoiceCodePDA = "0";
         try {
             if(cursorE2.getCount()>0)
@@ -30378,6 +30234,7 @@ String fetchdate=fnGetDateTimeString();
             }
            // close();
         }
+        return InvoiceCodePDA;*/
         return InvoiceCodePDA;
     }
 
@@ -30389,7 +30246,6 @@ String fetchdate=fnGetDateTimeString();
                                      int flgWholeSellApplicable,int flgRuleTaxVal,int Outstat,int flgTransferStatus)// , Double CreditAmt, Double
 
     {
-
 
         ContentValues initialValues = new ContentValues();
 
@@ -30558,11 +30414,20 @@ String fetchdate=fnGetDateTimeString();
         return db.insert(DATABASE_TABLE_MAIN210, null, initialValues);
     }
 
-    public static LinkedHashMap<String,Integer> fnGetFinalInvoiceQtyProductWise()
+    public static LinkedHashMap<String,Integer> fnGetFinalInvoiceQtyProductWise( int flgDrctslsIndrctSls)
     {
         LinkedHashMap<String,Integer> hmapFinalInvoiceQtyProductWise=new LinkedHashMap<String,Integer>();
         //open();
-        Cursor cursor= db.rawQuery("SELECT DISTINCT S.PrdctId,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable  from tblDistributorProductStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+        Cursor cursor=null;// db.rawQuery("SELECT DISTINCT S.PrdctId,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable  from tblDistributorProductStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+
+        if(flgDrctslsIndrctSls==1)
+        {
+            cursor= db.rawQuery("SELECT DISTINCT S.PrdctId,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable  from tblDistributorProductStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.InvoiceNumber=I.InvoiceNumber  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+        }
+        else
+        {
+            cursor= db.rawQuery("SELECT DISTINCT S.PrdctId,S.StockQntty-ifnull(D.OrderQty,0) AS StockAvailable  from tblDistributorProductStock S left outer join (SELECT ID.ProdID,SUM(ID.OrderQty) OrderQty FROM tblInvoiceHeader AS I INNER JOIN tblInvoiceDetails AS ID ON ID.TmpInvoiceCodePDA=I.TmpInvoiceCodePDA  WHERE I.flgProcessedInvoice=0 GROUP BY ID.ProdID) D ON D.ProdID=S.PrdctId", null);
+        }
         try {
             if(cursor.getCount()>0)
             {
@@ -31322,12 +31187,21 @@ String fetchdate=fnGetDateTimeString();
 
     }
 
-    public static void fnTransferDataFromTempToPermanent(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA)
+    public static void fnTransferDataFromTempToPermanent(String storeID,String StoreVisitCode,String TmpInvoiceCodePDA,int flgDrctslsIndrctSls)
     {
         //open();
         int InvoiceNumber = 0;
         int CycleID = 0;
+        int flgProcessedInvoice=0;
+        if(flgDrctslsIndrctSls==0)
+        {
 
+            db.execSQL("Delete from tblInvoiceHeader Where tblInvoiceHeader.StoreID='"+storeID+"' AND StoreVisitCode='"+StoreVisitCode+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
+
+            db.execSQL("Delete from tblInvoiceDetails Where StoreID='"+storeID+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'");
+            flgProcessedInvoice=2;
+
+        }
         if(CommonInfo.flgDrctslsIndrctSls==1)
         {
              InvoiceNumber = fnFetchInvoiceNumber();
@@ -31337,9 +31211,13 @@ String fetchdate=fnGetDateTimeString();
     try {
         int flgTransferStatus=1;
         fnUpdateflgTransferStatusInInvoiceHeader(storeID,StoreVisitCode,TmpInvoiceCodePDA,flgTransferStatus);
-        db.execSQL("INSERT INTO tblInvoiceHeader(StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,Sstat,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,InvoiceNumber,flgProcessedInvoice,CycleID) SELECT StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,3,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,"+InvoiceNumber+",0,"+CycleID+" FROM tblTmpInvoiceHeader Where tblTmpInvoiceHeader.StoreVisitCode='"+StoreVisitCode+"' AND  tblTmpInvoiceHeader.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceHeader.StoreID='"+storeID+"'");
+       /* db.execSQL("INSERT INTO tblInvoiceHeader(StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,Sstat,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,InvoiceNumber,flgProcessedInvoice,CycleID) SELECT StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,3,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,"+InvoiceNumber+",0,"+CycleID+" FROM tblTmpInvoiceHeader Where tblTmpInvoiceHeader.StoreVisitCode='"+StoreVisitCode+"' AND  tblTmpInvoiceHeader.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceHeader.StoreID='"+storeID+"'");
 
         db.execSQL("INSERT INTO tblInvoiceDetails(InvoiceNumber,TmpInvoiceCodePDA,StoreID,CatID,ProdID,ProductPrice,TaxRate,flgRuleTaxVal,OrderQty,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,FreeQty,DisVal,Sstat,SampleQuantity,ProductShortName,TaxValue,OrderIDPDA,flgIsQuoteRateApplied,ServingDBRId,flgWholeSellApplicable,ProductExtraOrder) SELECT "+InvoiceNumber+",TmpInvoiceCodePDA,StoreID,CatID,ProdID,ProductPrice,TaxRate,flgRuleTaxVal,OrderQty,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,FreeQty,DisVal,3,SampleQuantity,ProductShortName,TaxValue,OrderIDPDA,flgIsQuoteRateApplied,ServingDBRId,flgWholeSellApplicable,ProductExtraOrder FROM tblTmpInvoiceDetails Where tblTmpInvoiceDetails.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceDetails.StoreID='"+storeID+"'");
+*/
+        db.execSQL("INSERT INTO tblInvoiceHeader(StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,Sstat,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,InvoiceNumber,flgProcessedInvoice,CycleID,flgDrctslsIndrctSls) SELECT StoreVisitCode,TmpInvoiceCodePDA,StoreID,InvoiceDate,TotalBeforeTaxDis,TaxAmt,TotalDis,InvoiceVal,FreeTotal,3,InvAfterDis,AddDis,NoCoupon,TotalCoupunAmount,TransDate,FlgInvoiceType,flgWholeSellApplicable,"+InvoiceNumber+","+flgProcessedInvoice+","+CycleID+","+flgDrctslsIndrctSls+" FROM tblTmpInvoiceHeader Where tblTmpInvoiceHeader.StoreVisitCode='"+StoreVisitCode+"' AND  tblTmpInvoiceHeader.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceHeader.StoreID='"+storeID+"'");
+
+        db.execSQL("INSERT INTO tblInvoiceDetails(InvoiceNumber,TmpInvoiceCodePDA,StoreID,CatID,ProdID,ProductPrice,TaxRate,flgRuleTaxVal,OrderQty,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,FreeQty,DisVal,Sstat,SampleQuantity,ProductShortName,TaxValue,OrderIDPDA,flgIsQuoteRateApplied,ServingDBRId,flgWholeSellApplicable,ProductExtraOrder,flgDrctslsIndrctSls) SELECT "+InvoiceNumber+",TmpInvoiceCodePDA,StoreID,CatID,ProdID,ProductPrice,TaxRate,flgRuleTaxVal,OrderQty,UOMId,LineValBfrTxAftrDscnt,LineValAftrTxAftrDscnt,FreeQty,DisVal,3,SampleQuantity,ProductShortName,TaxValue,OrderIDPDA,flgIsQuoteRateApplied,ServingDBRId,flgWholeSellApplicable,ProductExtraOrder,"+flgDrctslsIndrctSls+" FROM tblTmpInvoiceDetails Where tblTmpInvoiceDetails.TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' AND tblTmpInvoiceDetails.StoreID='"+storeID+"'");
 
         flgTransferStatus=2;
         fnUpdateflgTransferStatusInInvoiceHeader(storeID,StoreVisitCode,TmpInvoiceCodePDA,flgTransferStatus);
@@ -34763,28 +34641,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         }
     }
 
-    public static HashMap<String, String> fnGetProductPurchaseList(String StoreID,String TmpInvoiceCodePDA)
-    {
-        //open();
-        HashMap<String, String> hmapPrdctOdrQty=new HashMap<String, String>();
-        Cursor cursor = db.rawQuery("SELECT ProdID,OrderQty From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
-        try {
-            String CompleteResult[] = new String[cursor.getCount()];
-            if (cursor.getCount() > 0) {
-                if (cursor.moveToFirst()) {
-                    for (int i = 0; i <= (cursor.getCount() - 1); i++) {
-                        hmapPrdctOdrQty.put( cursor.getString(0),cursor.getString(1)) ;
-                        cursor.moveToNext();
-                    }
-                }
-            }
-            return hmapPrdctOdrQty;
 
-        } finally {
-            cursor.close();
-            // close();
-        }
-    }
 
 
 
@@ -35839,7 +35696,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         db.execSQL("DELETE FROM tblPDAGetLastVisitDetails");
 
     }
-    public static void insertDistributorLeftOrderId(String distributorNodeIdNodeType,Integer orderId,Integer flgProcessedInvoice)
+    public static void insertDistributorLeftOrderId(String distributorNodeIdNodeType,String orderId,Integer flgProcessedInvoice)
     {
         ////open();
 
@@ -35977,7 +35834,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
             initialValues.put("IMEINumber", CommonInfo.imei.toString());
 
             if(hmapStoreIdSstat!=null && hmapStoreIdSstat.size()>0) {
-                if (hmapStoreIdSstat.containsKey(tblStoreListMasterData.getStoreIDPDA())) {
+                if (hmapStoreIdSstat.containsKey(tblStoreListMasterData.getStoreIDPDA()) || hmapStoreIdSstat.containsKey(tblStoreListMasterData.getStoreID())) {
                     initialValues.put("StoreID", tblStoreListMasterData.getStoreIDPDA().toString());
                 }
                 else
@@ -36756,6 +36613,274 @@ public static long saveTblPreAddedStoresAddStoreDynamic(String StoreID,String St
 
         return db.insert(TABLE_tblUserRegistarationStatus, null, initialValues);
     }
+
+
+    public static int fnCheckForNewInvoiceOrPreviousValue(String StoreID,String StoreVisitCode,int flgDrctslsIndrctSls)
+    {
+        int flginvoiceAnyInPErmanentTable=fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(StoreID,StoreVisitCode);
+        Cursor cursorE2=null;
+        if(flgDrctslsIndrctSls==0)
+        {
+            if(flginvoiceAnyInPErmanentTable==0)
+            {
+                cursorE2=  db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
+            }
+            else
+            {
+                cursorE2=  db.rawQuery("SELECT * FROM tblInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"'", null);
+            }
+        }
+        else
+        {
+            cursorE2= db.rawQuery("SELECT * FROM tblTmpInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"' AND Sstat=1", null);
+        }
+
+        int chkI = 0;
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                if (cursorE2.moveToFirst()) {
+                    chkI = 1;
+                }
+            }
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
+        return chkI;
+    }
+
+    public static int fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(String StoreID,String StoreVisitCode)
+    {
+
+        Cursor cursorE2 = db.rawQuery("SELECT * FROM tblInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"'", null);
+        int chkI = 0;
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                if (cursorE2.moveToFirst()) {
+                    chkI = 1;
+                }
+            }
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
+        return chkI;
+    }
+
+    public static String fnGetInvoiceCodePDAFromPermanentTable (String StoreID,String StoreVisitCode)
+    {
+
+        Cursor cursorE2 = db.rawQuery("SELECT TmpInvoiceCodePDA FROM tblInvoiceHeader WHERE StoreID='" + StoreID + "' AND StoreVisitCode='"+StoreVisitCode+"'", null);
+        String InvoiceCodePDA = "0";
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                if (cursorE2.moveToFirst()) {
+                    InvoiceCodePDA = cursorE2.getString(0).toString();
+                }
+            }
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
+        return InvoiceCodePDA;
+    }
+
+
+    public static LinkedHashMap<String, String> getFileredOrderReviewProductListMap(String StoreId,String TmpInvoiceCodePDA,int flgDrctslsIndrctSls,int chkflgInvoiceAlreadyGenerated)
+    {
+        //tblProductListMaster (CategoryID text  null,ProductID text  null, ProductShortName text  null, DisplayUnit text null, CalculateKilo real  null,ProductMRP real not null, ProductRLP real not null, ProductTaxAmount real not null, KGLiter string null,RetMarginPer real null,VatTax real null,StandardRate real null,StandardRateBeforeTax real null,StandardTax real null,CatOrdr int null,PrdOrdr int null,StoreCatNodeId int null);";
+
+        String searchString="";
+        Cursor cur=null;
+        LinkedHashMap<String, String> hmapFilterProductList=new LinkedHashMap<String, String>();
+        try {
+
+
+
+            if(flgDrctslsIndrctSls==0)
+            {
+                if(chkflgInvoiceAlreadyGenerated==1)
+                {
+                    int we=0;
+                    cur = db.rawQuery("SELECT * FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreId + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                    if(cur.getCount()>0) {
+                        we=1;
+                        if(cur!=null)
+                        {
+                            cur.close();
+                        }
+                    }
+                    if(we==1)
+                    {
+                        cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblTmpInvoiceDetails on tblProductListMaster.ProductID=tblTmpInvoiceDetails.ProdID  where tblTmpInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+                    }
+                    else
+                    {
+                        cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblInvoiceDetails on tblProductListMaster.ProductID=tblInvoiceDetails.ProdID  where tblInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+                        //cur = db.rawQuery("SELECT COUNT(*) FROM tblInvoiceDetails WHERE StoreID ='" + StoreId + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                    }
+                    // cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblTmpInvoiceDetails on tblProductListMaster.ProductID=tblTmpInvoiceDetails.ProdID  where tblTmpInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+                }
+                else
+                {
+                    cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblInvoiceDetails on tblProductListMaster.ProductID=tblInvoiceDetails.ProdID  where tblInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+                }
+            }
+            else
+            {
+                cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblTmpInvoiceDetails on tblProductListMaster.ProductID=tblTmpInvoiceDetails.ProdID  where tblTmpInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+            }
+
+            if(cur.getCount()>0)
+            {
+                if(cur.moveToFirst())
+                {
+                    for(int i=0;i<cur.getCount();i++)
+                    {
+                        hmapFilterProductList.put(cur.getString(0), cur.getString(1));
+                        cur.moveToNext();
+                    }
+                }
+
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            // TODO: handle exception
+        }
+        finally
+        {
+            if(cur!=null)
+            {
+                cur.close();
+            }
+            return hmapFilterProductList;
+        }
+    }
+
+    public static HashMap<String, String> fnGetProductPurchaseList(String StoreID,String TmpInvoiceCodePDA,int flgDrctslsIndrctSls,int chkflgInvoiceAlreadyGenerated)
+    {
+        //open();
+        HashMap<String, String> hmapPrdctOdrQty=new HashMap<String, String>();
+        Cursor cursor =null;
+        // cursor = db.rawQuery("SELECT ProdID,OrderQty From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
+        if(flgDrctslsIndrctSls==0)
+        {
+            if(chkflgInvoiceAlreadyGenerated==1)
+            {
+                int we=0;
+                cursor = db.rawQuery("SELECT ProdID,OrderQty FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                if(cursor.getCount()>0) {
+                    we=1;
+                    if(cursor!=null)
+                    {
+                        cursor.close();
+                    }
+                }
+                if(we==1)
+                {
+                    cursor= db.rawQuery("SELECT ProdID,OrderQty From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
+                }
+                else
+                {
+                    cursor= db.rawQuery("SELECT ProdID,OrderQty From tblInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
+                    //cur = db.rawQuery("SELECT COUNT(*) FROM tblInvoiceDetails WHERE StoreID ='" + StoreId + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                }
+                // cur=db.rawQuery("Select tblProductListMaster.ProductID,tblProductListMaster.ProductShortName from tblProductListMaster inner join tblTmpInvoiceDetails on tblProductListMaster.ProductID=tblTmpInvoiceDetails.ProdID  where tblTmpInvoiceDetails.StoreID='"+StoreId+"' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"' order by tblProductListMaster.CategoryID Asc,tblProductListMaster.PrdOrdr Asc", null);
+            }
+            else
+            {
+                cursor= db.rawQuery("SELECT ProdID,OrderQty From tblInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
+            }
+        }
+        else
+        {
+            cursor= db.rawQuery("SELECT ProdID,OrderQty From tblTmpInvoiceDetails where StoreID='"+StoreID+"'  AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'" , null);
+        }
+
+        try {
+            String CompleteResult[] = new String[cursor.getCount()];
+            if (cursor.getCount() > 0) {
+                if (cursor.moveToFirst()) {
+                    for (int i = 0; i <= (cursor.getCount() - 1); i++) {
+                        hmapPrdctOdrQty.put( cursor.getString(0),cursor.getString(1)) ;
+                        cursor.moveToNext();
+                    }
+                }
+            }
+            return hmapPrdctOdrQty;
+
+        } finally {
+            if(cursor!=null) {
+                cursor.close();
+            }
+            // close();
+        }
+    }
+
+    public static int fnCheckIfStoreExistInStoreProdcutPurchaseDetails(String StoreID,String TmpInvoiceCodePDA,int flgDrctslsIndrctSls,int chkflgInvoiceAlreadyGenerated)
+    {
+
+        Cursor cursorE2 = null;
+
+        if(flgDrctslsIndrctSls==0)
+        {
+            if(chkflgInvoiceAlreadyGenerated==1)
+            {
+                int we=0;
+                cursorE2 = db.rawQuery("SELECT * FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                if(cursorE2.getCount()>0) {
+                    we=1;
+                    if(cursorE2!=null)
+                    {
+                        cursorE2.close();
+                    }
+                }
+                if(we==1)
+                {
+                    cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                }
+                else
+                {
+                    cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+                }
+            }
+            else
+            {
+                cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+            }
+        }
+        else
+        {
+            cursorE2 = db.rawQuery("SELECT COUNT(*) FROM tblTmpInvoiceDetails WHERE StoreID ='" + StoreID + "' AND TmpInvoiceCodePDA='"+TmpInvoiceCodePDA+"'", null);
+        }
+        int chkI = 0;
+        try {
+            if(cursorE2.getCount()>0)
+            {
+                if (cursorE2.moveToFirst()) {
+
+                    if (cursorE2.getInt(0) > 0) {
+                        chkI = 1;
+                    } else {
+                        chkI = 0;
+                    }
+                }
+            }
+        } finally {
+            if(cursorE2!=null) {
+                cursorE2.close();
+            }
+        }
+        return chkI;
+    }
+
 }
 
 

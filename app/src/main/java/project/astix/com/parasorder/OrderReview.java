@@ -834,7 +834,7 @@ public void loadPurchaseProductDefault()
 		        	
 		        	ll_prdct_detal.removeAllViews();
 
-			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,strGlobalInvoiceNumber);
+			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			       System.out.println("hmapFilterProductListCount :-"+ hmapFilterProductList.size());
 		       
 		       			Iterator it11new = hmapPrdctIdPrdctName.entrySet().iterator();
@@ -2055,7 +2055,7 @@ public void loadPurchaseProductDefault()
 			{
 				strGlobalInvoiceNumber=dbengine.fnGettblInvoiceCaption(storeID);
 			}*/
-			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
+			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,strGlobalInvoiceNumber);
 
 			if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
@@ -3836,7 +3836,7 @@ public void loadPurchaseProductDefault()
 	           String[] arrStorePurcaseProducts=null;//=dbengine.fnGetProductPurchaseList(StoreID);
 	           if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1)
 	           {
-	            arrStorePurcaseProducts=dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+	            arrStorePurcaseProducts=null;//dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 	            System.out.println("Abhinav Nitish Ankit New Val :"+arrStorePurcaseProducts.length);
 	            
 	            LayoutInflater inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -10099,7 +10099,7 @@ public void loadPurchaseProductDefault()
 			  {
 				  strGlobalInvoiceNumber=dbengine.fnGettblInvoiceCaption(storeID);
 			  }*/
-			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
+			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			  CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,strGlobalInvoiceNumber);
 			  if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
 			  {

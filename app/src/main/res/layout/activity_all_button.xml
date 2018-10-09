@@ -446,7 +446,7 @@
                 android:layout_height="2dp"
                 android:orientation="horizontal"
                 android:id="@+id/viewDayStartOrDistributorStockOrWarehouseStock"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <View
                     android:layout_width="0dp"
@@ -507,7 +507,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <ImageView
                         android:id="@+id/imageView551"
@@ -537,7 +537,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <View
                     android:layout_width="0dp"

@@ -211,7 +211,7 @@ public class ServiceWorker
 
 
 				//AutoId= i +1;
-				dbengine.savetblDistributorDayReport(ProductNodeID, ProductNodeType, SKUName, FlvShortName,StockDate,CustomerNodeID,CustomerNodeType);
+				//dbengine.savetblDistributorDayReport(ProductNodeID, ProductNodeType, SKUName, FlvShortName,StockDate,CustomerNodeID,CustomerNodeType);
 
 			}
 

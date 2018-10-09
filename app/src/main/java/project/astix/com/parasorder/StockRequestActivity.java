@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.astix.Common.CommonFunction;
 import com.astix.Common.CommonInfo;
 
 import java.text.DecimalFormat;
@@ -39,9 +40,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class StockRequestActivity extends BaseActivity {
+import project.astix.com.parasorder.model.TblSaveVanStockRequestResult;
+import project.astix.com.parasorder.model.VanStockRequest;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+public class StockRequestActivity extends BaseActivity implements MultipleInterfaceRetrofit{
 
+    ApiInterface apiService;
     boolean serviceException=false;
     ArrayAdapter<String> dataAdapter = null;
     String[] storeNames;
@@ -127,7 +136,8 @@ public class StockRequestActivity extends BaseActivity {
                 {
                     if(dataSaved())
                     {
-                        new GetRqstStockForDay(StockRequestActivity.this).execute();
+                       // new GetRqstStockForDay(StockRequestActivity.this).execute();
+                        GetRqstStockForDayRetrofit();
                     }
                 }
                 else
@@ -526,9 +536,9 @@ public class StockRequestActivity extends BaseActivity {
             }
 
             else  {
-                new GetVanStockForDay(StockRequestActivity.this).execute();
+               // new GetVanStockForDay(StockRequestActivity.this).execute();
 
-
+                CommonFunction.getStockData(StockRequestActivity.this,imei,CommonInfo.RegistrationID,"",1);
             }
 
 
@@ -895,61 +905,81 @@ public class StockRequestActivity extends BaseActivity {
 
 
 
-    private class GetVanStockForDay extends AsyncTask<Void, Void, Void>
+
+    public void GetRqstStockForDayRetrofit(){
+        if(apiService==null){
+            apiService= ApiClient.getClient().create(ApiInterface.class);
+        }
+        Date currDate= new Date();
+        SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+        String currSysDate;
+        currSysDate = currDateFormat.format(currDate).toString();
+        String crntDate = currSysDate.trim().toString();
+        String prsnCvrgId_NdTyp=dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+
+        VanStockRequest vanStockRequest =new VanStockRequest();
+        vanStockRequest.setIMEINo(imei);
+        vanStockRequest.setCoverageAreaNodeId(Integer.parseInt(prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0]));
+        vanStockRequest.setCoverageAreaNodeType(Integer.parseInt(prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1]));
+        vanStockRequest.setProductString(strReqStockToSend.toString());
+        vanStockRequest.setStatusId(4);
+        vanStockRequest.setTrnDate(crntDate);
+        Call<TblSaveVanStockRequestResult> tblSaveVanStockRequestResultCall=apiService.Call_SaveVanStockRequest(vanStockRequest);
+        tblSaveVanStockRequestResultCall.enqueue(new Callback<TblSaveVanStockRequestResult>() {
+            @Override
+            public void onResponse(Call<TblSaveVanStockRequestResult> call, Response<TblSaveVanStockRequestResult> response) {
+                if(response.code()==200){
+                    Integer flgRequestAccept=0;
+                    TblSaveVanStockRequestResult tblSaveVanStockRequestResult=  response.body();
+                    flgRequestAccept= tblSaveVanStockRequestResult.getFlgRequestAccept();
+                    if(flgRequestAccept==1){
+                       // new GetVanStockForDay(StockRequestActivity.this).execute();
+                        CommonFunction.getStockData(StockRequestActivity.this,imei,CommonInfo.RegistrationID,"",1);
+                    }
+
+                }
+                else{
+
+                    showAlertForError("Error while retreiving data from server");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<TblSaveVanStockRequestResult> call, Throwable t) {
+                dismissProgress();
+                showAlertForError("Error while retreiving data from server");
+
+            }
+        });
+    }
+    public void showAlertForError(String msg)
     {
+        // AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(new ContextThemeWrapper(SplashScreen.this, R.style.Dialog));
+        android.support.v7.app.AlertDialog.Builder alertDialogNoConn = new android.support.v7.app.AlertDialog.Builder(StockRequestActivity.this);
 
-        int flgStockOut=0;
-        public GetVanStockForDay(StockRequestActivity activity)
+        alertDialogNoConn.setTitle(R.string.AlertDialogHeaderMsg);
+        alertDialogNoConn.setMessage(msg);
+        alertDialogNoConn.setCancelable(false);
+        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,new DialogInterface.OnClickListener()
         {
-
-        }
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-
-
-
-
-            // Base class method for Creating ProgressDialog
-            showProgress(getResources().getString(R.string.RetrivingDataMsg));
-
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... args)
-        {
-
-
-            try
+            public void onClick(DialogInterface dialog, int which)
             {
-
+                dialog.dismiss();
+                // finish();
             }
-            catch (Exception e)
-            {
-                Log.i("SvcMgr", "Service Execution Failed!", e);
-            }
-            finally
-            {
-                Log.i("SvcMgr", "Service Execution Completed...");
-            }
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            super.onPostExecute(result);
-
-
-            dismissProgress();   // Base class method for dismissing ProgressDialog
-
-            showAlertForSubmission(getString(R.string.DataSucc));
-
-        }
+        });
+        //alertDialogNoConn.setIcon(R.drawable.info_ico);
+        android.support.v7.app.AlertDialog alert = alertDialogNoConn.create();
+        alert.show();
+    }
+    @Override
+    public void success(int flgCalledFrom) {
+        showAlertForSubmission(getString(R.string.DataSucc));
     }
 
-
+    @Override
+    public void failure(int flgCalledFrom) {
+        showAlertForSubmission(getString(R.string.DataSucc));
+    }
 }

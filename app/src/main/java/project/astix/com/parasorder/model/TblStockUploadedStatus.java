@@ -14,7 +14,7 @@ public class TblStockUploadedStatus {
     private Integer vanLoadUnLoadCycID;
     @SerializedName("CycleTime")
     @Expose
-    private String cycleTime;
+    private Integer cycleTime;
     @SerializedName("StatusID")
     @Expose
     private Integer statusID;
@@ -38,11 +38,11 @@ public class TblStockUploadedStatus {
         this.vanLoadUnLoadCycID = vanLoadUnLoadCycID;
     }
 
-    public String getCycleTime() {
+    public Integer getCycleTime() {
         return cycleTime;
     }
 
-    public void setCycleTime(String cycleTime) {
+    public void setCycleTime(Integer cycleTime) {
         this.cycleTime = cycleTime;
     }
 

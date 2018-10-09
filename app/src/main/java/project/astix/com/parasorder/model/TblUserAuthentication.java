@@ -9,6 +9,7 @@ public class TblUserAuthentication {
     @SerializedName("flgUserAuthenticated")
     @Expose
     private Integer flgUserAuthenticated;
+
     @SerializedName("PersonName")
     @Expose
     private String personName;

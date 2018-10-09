@@ -414,7 +414,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
 
        // imei="868622032054183";
         //imei="352801088236109";//Order Book App
-        imei="354733070991110";//Direct Sales
+       // imei="354733070991110";//Direct Sales
         CommonInfo.imei = imei;
 
         if(dbengine.isDBOpen()==false)
@@ -1707,7 +1707,7 @@ public class SplashScreen extends BaseActivity implements  TaskListner,Interface
 
                     List<TblUserAuthentication> listTblUserAuthentication= imeiVersionParentModel.getTblUserAuthentication();
                     TblUserAuthentication tblUserAuthentication=  listTblUserAuthentication.get(0);
-                    dbengine.savetblUserAuthenticationMstr(""+tblUserAuthentication.getFlgUserAuthenticated(),tblUserAuthentication.getPersonName(),""+tblUserAuthentication.getFlgRegistered(),flgAppStatus,DisplayMessage,flgValidApplication,MessageForInvalid,flgPersonTodaysAtt,tblUserAuthentication.getPersonNodeID(),tblUserAuthentication.getPersonNodeType(),tblUserAuthentication.getContactNo(),tblUserAuthentication.getDOB(),tblUserAuthentication.getSelfieName(),tblUserAuthentication.getSelfieNameURL(),tblUserAuthentication.getSalesAreaName(),tblUserAuthentication.getCoverageAreaNodeID(),tblUserAuthentication.getCoverageAreaNodeType(),tblUserAuthentication.getFlgToShowAllRoutesData());
+                    dbengine.savetblUserAuthenticationMstr(""+tblUserAuthentication.getFlgUserAuthenticated(),tblUserAuthentication.getPersonName(),""+tblUserAuthentication.getFlgRegistered(),flgAppStatus,DisplayMessage,flgValidApplication,MessageForInvalid,flgPersonTodaysAtt,tblUserAuthentication.getPersonNodeID(),tblUserAuthentication.getPersonNodeType(),tblUserAuthentication.getContactNo(),tblUserAuthentication.getDOB(),tblUserAuthentication.getSelfieName(),tblUserAuthentication.getSelfieNameURL(),tblUserAuthentication.getSalesAreaName(),tblUserAuthentication.getCoverageAreaNodeID(),tblUserAuthentication.getCoverageAreaNodeType(),tblUserAuthentication.getFlgToShowAllRoutesData(),tblUserAuthentication.getWorkingType());
 
                     List<TblAvailableVersion> listTblAvailableVersion= imeiVersionParentModel.getTblAvailableVersion();
                     TblAvailableVersion tblAvailableVersion=  listTblAvailableVersion.get(0);

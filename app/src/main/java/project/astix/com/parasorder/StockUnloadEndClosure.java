@@ -54,8 +54,18 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class StockUnloadEndClosure extends BaseActivity {
+import project.astix.com.parasorder.model.TblPDAVanDayEndDetResult;
+import project.astix.com.parasorder.model.TblSaveVanStockRequestResult;
+import project.astix.com.parasorder.model.VanDayEnd;
+import project.astix.com.parasorder.model.VanStockRequest;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+public class StockUnloadEndClosure extends BaseActivity {
+    ApiInterface apiService;
 
     public String[] xmlForWeb = new String[1];
     int serverResponseCode = 0;
@@ -156,7 +166,8 @@ public class StockUnloadEndClosure extends BaseActivity {
             @Override
             public void onClick(View v) {
                 flgUnloading=0;
-                new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+              //  new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+                DayEndClosureForDayRetrofit();
 
             }
         });
@@ -169,12 +180,14 @@ public class StockUnloadEndClosure extends BaseActivity {
                     flgUnloading=1;
                         if(dataSaved())
                         {
-                            new GetRqstStockForDay(StockUnloadEndClosure.this).execute();
+                           // new GetRqstStockForDay(StockUnloadEndClosure.this).execute();
+                            GetRqstStockForDayRetrofit();
                         }
 
                          else
                         {
-                            new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+                           // new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+                            DayEndClosureForDayRetrofit();
 
 
                       /*  SharedPreferences.Editor editor = sharedPref.edit();
@@ -628,7 +641,8 @@ public class StockUnloadEndClosure extends BaseActivity {
 
             else  {
 
-                    new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+                   // new DayEndClosureForDay(StockUnloadEndClosure.this).execute();
+                DayEndClosureForDayRetrofit();
 
             }
 
@@ -1638,5 +1652,139 @@ public class StockUnloadEndClosure extends BaseActivity {
         file.delete();
         File file1 = new File(delPath.toString().replace(".xml", ".zip"));
         file1.delete();
+    }
+    public void DayEndClosureForDayRetrofit(){
+        String currSysDate;
+        showProgress(getResources().getString(R.string.txtEndingDay));
+        Date date1 = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        fDate = sdf.format(date1).toString().trim();
+        Date currDate= new Date();
+        long syncTIMESTAMP = System.currentTimeMillis();
+        Date dateobj = new Date(syncTIMESTAMP);
+        SimpleDateFormat df = new SimpleDateFormat(
+                "dd-MMM-yyyy HH:mm:ss",Locale.ENGLISH);
+        String EndTS = df.format(dateobj);
+
+        int cycleId=dbengine.fetchtblVanCycleId();
+        if(cycleId==-1)
+        {
+            cycleId=0;
+
+        }
+
+        SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+        String rID=dbengine.GetActiveRouteID();
+        currSysDate = currDateFormat.format(currDate).toString();
+        String crntDate = currSysDate.trim().toString();
+        if(apiService==null){
+            apiService= ApiClient.getClient().create(ApiInterface.class);
+        }
+        VanDayEnd vanDayEnd=new VanDayEnd();
+        vanDayEnd.setIMEINo(imei);
+        vanDayEnd.setFlgUnloading(flgUnloading);
+        vanDayEnd.setDayEndTime(EndTS);
+        vanDayEnd.setAppVersionId(CommonInfo.DATABASE_VERSIONID);
+        vanDayEnd.setVanLoadUnLoadCycleId(cycleId);
+        vanDayEnd.setVisitDate(crntDate);
+        Call<TblPDAVanDayEndDetResult> tblPDAVanDayEndDetResultCall=apiService.Call_PDAVanDayEnd(vanDayEnd);
+        tblPDAVanDayEndDetResultCall.enqueue(new Callback<TblPDAVanDayEndDetResult>() {
+            @Override
+            public void onResponse(Call<TblPDAVanDayEndDetResult> call, Response<TblPDAVanDayEndDetResult> response) {
+                dismissProgress();
+                if(response.code()==200){
+                    Integer flgRequestAccept=0;
+                    TblPDAVanDayEndDetResult TblPDAVanDayEndDetResult=  response.body();
+                    flgRequestAccept=  TblPDAVanDayEndDetResult.getFlgDayEndRequestAccept();
+                    if(flgRequestAccept==1){
+                        DayEndXMLFileUpload();
+                    }
+                    else{
+
+                    }
+
+                }
+                else{
+                    showAlertForError("Error while retreiving data from server");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TblPDAVanDayEndDetResult> call, Throwable t) {
+                dismissProgress();
+                showAlertForError("Error while retreiving data from server");
+            }
+        });
+    }
+    public void showAlertForError(String msg)
+    {
+        // AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(new ContextThemeWrapper(SplashScreen.this, R.style.Dialog));
+        android.support.v7.app.AlertDialog.Builder alertDialogNoConn = new android.support.v7.app.AlertDialog.Builder(StockUnloadEndClosure.this);
+
+        alertDialogNoConn.setTitle(R.string.AlertDialogHeaderMsg);
+        alertDialogNoConn.setMessage(msg);
+        alertDialogNoConn.setCancelable(false);
+        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+               // finish();
+            }
+        });
+        //alertDialogNoConn.setIcon(R.drawable.info_ico);
+        android.support.v7.app.AlertDialog alert = alertDialogNoConn.create();
+        alert.show();
+    }
+    public void GetRqstStockForDayRetrofit(){
+        if(apiService==null){
+            apiService= ApiClient.getClient().create(ApiInterface.class);
+        }
+        Date currDate= new Date();
+        SimpleDateFormat currDateFormat = new SimpleDateFormat("dd-MMM-yyyy",Locale.ENGLISH);
+         String currSysDate;
+        currSysDate = currDateFormat.format(currDate).toString();
+        String crntDate = currSysDate.trim().toString();
+        String prsnCvrgId_NdTyp=dbengine.fngetSalesPersonCvrgIdCvrgNdTyp();
+
+        VanStockRequest vanStockRequest =new VanStockRequest();
+        vanStockRequest.setIMEINo(imei);
+        vanStockRequest.setCoverageAreaNodeId(Integer.parseInt(prsnCvrgId_NdTyp.split(Pattern.quote("^"))[0]));
+        vanStockRequest.setCoverageAreaNodeType(Integer.parseInt(prsnCvrgId_NdTyp.split(Pattern.quote("^"))[1]));
+        vanStockRequest.setProductString(strReqStockToSend.toString());
+        vanStockRequest.setStatusId(4);
+        vanStockRequest.setTrnDate(crntDate);
+        Call<TblSaveVanStockRequestResult> tblSaveVanStockRequestResultCall=apiService.Call_SaveVanStockRequest(vanStockRequest);
+        tblSaveVanStockRequestResultCall.enqueue(new Callback<TblSaveVanStockRequestResult>() {
+            @Override
+            public void onResponse(Call<TblSaveVanStockRequestResult> call, Response<TblSaveVanStockRequestResult> response) {
+                if(response.code()==200){
+                    Integer flgRequestAccept=0;
+                    TblSaveVanStockRequestResult tblSaveVanStockRequestResult=  response.body();
+                    flgRequestAccept= tblSaveVanStockRequestResult.getFlgRequestAccept();
+                    if(flgRequestAccept==1){
+                        DayEndClosureForDayRetrofit();
+                    }
+                    else if(flgRequestAccept==0){
+                        showAlertStockOut(getString(R.string.genTermNoDataConnection),getString(R.string.AlertVANStockConfrmDstrbtr),false,"0");
+                    }
+                    else{
+                        showAlertStockOut(getString(R.string.AlertDialogHeaderMsg),getString(R.string.AlertDialogUnloadStock),false,"0");
+                    }
+                }
+                else{
+
+                    showAlertForError("Error while retreiving data from server");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<TblSaveVanStockRequestResult> call, Throwable t) {
+                dismissProgress();
+                showAlertForError("Error while retreiving data from server");
+
+            }
+        });
     }
 }

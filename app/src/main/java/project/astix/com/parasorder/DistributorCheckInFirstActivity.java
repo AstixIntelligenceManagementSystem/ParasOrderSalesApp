@@ -245,7 +245,8 @@ public class DistributorCheckInFirstActivity extends BaseActivity implements Loc
         rb_gstPending= (RadioButton) findViewById(R.id.rb_gstPending);
         spinner_for_filter= (Spinner) findViewById(R.id.spinner_for_filter);
         btn_submit= (Button) findViewById(R.id.btn_submit);
-        btn_submit.setText(getText(R.string.txtSubmit));
+        //btn_submit.setText(getText(R.string.txtSubmit));
+        btn_submit.setText(getText(R.string.txtNext));
         ll_gstDetails= (LinearLayout) findViewById(R.id.ll_gstDetails);
         img_back_Btn= (ImageView) findViewById(R.id.img_back_Btn);
         txt_gst= (TextView) findViewById(R.id.txt_gst);

@@ -34,7 +34,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import project.astix.com.parasorder.model.ConfirmVanStock;
+import project.astix.com.parasorder.model.TblPDAConfirmVanStockResult;
+import project.astix.com.parasorder.rest.ApiClient;
+import project.astix.com.parasorder.rest.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class WarehouseCheckInSecondActivity extends BaseActivity implements CategoryCommunicator {
+    ApiInterface apiService;
     public int flgCheckAnyStockInMinus=0;
     LinkedHashMap<String, String> hmapctgry_details = new LinkedHashMap<String, String>();
     public int StoreCurrentStoreType=0;
@@ -291,7 +300,8 @@ void conFirmBtn(){
             if(flgCheckAnyStockInMinus==0) {
                 if (!userId.equals("0")) {
                     //
-                    new FullSyncDataNow(WarehouseCheckInSecondActivity.this).execute();
+                    //new FullSyncDataNow(WarehouseCheckInSecondActivity.this).execute();
+                    FullSyncDataNowRetrofit();
                 }
             }
             else if(flgCheckAnyStockInMinus==0) {
@@ -429,7 +439,8 @@ void conFirmBtn(){
                 .setNegativeButton("Retry", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        new FullSyncDataNow(WarehouseCheckInSecondActivity.this).execute();
+                       // new FullSyncDataNow(WarehouseCheckInSecondActivity.this).execute();
+                        FullSyncDataNowRetrofit();
                     }
                 }).create().show();
     }
@@ -837,5 +848,78 @@ void conFirmBtn(){
         AlertDialog alert = alertDialogNoConn.create();
         alert.show();
 
+    }
+    public void FullSyncDataNowRetrofit(){
+
+        if(apiService==null){
+            apiService= ApiClient.getClient().create(ApiInterface.class);
+        }
+        int vanCycleId= dbengine.fetchtblVanCycleId();
+        String CycStartTime=dbengine.fetchtblVanCycleTime();
+        ConfirmVanStock confirmVanStock=new ConfirmVanStock();
+        confirmVanStock.setVanLoadUnLoadCycleId(vanCycleId);
+        confirmVanStock.setPDACycleTime(CycStartTime);
+        Call<TblPDAConfirmVanStockResult> tblPDAConfirmVanStockResultCall= apiService.Call_PDAConfirmVanStock(confirmVanStock);
+        tblPDAConfirmVanStockResultCall.enqueue(new Callback<TblPDAConfirmVanStockResult>() {
+            @Override
+            public void onResponse(Call<TblPDAConfirmVanStockResult> call, Response<TblPDAConfirmVanStockResult> response) {
+                if(response.code()==200){
+                    Integer flgDataConfirmed=-1;
+                    TblPDAConfirmVanStockResult tblPDAConfirmVanStockResult= response.body();
+                    if(tblPDAConfirmVanStockResult.getFlgDataConfirmed()!=null){
+                        flgDataConfirmed= tblPDAConfirmVanStockResult.getFlgDataConfirmed();
+                    }
+                    if(flgDataConfirmed==-1)
+                    {
+                        showAlertSingleButtonError("Error while Submitting Data. Please retry.");
+                    }
+                    else if(flgDataConfirmed==0)
+                    {
+                        alertToRePopulateData();
+                    }
+                    else {
+                        dbengine.insertConfirmWArehouse(userId,"1");
+                        dbengine.inserttblDayCheckIn(1);
+                        Intent i=new Intent(WarehouseCheckInSecondActivity.this,AllButtonActivity.class);
+                        i.putExtra("imei", imei);
+
+                        startActivity(i);
+                        finish();
+                    }
+
+
+                }
+                else{
+                    showAlertForError("Error while retreiving data from server");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<TblPDAConfirmVanStockResult> call, Throwable t) {
+                showAlertForError("Error while retreiving data from server");
+
+            }
+        });
+    }
+    public void showAlertForError(String msg)
+    {
+        // AlertDialog.Builder alertDialogNoConn = new AlertDialog.Builder(new ContextThemeWrapper(SplashScreen.this, R.style.Dialog));
+        android.support.v7.app.AlertDialog.Builder alertDialogNoConn = new android.support.v7.app.AlertDialog.Builder(WarehouseCheckInSecondActivity.this);
+
+        alertDialogNoConn.setTitle(R.string.AlertDialogHeaderMsg);
+        alertDialogNoConn.setMessage(msg);
+        alertDialogNoConn.setCancelable(false);
+        alertDialogNoConn.setNeutralButton(R.string.AlertDialogOkButton,new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                // finish();
+            }
+        });
+        //alertDialogNoConn.setIcon(R.drawable.info_ico);
+        android.support.v7.app.AlertDialog alert = alertDialogNoConn.create();
+        alert.show();
     }
 }

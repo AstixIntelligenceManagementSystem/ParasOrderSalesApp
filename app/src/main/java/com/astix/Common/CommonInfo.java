@@ -71,13 +71,14 @@ public class CommonInfo {
 	public static int AnyVisit = 0;
 	public static String AppLatLngJsonFile = "ParasOrderSFALatLngJson";
 
-	public static int Application_TypeID = 8;
+	public static int Application_TypeID = 2;
 	public static final String AttandancePreference = "ParasOrderAttandancePreference";
 	public static int CoverageAreaNodeID = 0;
 	public static int CoverageAreaNodeType = 0;
 	public static String DATABASE_NAME = "PRJDatabase";
-	public static int DATABASE_VERSIONID = 16;
-	public static String AppVersionID = "1.12";
+	public static int DATABASE_VERSIONID = 2;
+	public static String AppVersionID = "1.0";
+	public static int flgDrctslsIndrctSls=0;
 	public static int DayStartClick = 0;
 	public static int DistanceRange = 3000;
 	public static final String DistributorCheckInXMLFolder = "ParasOrderDistributorCheckInXML";
@@ -122,7 +123,7 @@ public class CommonInfo {
 	public static Uri uriSavedImage_savedInstance = null;
 	public static String TextFileName="ParasAllDetails";
 	public static String TextFileArrayName="AllDetails";
-	public static int flgDrctslsIndrctSls=1;
+
 	public static final String BASE_URL = "http://103.20.212.194/ParasDataAPI_Dev/";
 	public static String RegistrationID="NotGettingFromServer";
 	public static LinkedHashMap<String,Integer> hmapAppMasterFlags=new LinkedHashMap<String,Integer>();//Filled from All Button Activicty On onCreate Method
@@ -144,5 +145,34 @@ public class CommonInfo {
                     hmapAppMasterFlags.put("flgControlCollection", cursor.getInt(13));
                     hmapAppMasterFlags.put("flgManageScheme", cursor.getInt(14));
                     hmapAppMasterFlags.put("flgManageSalesQuotation", cursor.getInt(15));
-                    hmapAppMasterFlags.put("flgManageExecution", cursor.getInt(16));*/
+                    hmapAppMasterFlags.put("flgManageExecution", cursor.getInt(16));
+                    hmapAppMasterFlags.put("flgDistributorCheckIn", cursor.getInt(17));*///OLD
+
+	/*	hmapAppMasterFlags.put("flgDistributorCheckIn", cursor.getInt(0));
+                    hmapAppMasterFlags.put("flgDBRStockInApp", cursor.getInt(1));
+                    hmapAppMasterFlags.put("flgDBRStockEdit", cursor.getInt(2));
+                    hmapAppMasterFlags.put("flgDBRStockCalculate", cursor.getInt(3));
+                    hmapAppMasterFlags.put("flgDBRStockControl", cursor.getInt(4));
+                    hmapAppMasterFlags.put("flgCollRequired", cursor.getInt(5));   //0=Not To be mapped Again,1=Can Map Distributor
+                    hmapAppMasterFlags.put("flgCollReqOrdr", cursor.getInt(6));
+                    hmapAppMasterFlags.put("flgCollTab", cursor.getInt(7));
+                    hmapAppMasterFlags.put("flgCollDefControl", cursor.getInt(8));
+                    hmapAppMasterFlags.put("flgCollControlRule", cursor.getInt(9));
+                    hmapAppMasterFlags.put("flgSchemeAvailable", cursor.getInt(10));
+                    hmapAppMasterFlags.put("flgSchemeAllowEntry", cursor.getInt(11));
+                    hmapAppMasterFlags.put("flgSchemeAllowEdit", cursor.getInt(12));
+                    hmapAppMasterFlags.put("flgQuotationIsAvailable", cursor.getInt(13));
+                    hmapAppMasterFlags.put("flgExecutionIsAvailable", cursor.getInt(14));
+                    hmapAppMasterFlags.put("flgExecutionPhotoCompulsory", cursor.getInt(15));
+                    hmapAppMasterFlags.put("flgTargetShowatStart", cursor.getInt(16));
+                    hmapAppMasterFlags.put("flgIncentiveShowtStart", cursor.getInt(17));
+                    hmapAppMasterFlags.put("flgInvoicePrint", cursor.getInt(18));
+                    hmapAppMasterFlags.put("flgShowPOSM", cursor.getInt(19));
+                    hmapAppMasterFlags.put("flgVisitStartOutstandingDetails", cursor.getInt(20));
+                    hmapAppMasterFlags.put("flgVisitStartSchemeDetails", cursor.getInt(21));
+                    hmapAppMasterFlags.put("flgStoreDetailsEdit", cursor.getInt(22));
+                    hmapAppMasterFlags.put("flgShowDeliveryAddressButtonOnOrder", cursor.getInt(23));
+                    hmapAppMasterFlags.put("flgShowManagerOnStoreList", cursor.getInt(24));
+                    hmapAppMasterFlags.put("flgRptTargetVsAchived", cursor.getInt(25));
+                    hmapAppMasterFlags.put("flgVanSockManage", cursor.getInt(26));*/
 }

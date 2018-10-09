@@ -855,7 +855,20 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		{
 			txt_Lststock.setText(getResources().getString(R.string.LastStk));
 		}
-		StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
+		//StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
+
+		if(CommonInfo.flgDrctslsIndrctSls==0)
+		{
+
+			StoreVisitCode=dbengine.fnGetStoreVisitCodeInCaseOfIndrectSales(storeID);
+		}
+		else
+		{
+
+			StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+		}
+
+
 		ImageView executionDetails_butn = (ImageView) findViewById(R.id.txt_execution_Details);
 	//	tvRateHeading = (TextView) findViewById(R.id.tvRateHeading);
 		executionDetails_butn.setOnClickListener(new OnClickListener() {
@@ -2481,7 +2494,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 		if (prductId.length > 0) {
 			String[] arrStorePurcaseProducts = null;//=dbengine.fnGetProductPurchaseList(StoreID);
 			if (CheckIfStoreExistInStoreProdcutPurchaseDetails == 1) {
-				arrStorePurcaseProducts = dbengine.fnGetProductPurchaseList(storeID, strGlobalOrderID, TmpInvoiceCodePDA);
+				arrStorePurcaseProducts= null;// dbengine.fnGetProductPurchaseList(storeID, strGlobalOrderID, TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 
 
 				LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -6972,7 +6985,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 
-			  chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+			  chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
 			 if(chkflgInvoiceAlreadyGenerated==1)
 			 {
 				 TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
@@ -6982,7 +6995,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 			 {
 				 TmpInvoiceCodePDA=genTempInvoiceCodePDA();
 			 }
-			 CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA);
+			 CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			  CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,TmpInvoiceCodePDA);
               strGlobalOrderID= TmpInvoiceCodePDA;
 		  /* if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
@@ -7012,7 +7025,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 
 			  distID=dbengine.getDisId(storeID);
-			  hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise();
+			  hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise(CommonInfo.flgDrctslsIndrctSls);
 			  hmapPerUnitName=dbengine.getPerUnitName();
 			  hmapPerBaseQty=dbengine.getPerBaseQty();
 			/*  if(hmapPrdctIdOutofStock!=null && hmapPrdctIdOutofStock.size()>0)
@@ -7033,7 +7046,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator {
 
 	        	ll_prdct_detal.removeAllViews();
 
-		       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,TmpInvoiceCodePDA);
+		       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 
 	       			/*Iterator it11new = hmapPrdctIdPrdctName.entrySet().iterator();
 	       			String crntPID="0";

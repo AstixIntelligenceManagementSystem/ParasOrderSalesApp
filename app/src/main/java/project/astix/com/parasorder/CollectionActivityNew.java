@@ -315,10 +315,31 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
         ButtonInialization();
 
 
-        chkflgInvoiceAlreadyGenerated = dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID, StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
-        if (chkflgInvoiceAlreadyGenerated == 1) {
-            TmpInvoiceCodePDA = dbengine.fnGetExistingInvoiceNumber(storeID);
+        if(CommonInfo.flgDrctslsIndrctSls==0)
+        {
+
+            chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+            if(chkflgInvoiceAlreadyGenerated==1)
+            {
+                TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
+
+            }
+            else if(dbengine.fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(storeID,StoreVisitCode)==1)
+            {
+                TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAFromPermanentTable(storeID,StoreVisitCode);
+            }
+
         }
+        else {
+            chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+            if (chkflgInvoiceAlreadyGenerated == 1) {
+                TmpInvoiceCodePDA = dbengine.fnGetInvoiceCodePDA(storeID, StoreVisitCode);
+
+            }
+        }
+       /* if (chkflgInvoiceAlreadyGenerated == 1) {
+            TmpInvoiceCodePDA = dbengine.fnGetExistingInvoiceNumber(storeID);
+        }*/
 
 
         cb_collection = (CheckBox) findViewById(R.id.cb_collection);
@@ -506,7 +527,18 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
         flgFromPlace = Integer.parseInt(passedvals.getStringExtra("FromPlace"));
 
         storeIDGlobal = storeID;
-        StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
+        //StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
+
+        if(CommonInfo.flgDrctslsIndrctSls==0)
+        {
+
+            StoreVisitCode=dbengine.fnGetStoreVisitCodeInCaseOfIndrectSales(storeID);
+        }
+        else
+        {
+
+            StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+        }
     }
 
     public void EdittextInitialization() {
@@ -2134,7 +2166,7 @@ public class CollectionActivityNew extends BaseActivity implements DatePickerDia
                 if (cntInvoceValue > 0.0) {
                     if (strFinalAllotedInvoiceIds.equals("NA")) {
 
-                        dbengine.fnTransferDataFromTempToPermanent(storeID, StoreVisitCode, TmpInvoiceCodePDA);
+                        dbengine.fnTransferDataFromTempToPermanent(storeID, StoreVisitCode, TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls);
 
                         int chkflgTransferStatus = dbengine.fnCheckflgTransferStatus(storeID, StoreVisitCode, TmpInvoiceCodePDA);
                         if (chkflgTransferStatus == 2) {

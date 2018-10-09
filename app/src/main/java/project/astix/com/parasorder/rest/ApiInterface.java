@@ -9,13 +9,22 @@ import project.astix.com.parasorder.model.AllSummarySKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreSKUWiseDay;
 import project.astix.com.parasorder.model.AllSummaryStoreWiseDay;
 import project.astix.com.parasorder.model.AllTargetVsAchieved;
+import project.astix.com.parasorder.model.ConfirmVanStock;
 import project.astix.com.parasorder.model.Data;
+import project.astix.com.parasorder.model.DistributorStockData;
+import project.astix.com.parasorder.model.DistributorTodaysStock;
 import project.astix.com.parasorder.model.IMEIVersionDetails;
 import project.astix.com.parasorder.model.IMEIVersionParentModel;
 import project.astix.com.parasorder.model.PersonInfo;
 import project.astix.com.parasorder.model.RegistrationValidation;
 import project.astix.com.parasorder.model.ReportsAddedOutletSummary;
 import project.astix.com.parasorder.model.ReportsInfo;
+import project.astix.com.parasorder.model.StockData;
+import project.astix.com.parasorder.model.TblPDAConfirmVanStockResult;
+import project.astix.com.parasorder.model.TblPDAVanDayEndDetResult;
+import project.astix.com.parasorder.model.TblSaveVanStockRequestResult;
+import project.astix.com.parasorder.model.VanDayEnd;
+import project.astix.com.parasorder.model.VanStockRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -63,5 +72,22 @@ public interface ApiInterface {
 
     @POST("Home/GetPersonDetail")
     Call<RegistrationValidation> Call_GetRegistrationDetails(@Body PersonInfo personInfo);
+
+
+    @POST("Home/SaveVanStockRequest")
+    Call<TblSaveVanStockRequestResult> Call_SaveVanStockRequest(@Body VanStockRequest VanStockRequest);
+
+    @POST("Home/PDAConfirmVanStock")
+    Call<TblPDAConfirmVanStockResult> Call_PDAConfirmVanStock(@Body ConfirmVanStock ConfirmVanStock);
+
+    @POST("Home/PDAVanDayEnd")
+    Call<TblPDAVanDayEndDetResult> Call_PDAVanDayEnd(@Body VanDayEnd VanDayEnd);
+
+    @POST("Home/StockMaster")
+    Call<StockData> Call_StockData(@Body Data data);
+
+    @POST("Home/GetDistributorTodaysStock")
+    Call<DistributorStockData> Call_DistributorTodayStockData(@Body DistributorTodaysStock data);
+
 
 }

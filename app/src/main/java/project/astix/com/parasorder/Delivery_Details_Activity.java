@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.astix.Common.CommonInfo;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
@@ -128,7 +129,7 @@ public class Delivery_Details_Activity extends Activity implements  DatePickerDi
 		fillAllDataOfDeliverySectionToView();
 		arrowOfDeleveryInfo.setChecked(true);
 		delivey_details_parent.setVisibility(View.VISIBLE);
-		chkflgInvoiceAlreadyGenerated=helperDb.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+		chkflgInvoiceAlreadyGenerated=helperDb.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode, CommonInfo.flgDrctslsIndrctSls);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
 		if(chkflgInvoiceAlreadyGenerated==1)
 		{
 			strGlobalInvoiceNumber=helperDb.fnGetExistingInvoiceNumber(storeID);

@@ -2412,6 +2412,9 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                    }
 
                 }
+                else{
+                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
+                }
                 //setting data to layout
 
                 setDataToLayoutAfterResponce();
@@ -2424,6 +2427,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 {
                     pDialogGetStores.dismiss();
                 }
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.internetError), Toast.LENGTH_LONG).show();
             }
         });
     }

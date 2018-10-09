@@ -542,7 +542,7 @@ public void loadPurchaseProductDefault()
 		        	
 
 
-			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,TmpInvoiceCodePDA);
+			       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			       System.out.println("hmapFilterProductListCount :-"+ hmapFilterProductList.size());
 		       
 		       			Iterator it11new = hmapPrdctIdPrdctName.entrySet().iterator();
@@ -1392,7 +1392,17 @@ public void loadPurchaseProductDefault()
 			  date = passedvals.getStringExtra("userdate");
 			  pickerDate = passedvals.getStringExtra("pickerDate");
 			  SN = passedvals.getStringExtra("SN");
-			StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+				//StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+			if(CommonInfo.flgDrctslsIndrctSls==0)
+			{
+
+				StoreVisitCode=dbengine.fnGetStoreVisitCodeInCaseOfIndrectSales(storeID);
+			}
+			else
+			{
+
+				StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+			}
 			 // //dbengine.open();
 				 StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
 				//	//dbengine.close();
@@ -1400,16 +1410,36 @@ public void loadPurchaseProductDefault()
 			  hmapProductRelatedSchemesList=dbengine.fnProductRelatedSchemesList();
 			  //hmapPrdtAppliedSchIdsAppliedSlabIdsDefination=dbengine.fnProductWiseAppliedScehmeSlabDetails(StoreID);
 
-			chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
-			if(chkflgInvoiceAlreadyGenerated==1)
+			if(CommonInfo.flgDrctslsIndrctSls==0)
 			{
-				TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
+
+				chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+				if(chkflgInvoiceAlreadyGenerated==1)
+				{
+					TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
+
+				}
+				else if(dbengine.fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(storeID,StoreVisitCode)==1)
+				{
+					TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAFromPermanentTable(storeID,StoreVisitCode);
+				}
+				else
+				{
+					TmpInvoiceCodePDA = genTempInvoiceCodePDA();
+				}
 			}
-			else
-			{
-				TmpInvoiceCodePDA=genTempInvoiceCodePDA();//dbengine.fnGettblInvoiceCaption(storeID);
+			else {
+				chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+				if (chkflgInvoiceAlreadyGenerated == 1) {
+					TmpInvoiceCodePDA = dbengine.fnGetInvoiceCodePDA(storeID, StoreVisitCode);
+
+				} else {
+
+
+					TmpInvoiceCodePDA = genTempInvoiceCodePDA();//dbengine.fnGettblInvoiceCaption(storeID);
+				}
 			}
-			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA);
+			CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,TmpInvoiceCodePDA);
 			strGlobalOrderID=TmpInvoiceCodePDA;
 			/*if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
@@ -1496,7 +1526,7 @@ public void loadPurchaseProductDefault()
 
 			}
 
-			hmapPrdctOdrQty=dbengine.fnGetProductPurchaseList(storeID,TmpInvoiceCodePDA);
+			hmapPrdctOdrQty=dbengine.fnGetProductPurchaseList(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			if(hmapPrdctOdrQty!=null && hmapPrdctOdrQty.size()>0)
 			{
 				for(Entry<String,String> entry:hmapPrdctOdrQty.entrySet())
@@ -3673,7 +3703,7 @@ public void loadPurchaseProductDefault()
 				if (cntInvoceValue > 0.0) {
 					if(strFinalAllotedInvoiceIds.equals("NA"))
 					{
-						dbengine.fnTransferDataFromTempToPermanent(storeID,StoreVisitCode,TmpInvoiceCodePDA);
+						dbengine.fnTransferDataFromTempToPermanent(storeID,StoreVisitCode,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls);
 
 						int chkflgTransferStatus=dbengine.fnCheckflgTransferStatus(storeID,StoreVisitCode,TmpInvoiceCodePDA);
 						if(chkflgTransferStatus==2)
@@ -3839,7 +3869,7 @@ public void loadPurchaseProductDefault()
 
 
 
-			  chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+			  chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
 			  if(chkflgInvoiceAlreadyGenerated==1)
 			  {
 				  TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
@@ -3848,7 +3878,7 @@ public void loadPurchaseProductDefault()
 			  {
 				  TmpInvoiceCodePDA=genTempInvoiceCodePDA();
 			  }
-			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA);
+			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			  CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,TmpInvoiceCodePDA);
 			  strGlobalOrderID=TmpInvoiceCodePDA;
 			 /* if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
@@ -3876,7 +3906,7 @@ public void loadPurchaseProductDefault()
 
 			  }
 			  distID=dbengine.getDisId(storeID);
-			  hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise();
+			  hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise(CommonInfo.flgDrctslsIndrctSls);
 			  hmapPerUnitName=dbengine.getPerUnitName();
 			  hmapPerBaseQty=dbengine.getPerBaseQty();
 		   return null;

@@ -237,20 +237,56 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
     public void getDataFromatabase()
     {
 
-        StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
-        StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
-        chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
-        if(chkflgInvoiceAlreadyGenerated==1)
-        {
-            TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
+        //StoreVisitCode = dbengine.fnGetStoreVisitCode(storeID);
 
+
+
+
+        if(CommonInfo.flgDrctslsIndrctSls==0)
+        {
+
+            StoreVisitCode=dbengine.fnGetStoreVisitCodeInCaseOfIndrectSales(storeID);
         }
         else
         {
-            TmpInvoiceCodePDA=genTempInvoiceCodePDA();
+
+                StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
+        }
+        StoreCurrentStoreType=Integer.parseInt(dbengine.fnGetStoreTypeOnStoreIdBasis(storeID));
+       // chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);//0=Need to Generate Invoice Number,1=No Need of Generating Invoice Number
+
+
+        if(CommonInfo.flgDrctslsIndrctSls==0)
+        {
+
+            chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+            if(chkflgInvoiceAlreadyGenerated==1)
+            {
+                TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDA(storeID,StoreVisitCode);
+
+            }
+            else if(dbengine.fnCheckForNewInvoiceOrPreviousValueFromPermanentTable(storeID,StoreVisitCode)==1)
+            {
+                TmpInvoiceCodePDA=dbengine.fnGetInvoiceCodePDAFromPermanentTable(storeID,StoreVisitCode);
+            }
+            else
+            {
+                TmpInvoiceCodePDA = genTempInvoiceCodePDA();
+            }
+        }
+        else {
+            chkflgInvoiceAlreadyGenerated=dbengine.fnCheckForNewInvoiceOrPreviousValue(storeID,StoreVisitCode,CommonInfo.flgDrctslsIndrctSls);
+            if (chkflgInvoiceAlreadyGenerated == 1) {
+                TmpInvoiceCodePDA = dbengine.fnGetInvoiceCodePDA(storeID, StoreVisitCode);
+
+            } else {
+
+
+                TmpInvoiceCodePDA = genTempInvoiceCodePDA();//dbengine.fnGettblInvoiceCaption(storeID);
+            }
         }
         hmapProductIdStock=dbengine.fetchActualVisitData(storeID);
-        hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise();
+        hmapDistPrdctStockCount=dbengine.fnGetFinalInvoiceQtyProductWise(CommonInfo.flgDrctslsIndrctSls);
         distID=dbengine.getDisId(storeID);
         getCategoryDetail();
         getPrductInfoDetail();
@@ -285,7 +321,7 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
             hmapLineValAftrTxAftrDscnt = arrLstHmapPrdct.get(27);
 
         }
-        hmapPrdctOdrQty=dbengine.fnGetProductPurchaseList(storeID,TmpInvoiceCodePDA);
+        hmapPrdctOdrQty=dbengine.fnGetProductPurchaseList(storeID,TmpInvoiceCodePDA,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
         if(hmapPrdctOdrQty!=null && hmapPrdctOdrQty.size()>0)
         {
             for(Map.Entry<String,String> entry:hmapPrdctOdrQty.entrySet())

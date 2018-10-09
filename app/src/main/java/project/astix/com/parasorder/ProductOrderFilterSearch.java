@@ -2700,7 +2700,7 @@ GoogleApiClient.OnConnectionFailedListener,CategoryCommunicator
 	           String[] arrStorePurcaseProducts=null;//=dbengine.fnGetProductPurchaseList(StoreID);
 	           if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1)
 	           {
-	            arrStorePurcaseProducts=dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
+	            arrStorePurcaseProducts=null;//dbengine.fnGetProductPurchaseList(storeID,strGlobalOrderID,strGlobalInvoiceNumber);
 
 
 	            LayoutInflater inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -10345,7 +10345,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 			 {
 				 strGlobalInvoiceNumber=dbengine.fnGettblInvoiceCaption(storeID);
 			 }*/
-			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber);
+			  CheckIfStoreExistInStoreProdcutPurchaseDetails=dbengine.fnCheckIfStoreExistInStoreProdcutPurchaseDetails(storeID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 			  CheckIfStoreExistInStoreProdcutInvoiceDetails=dbengine.fnCheckIfStoreExistInStoreProdcutInvoiceDetails(storeID,strGlobalInvoiceNumber);
 		   if(CheckIfStoreExistInStoreProdcutPurchaseDetails==1 || CheckIfStoreExistInStoreProdcutInvoiceDetails==1)
            {
@@ -10384,7 +10384,7 @@ if(hmapProductListOnWhichWholePriceNeedsToApplyIfRequired.containsKey(ProductID)
 
 	        	ll_prdct_detal.removeAllViews();
 
-		       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,strGlobalInvoiceNumber);
+		       hmapFilterProductList=dbengine.getFileredOrderReviewProductListMap(storeID,strGlobalInvoiceNumber,CommonInfo.flgDrctslsIndrctSls,chkflgInvoiceAlreadyGenerated);
 
 
 
