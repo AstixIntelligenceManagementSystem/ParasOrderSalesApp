@@ -943,10 +943,11 @@ public class CommonFunction {
                     hmapStoreIdSstat=dbengine.checkForStoreIdSstat();
                     HashMap<String, String> hmapflgOrderType=new HashMap<String, String>();
                     hmapflgOrderType=dbengine.checkForStoreflgOrderType();
-                    dbengine.Delete_tblStore_for_refreshDataButNotNewStore();
-                    dbengine.fndeleteStoreAddressMapDetailsMstr();
                     HashMap<String, String> hmapStoreIdNewStore=new HashMap<String, String>();
                     hmapStoreIdNewStore=dbengine.checkForStoreIdIsNewStore();
+                    dbengine.Delete_tblStore_for_refreshDataButNotNewStore();
+                    dbengine.fndeleteStoreAddressMapDetailsMstr();
+
                     //deleted above
                     List<TblStoreListMaster> tblStoreListMaster=  allMasterTablesModel.getTblStoreListMaster();
 
