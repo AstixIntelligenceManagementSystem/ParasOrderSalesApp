@@ -962,7 +962,11 @@ public class CommonFunction {
                     }
                     if(hmapStoreIdSstat!=null && hmapStoreIdSstat.size()>0) {
                         hmapStoreIdSstat.clear();
+                        hmapflgOrderType.clear();
+                        hmapStoreIdNewStore.clear();
                         hmapStoreIdSstat=null;
+                        hmapflgOrderType=null;
+                        hmapStoreIdNewStore=null;
                     }
 
                     //table 40-------------------------------
