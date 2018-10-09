@@ -945,13 +945,15 @@ public class CommonFunction {
                     hmapflgOrderType=dbengine.checkForStoreflgOrderType();
                     dbengine.Delete_tblStore_for_refreshDataButNotNewStore();
                     dbengine.fndeleteStoreAddressMapDetailsMstr();
+                    HashMap<String, String> hmapStoreIdNewStore=new HashMap<String, String>();
+                    hmapStoreIdNewStore=dbengine.checkForStoreIdIsNewStore();
                     //deleted above
                     List<TblStoreListMaster> tblStoreListMaster=  allMasterTablesModel.getTblStoreListMaster();
 
                     if(tblStoreListMaster.size()>0){
 
 
-                        dbengine.saveSOAPdataStoreList(tblStoreListMaster,hmapStoreIdSstat,hmapflgOrderType);
+                        dbengine.saveSOAPdataStoreList(tblStoreListMaster,hmapStoreIdSstat,hmapflgOrderType,hmapStoreIdNewStore);
 
                     }
                     else{

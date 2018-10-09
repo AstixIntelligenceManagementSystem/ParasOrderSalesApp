@@ -4821,7 +4821,7 @@ public class PRJDatabase
 
     public static void Delete_tblStore_for_refreshDataButNotNewStore()
     {
-        db.execSQL("DELETE FROM tblStoreList where ISNewStore<>1");
+        db.execSQL("DELETE FROM tblStoreList");// where ISNewStore<>1
         db.execSQL("DELETE FROM tblNewAddedStoreLocationDetails where Sstat=4");
     }
 
@@ -9951,7 +9951,23 @@ public class PRJDatabase
         }
         return hmapStoreIDSstat;
     }
-
+    public static HashMap<String, String> checkForStoreIdIsNewStore()
+    {
+        Cursor cursor=db.rawQuery("Select StoreID,ISNewStore from tblStoreList",null);// where Sstat in(1,3,4,5)
+        HashMap<String, String> hmapStoreIdNewStore=new HashMap<String, String>();
+        if(cursor.getCount()>0)
+        {
+            if(cursor.moveToFirst())
+            {
+                for(int index=0;index<cursor.getCount();index++)
+                {
+                    hmapStoreIdNewStore.put(cursor.getString(0), cursor.getString(1));
+                    cursor.moveToNext();
+                }
+            }
+        }
+        return hmapStoreIdNewStore;
+    }
     public static HashMap<String, String> checkForPreAddedStoreIdSstat()
     {
         Cursor cursor=db.rawQuery("Select StoreID,Sstat from tblStoreList",null);// where Sstat in(1,3,4,5)
@@ -35822,7 +35838,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         }
         db.endTransaction();
     }
-    public static void saveSOAPdataStoreList(List<TblStoreListMaster> tblStoreListMaster,HashMap<String,String>hmapStoreIdSstat,HashMap<String,String> hmapflgOrderType)
+    public static void saveSOAPdataStoreList(List<TblStoreListMaster> tblStoreListMaster,HashMap<String,String>hmapStoreIdSstat,HashMap<String,String> hmapflgOrderType,HashMap<String,String> hmapStoreIdNewStore)
     {
 
        db.beginTransaction();
@@ -35831,6 +35847,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
         {
             int Sstat=0;
             int flgOrderType=0;
+            int ISNewStore=0;
             initialValues.put("IMEINumber", CommonInfo.imei.toString());
 
             if(hmapStoreIdSstat!=null && hmapStoreIdSstat.size()>0) {
@@ -35844,6 +35861,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
                 if (hmapStoreIdSstat.containsKey(""+tblStoreListMasterData.getStoreID())) {
                     Sstat = Integer.parseInt(hmapStoreIdSstat.get(""+tblStoreListMasterData.getStoreID()));
                     flgOrderType= Integer.parseInt(hmapflgOrderType.get(""+tblStoreListMasterData.getStoreID()));
+                    ISNewStore=Integer.parseInt(hmapStoreIdNewStore.get(""+tblStoreListMasterData.getStoreID()));
                 } else {
                             Sstat = Integer.parseInt(tblStoreListMasterData.getSstat());
 
@@ -35877,7 +35895,7 @@ public static void fnUpdateflgTransferStatusInInvoiceHeader(String storeID,Strin
             initialValues.put("LastTransactionDate", tblStoreListMasterData.getLastTransactionDate());
            // initialValues.put("Sstat", tblStoreListMasterData.getSstat());
             initialValues.put("Sstat",Sstat);
-            initialValues.put("ISNewStore", 0);
+            initialValues.put("ISNewStore", ISNewStore);
             initialValues.put("PaymentStage", tblStoreListMasterData.getPaymentStage());
             initialValues.put("StoreRouteID", tblStoreListMasterData.getRouteID());
             initialValues.put("RouteNodeType", tblStoreListMasterData.getRouteNodeType());
