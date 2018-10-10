@@ -60,6 +60,7 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
     PRJDatabase dbengine = new PRJDatabase(this);
     //Intent Data
     public String storeID,imei,date,pickerDate,SN;
+    int flgOrderType=0;
 
     //Custom Keyboard
     CustomKeyboard mCustomKeyboardNum, mCustomKeyboardNumWithoutDecimal;
@@ -173,6 +174,7 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
         date = passedvals.getStringExtra("userdate");
         pickerDate = passedvals.getStringExtra("pickerDate");
         SN = passedvals.getStringExtra("SN");
+        flgOrderType= passedvals.getIntExtra("flgOrderType",0);
 
 
     }
@@ -816,6 +818,7 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
                 storeOrderReviewIntent.putExtra("userdate", date);
                 storeOrderReviewIntent.putExtra("pickerDate", pickerDate);
                 storeOrderReviewIntent.putExtra("OrderPDAID", TmpInvoiceCodePDA);
+                storeOrderReviewIntent.putExtra("flgOrderType", flgOrderType);
                 startActivity(storeOrderReviewIntent);
                 finish();
             }
@@ -828,31 +831,35 @@ public class ProductEntryForm extends BaseActivity implements View.OnClickListen
                 storeOrderReviewIntent.putExtra("userdate", date);
                 storeOrderReviewIntent.putExtra("pickerDate", pickerDate);
                 storeOrderReviewIntent.putExtra("OrderPDAID", TmpInvoiceCodePDA);
+                storeOrderReviewIntent.putExtra("flgOrderType", flgOrderType);
                 startActivity(storeOrderReviewIntent);
                 finish();
             }
             if(btnClkd==5) {
-               /* Intent fireBackDetPg = new Intent(ProductEntryForm.this,ActualVisitStock.class);
+               if(flgOrderType==0)
+               {
+                   Intent prevP2 = new Intent(ProductEntryForm.this, StoreSelection.class);
+                   String rID=dbengine.GetActiveRouteID();
+                   //Location_Getting_Service.closeFlag = 0;
+                   prevP2.putExtra("imei", imei);
+                   prevP2.putExtra("userDate", date);
+                   prevP2.putExtra("pickerDate", pickerDate);
+                   prevP2.putExtra("rID", rID);
+                   startActivity(prevP2);
+                   finish();
+               }
+               else
+               {
+                   Intent nxtP4 = new Intent(ProductEntryForm.this,ActualVisitStock.class);
+                   nxtP4.putExtra("storeID", storeID);
+                   nxtP4.putExtra("SN", SN);
+                   nxtP4.putExtra("imei", imei);
+                   nxtP4.putExtra("userdate", date);
+                   nxtP4.putExtra("pickerDate", pickerDate);
+                   startActivity(nxtP4);
+                   finish();
+               }
 
-                fireBackDetPg.putExtra("storeID", storeID);
-                fireBackDetPg.putExtra("SN", SN);
-                fireBackDetPg.putExtra("imei", imei);
-                fireBackDetPg.putExtra("userdate", date);
-                fireBackDetPg.putExtra("pickerDate", pickerDate);
-
-                startActivity(fireBackDetPg);
-                finish();*/
-                Intent fireBackDetPg=new Intent(ProductEntryForm.this,LastVisitDetails.class);
-                fireBackDetPg.putExtra("storeID", storeID);
-                fireBackDetPg.putExtra("SN", SN);
-                fireBackDetPg.putExtra("bck", 1);
-                fireBackDetPg.putExtra("imei", imei);
-                fireBackDetPg.putExtra("userdate", date);
-                fireBackDetPg.putExtra("pickerDate", pickerDate);
-                fireBackDetPg.putExtra("flgOrderType", 1);
-                //fireBackDetPg.putExtra("rID", routeID);
-                startActivity(fireBackDetPg);
-                finish();
             }
 
         }

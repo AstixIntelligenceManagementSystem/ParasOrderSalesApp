@@ -421,6 +421,22 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 Submit_btn.setVisibility(View.VISIBLE);
                 BtnCancel.setVisibility(View.VISIBLE);
 
+                if(!PersonNameAndFlgRegistered.equals("0"))
+                {
+                    String personName=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[0];
+                    ET_firstname.setText(personName);
+                    String ContactNumberFromServer=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[2];
+                    if(!ContactNumberFromServer.equals("0")){
+                        ET_contact_no.setText(ContactNumberFromServer);
+                    }
+                    String DOB=   PersonNameAndFlgRegistered.split(Pattern.quote("^"))[3];
+                    if(!DOB.equals("NA")){
+                        Text_Dob.setText(DOB);
+                    }
+
+
+                }
+
             }
         });
 
@@ -1783,7 +1799,7 @@ public class DSR_Registration extends AppCompatActivity implements DatePickerDia
                 DobOnWelcome.setVisibility(View.GONE);
                 textCoverage.setVisibility(View.VISIBLE);
                 textContact.setVisibility(View.VISIBLE);
-                textDob.setVisibility(View.GONE);
+                textDob.setVisibility(View.VISIBLE);
                 profile_image.setVisibility(View.GONE);
                 CovrageArea.setText(SalesAreaName);
 

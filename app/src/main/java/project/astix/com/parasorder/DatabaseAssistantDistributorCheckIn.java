@@ -93,9 +93,10 @@ public class DatabaseAssistantDistributorCheckIn
 
         if (1==1)
         {
+            //tblDistributorSavedData
            // exportTableNew("tblDistributorList");
-            //exportTable("tblDistributorSavedData");
-            exportTable("tblDistributorMapping");
+            exportTable("tblDistributorSavedData");
+            exportTable("tblSuplierMapping");
             exportTable("tblCycleID");
 
 

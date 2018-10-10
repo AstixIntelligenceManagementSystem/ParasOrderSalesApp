@@ -120,6 +120,7 @@ GoogleApiClient.OnConnectionFailedListener{
 	public  int flgRestartOrderReview=0;
 	public  int flgStoreOrderOrderReview=0;
 	public int powerCheck=0;
+	int flgOrderType=0;
 	public  PowerManager.WakeLock wl;
 		public int StoreCurrentStoreType=0;
 		public String Noti_text="Null";
@@ -841,6 +842,7 @@ public void loadPurchaseProductDefault()
 					storeOrderReviewIntent.putExtra("userdate", date);
 					storeOrderReviewIntent.putExtra("pickerDate", pickerDate);
 					storeOrderReviewIntent.putExtra("OrderPDAID", strGlobalOrderID);
+					storeOrderReviewIntent.putExtra("flgOrderType", flgOrderType);
 					startActivity(storeOrderReviewIntent);
 					finish();
 				}
@@ -1588,6 +1590,7 @@ public void loadPurchaseProductDefault()
 			  date = passedvals.getStringExtra("userdate");
 			  pickerDate = passedvals.getStringExtra("pickerDate");
 			  SN = passedvals.getStringExtra("SN");
+			flgOrderType= passedvals.getIntExtra("flgOrderType",0);
 			//StoreVisitCode=dbengine.fnGetStoreVisitCode(storeID);
 			if(CommonInfo.flgDrctslsIndrctSls==0)
 			{
@@ -5722,6 +5725,8 @@ public void loadPurchaseProductDefault()
 						AmtCollectIntent.putExtra("SN", SN);
 						AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
 						AmtCollectIntent.putExtra("FromPlace", "2");
+						AmtCollectIntent.putExtra("flgOrderType", flgOrderType);
+
 						startActivity(AmtCollectIntent);
 						finish();
 					/*}
@@ -8121,7 +8126,7 @@ public void loadPurchaseProductDefault()
 		           fireBackDetPg.putExtra("pickerDate", pickerDate);
 		           fireBackDetPg.putExtra("OrderPDAID", strGlobalOrderID);
 		           fireBackDetPg.putExtra("flgPageToRedirect", "2");
-		          // fireBackDetPg.putExtra("rID", routeID);
+				 fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 
 		           startActivity(fireBackDetPg);
 		           finish();
@@ -8137,7 +8142,7 @@ public void loadPurchaseProductDefault()
 			    fireBackDetPg.putExtra("imei", imei);
 			    fireBackDetPg.putExtra("userdate", date);
 			    fireBackDetPg.putExtra("pickerDate", pickerDate);
-			    //fireBackDetPg.putExtra("rID", routeID);
+				 fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 			    startActivity(fireBackDetPg);
 			    finish();
 		     }
@@ -8151,7 +8156,7 @@ public void loadPurchaseProductDefault()
 				 AmtCollectIntent.putExtra("SN", SN);
 				 AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
 				 AmtCollectIntent.putExtra("FromPlace", "2");
-				// AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
+				 AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
 				 startActivity(AmtCollectIntent);
 				 finish();
 			 }
@@ -8164,7 +8169,7 @@ public void loadPurchaseProductDefault()
 				 AmtCollectIntent.putExtra("pickerDate", pickerDate);
 				 AmtCollectIntent.putExtra("SN", SN);
 				 AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
-				// AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
+				 AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
 				 startActivity(AmtCollectIntent);
 				 finish();
 			 }
@@ -8178,7 +8183,7 @@ public void loadPurchaseProductDefault()
 				 AmtCollectIntent.putExtra("SN", SN);
 				 AmtCollectIntent.putExtra("OrderPDAID", strGlobalOrderID);
 				 AmtCollectIntent.putExtra("FromPlace", "2");
-				 // AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
+				  AmtCollectIntent.putExtra("flgOrderType",flgOrderType);
 				 startActivity(AmtCollectIntent);
 				 finish();
 			 }

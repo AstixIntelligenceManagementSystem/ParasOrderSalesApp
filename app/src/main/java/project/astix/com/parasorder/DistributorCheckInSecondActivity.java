@@ -1654,7 +1654,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity implements In
 
             //startActivity(i);
             //finish();
-            if (isOnline())
+            if (result==200)
             {
                 Builder alertDialogSyncOK = new Builder(DistributorCheckInSecondActivity.this);
                 alertDialogSyncOK.setTitle(getText(R.string.genTermInformation));
@@ -1681,7 +1681,7 @@ public class DistributorCheckInSecondActivity extends BaseActivity implements In
 
             } else
                 {
-                    showAlertSingleButtonError(getResources().getString(R.string.NoDataConnectionFullMsg));
+                    showAlertSingleButtonError(getResources().getString(R.string.uploading_error_data));
             }
 
 

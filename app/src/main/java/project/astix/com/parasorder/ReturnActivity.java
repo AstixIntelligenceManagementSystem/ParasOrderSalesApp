@@ -99,7 +99,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 	private boolean isLighOn = false;
 	//String imageName;
 	float mDist=0;
-
+	int flgOrderType=0;
 	private String FilePathStrings;
 	private String FileNameStrings;
 	private File[] listFile;
@@ -461,7 +461,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 						fireBackDetPg.putExtra("userdate", date);
 						fireBackDetPg.putExtra("pickerDate", pickerDate);
 						fireBackDetPg.putExtra("rID", routeID);
-
+						fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 						startActivity(fireBackDetPg);
 						finish();
 					}
@@ -475,7 +475,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 						fireBackDetPg.putExtra("userdate", date);
 						fireBackDetPg.putExtra("pickerDate", pickerDate);
 						fireBackDetPg.putExtra("rID", routeID);
-
+						fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 						startActivity(fireBackDetPg);
 						finish();
 					}
@@ -638,7 +638,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
-
+					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 					startActivity(fireBackDetPg);
 					finish();
 				}
@@ -652,7 +652,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
-
+					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 					startActivity(fireBackDetPg);
 					finish();
 				}
@@ -738,7 +738,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 		SN = passedvals.getStringExtra("SN");
 		OrderPDAID= passedvals.getStringExtra("OrderPDAID");
 		flgPageToRedirect= passedvals.getStringExtra("flgPageToRedirect");
-		//dbengine.open();
+		flgOrderType= passedvals.getIntExtra("flgOrderType",0);
 		routeID= dbengine.GetActiveRouteID();
 		//dbengine.close();
 
@@ -1460,6 +1460,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
+					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 
 					startActivity(fireBackDetPg);
 					finish();
@@ -1474,7 +1475,7 @@ public class ReturnActivity extends BaseActivity implements OnItemSelectedListen
 					fireBackDetPg.putExtra("userdate", date);
 					fireBackDetPg.putExtra("pickerDate", pickerDate);
 					fireBackDetPg.putExtra("rID", routeID);
-
+					fireBackDetPg.putExtra("flgOrderType", flgOrderType);
 					startActivity(fireBackDetPg);
 					finish();
 				}
