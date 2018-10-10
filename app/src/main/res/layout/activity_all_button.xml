@@ -471,7 +471,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:id="@+id/llDayStartOrDistributorStockOrWarehouseStock"
-                android:visibility="gone">
+                android:visibility="visible">
 
 
                 <View
@@ -507,7 +507,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    >
 
                     <ImageView
                         android:id="@+id/imageView551"

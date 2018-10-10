@@ -1789,7 +1789,22 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                     }
                     else {
 
-                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 )
+                        {
+                            CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        }
+                        else
+                        {
+                            Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
+                            i.putExtra("imei", imei);
+                            i.putExtra("CstmrNodeId", CstmrNodeId);
+                            i.putExtra("CstomrNodeType", CstomrNodeType);
+                            i.putExtra("fDate", fDate);
+                            startActivity(i);
+                            finish();
+                        }
+
+
 
                     }
                 }
@@ -3336,7 +3351,20 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
             else {
                 if (CommonInfo.flgDrctslsIndrctSls == 1) {
                     if (flgClkdBtn == 1) {
-                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 )
+                        {
+                            CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        }
+                        else
+                        {
+                            Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
+                            i.putExtra("imei", imei);
+                            i.putExtra("CstmrNodeId", CstmrNodeId);
+                            i.putExtra("CstomrNodeType", CstomrNodeType);
+                            i.putExtra("fDate", fDate);
+                            startActivity(i);
+                            finish();
+                        }
 
                     } else {
 
@@ -3669,7 +3697,20 @@ public class AllButtonActivity extends BaseActivity implements LocationListener,
                 dbengine.UpdateStoreVisitWiseTablesAfterSync(4);
                 if(CommonInfo.flgDrctslsIndrctSls==1) {
                     if (flgClkdBtn == 1) {
-                        CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        if(CommonInfo.hmapAppMasterFlags.get("flgNeedStock")==1 && CommonInfo.hmapAppMasterFlags.get("flgCalculateStock")==1 )
+                        {
+                            CommonFunction.getStockData(AllButtonActivity.this,imei,CommonInfo.RegistrationID,"",0);
+                        }
+                        else
+                        {
+                            Intent i=new Intent(AllButtonActivity.this,DistributorCheckInFirstActivity.class);
+                            i.putExtra("imei", imei);
+                            i.putExtra("CstmrNodeId", CstmrNodeId);
+                            i.putExtra("CstomrNodeType", CstomrNodeType);
+                            i.putExtra("fDate", fDate);
+                            startActivity(i);
+                            finish();
+                        }
 
                     } else {
 
